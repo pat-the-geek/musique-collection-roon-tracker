@@ -40,7 +40,6 @@ from datetime import datetime, timezone, timedelta
 import json
 import urllib.request
 import urllib.parse
-import json as json_lib
 import base64
 import time
 
@@ -92,7 +91,7 @@ def get_spotify_token():
 
     try:
         with urllib.request.urlopen(req) as response:
-            payload = json_lib.loads(response.read().decode("utf-8"))
+            payload = json.loads(response.read().decode("utf-8"))
         spotify_token_cache["access_token"] = payload.get("access_token")
         expires_in = payload.get("expires_in", 3600)
         spotify_token_cache["expires_at"] = time.time() + expires_in
@@ -119,7 +118,7 @@ def search_spotify_artist_image(token, artist_name):
 
     try:
         with urllib.request.urlopen(req) as response:
-            data = json_lib.loads(response.read().decode("utf-8"))
+            data = json.loads(response.read().decode("utf-8"))
         items = data.get("artists", {}).get("items", [])
         image_url = items[0]["images"][0]["url"] if items and items[0].get("images") else None
         cache_artist_images_spotify[artist_name] = image_url
@@ -147,7 +146,7 @@ def search_spotify_album_image(token, artist_name, album_name):
 
     try:
         with urllib.request.urlopen(req) as response:
-            data = json_lib.loads(response.read().decode("utf-8"))
+            data = json.loads(response.read().decode("utf-8"))
         items = data.get("albums", {}).get("items", [])
         image_url = items[0]["images"][0]["url"] if items and items[0].get("images") else None
         cache_album_images_spotify[cache_key] = image_url
@@ -175,7 +174,7 @@ def search_lastfm_album_image(artist_name, album_name):
             f"&api_key={API_KEY}&artist={artist_encoded}&album={album_encoded}&format=json"
         )
         with urllib.request.urlopen(url) as response:
-            data = json_lib.loads(response.read().decode("utf-8"))
+            data = json.loads(response.read().decode("utf-8"))
         images = data.get("album", {}).get("image", [])
         image_url = images[-1]["#text"] if images else None
         cache_album_images_lastfm[cache_key] = image_url

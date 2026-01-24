@@ -58,9 +58,6 @@ from typing import Tuple, Optional
 import secrets
 from dotenv import load_dotenv
 
-import requests
-from typing import Optional
-
 def decouper_en_lignes(texte: str) -> str:
     """Découpe un texte en lignes formatées avec indentation.
     
