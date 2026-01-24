@@ -23,6 +23,10 @@ mutagen>=1.47.0               # Lecture métadonnées audio FLAC/MP3 (List_all_m
 streamlit>=1.53.0             # Interface Web (musique-gui.py)
 pillow>=12.1.0                # Traitement images (musique-gui.py)
 
+# ---- Testing (src/tests/) ----
+pytest>=7.0.0                 # Framework de tests unitaires
+pytest-cov>=4.0.0             # Couverture de code pour pytest
+
 # ---- Python Standard Library (déjà incluses avec Python) ----
 # Les modules suivants n'ont pas besoin d'installation:
 # - json, os, time, sys, csv, base64, re, fcntl
