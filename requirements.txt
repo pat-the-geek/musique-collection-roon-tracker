@@ -1,0 +1,31 @@
+# =============================================================================
+# Requirements pour le projet Musique - Collection & Tracking
+# =============================================================================
+# Date: 24 janvier 2026
+# Version: 3.0.0
+#
+# Installation: pip install -r requirements.txt
+# =============================================================================
+
+# ---- Core Dependencies (utilisées par plusieurs scripts) ----
+python-dotenv>=1.0.0          # Gestion variables d'environnement (.env)
+requests>=2.31.0              # Requêtes HTTP (API Spotify, Discogs, EurIA)
+certifi>=2023.0.0             # Gestion certificats SSL
+
+# ---- Roon & Last.fm Tracking (src/trackers/) ----
+roonapi>=0.1.0                # API Roon Core (chk-roon.py)
+pylast>=5.0.0                 # API Last.fm (chk-roon.py, chk-last-fm.py)
+
+# ---- Audio Metadata (src/utils/) ----
+mutagen>=1.47.0               # Lecture métadonnées audio FLAC/MP3 (List_all_music_on_drive.py)
+
+# ---- Web Interface (src/gui/) ----
+streamlit>=1.53.0             # Interface Web (musique-gui.py)
+pillow>=12.1.0                # Traitement images (musique-gui.py)
+
+# ---- Python Standard Library (déjà incluses avec Python) ----
+# Les modules suivants n'ont pas besoin d'installation:
+# - json, os, time, sys, csv, base64, re, fcntl
+# - datetime, collections, typing, secrets, unicodedata
+# - urllib.request, urllib.parse
+# - io (BytesIO)

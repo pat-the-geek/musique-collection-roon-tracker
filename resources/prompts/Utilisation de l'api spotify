@@ -1,0 +1,12 @@
+
+utilise les variables d'environnement pour te connecter à l'api de spotify :
+SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET
+
+Recherche l'URL de l'image de l'artiste et l'url de l'image de l'album pour chaque morceaux de musique.
+
+Afin d'éviter des accès inutile à l'API met en place un mécanisme de cache pour ces recherches (url de l'artiste et url de l'album)
+
+pour le fichier JSON "chk-last-fm.json" stocke utilise les proprités suivantes :
+        "artist_spotify_image" pour l'url de l'artiste
+        "album_spotify_image" pour l'url de l'album

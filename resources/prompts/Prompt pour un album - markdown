@@ -1,0 +1,19 @@
+Analyse le fichier discogs-collection.json et génère un fichier Markdown prêt pour iA Writer avec les règles suivantes :
+
+1.	Pour l'album {Album} de l'artiste {Artiste} sur le support {support}
+	•	Titre
+	•	Artiste
+	•	Année
+	•	Labels
+	•	Support	
+	•	Résumé (ou Resume dans le JSON)
+2.	Insère l’image de la Pochette avec ces contraintes :
+	•	affichée centrée
+	•	taille maximale une demi-page (utiliser une balise HTML <img> avec max-width:50%).
+3.	Ajoute une ligne blanche et un saut de page marqué par === :
+	•	entre chaque artiste
+	•	après chaque album.
+4.	La sortie doit être un fichier Markdown compatible avec iA Writer, prêt à être exporté en PDF.
+	
+
+⸻

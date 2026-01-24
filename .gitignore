@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Environnement et configuration
+data/config/.env
+*.log
+
+# Données sensibles - Configuration
+data/config/roon-config.json
+data/config/Liste_sites_musique-favoris.json
+data/history/chk-roon.lock
+
+# Données sensibles - Collection personnelle
+data/collection/discogs-collection.json
+data/collection/soundtrack.json
+
+# Données sensibles - Historique personnel
+data/history/chk-roon.json
+data/history/chk-last-fm.json
+
+# Outputs temporaires
+output/haikus/*.txt
+output/reports/*.txt
+*.tmp
+
+# Exports (contenu personnel)
+data/exports/*.md
+data/exports/*.csv
+data/exports/*.pdf
+
+# Backups (garder la structure, ignorer le contenu)
+backups/
+!backups/.gitkeep
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Streamlit
+.streamlit/
+
+# Cache
+.cache/
+*.cache

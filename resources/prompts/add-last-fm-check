@@ -1,0 +1,10 @@
+Pour chaque vérification de lecture sur Roon 
+contrôle également les dernières lecture sur last.fm
+
+inspire toi des fonctions utilisées dans le programme "chk-last-fm.py"
+et utilise les variables d'environnement .env pour la connexion à last.fm :
+- API_KEY
+- API_SECRET
+- LASTFM_USERNAME
+
+Attention, si la dernière lecture de last.fm a déjà été prise en compte, tu peux l'ignorer. Il faut éviter de créer des doublons.

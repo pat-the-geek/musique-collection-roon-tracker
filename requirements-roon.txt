@@ -1,0 +1,10 @@
+# Dépendances pour Roon Music Tracker
+
+# API Roon
+roonapi>=0.1.0
+
+# Gestion des variables d'environnement
+python-dotenv>=1.0.0
+
+# Gestion des certificats SSL
+certifi>=2023.0.0

@@ -1,0 +1,15 @@
+{
+  "token": "your-roon-token-here",
+  "host": "192.168.x.x",
+  "port": "9330",
+  "listen_start_hour": 6,
+  "listen_end_hour": 23,
+  "radio_stations": [
+    "RTS La Première",
+    "RTS Couleur 3",
+    "RTS Espace 2",
+    "RTS Option Musique",
+    "Radio Meuh",
+    "Radio Nova"
+  ]
+}
