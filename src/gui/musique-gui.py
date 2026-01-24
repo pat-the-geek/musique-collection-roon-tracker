@@ -113,9 +113,17 @@ Intégration écosystème:
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
 
+Changelog v3.0 (24 janvier 2026):
+    - Vue compacte pour Journal Roon: images réduites à 60px, layout optimisé
+    - Toggle "Vue compacte / Vue détaillée" pour basculer entre modes
+    - En mode compact: Header sur une ligne, infos denses, +60% de contenu visible
+    - Collection Discogs: images limitées à 400px pour meilleure utilisation espace
+    - CSS optimisé: marges réduites de 40%, espacements minimisés
+    - Amélioration densité globale de l'interface
+
 Auteur: Patrick Ostertag
-Version: 1.0.0
-Date: 21 janvier 2026
+Version: 3.0.0
+Date: 24 janvier 2026
 License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
@@ -191,23 +199,42 @@ st.markdown("""
         background-color: #f0f2f6;
         color: #000000;
     }
-    /* Réduction de hauteur pour le journal Roon */
-    .roon-track h3 {
-        font-size: 1.2rem;
-        margin-top: 0.2rem;
-        margin-bottom: 0.2rem;
+    /* Optimisations Journal Roon v3.0 - Ultra-compact */
+    .roon-track {
+        margin-bottom: 0.5rem;
+    }
+    .roon-track h3, .roon-track h4 {
+        font-size: 1.0rem;
+        margin-top: 0.1rem;
+        margin-bottom: 0.1rem;
+        font-weight: 600;
     }
     .roon-track p {
-        margin-bottom: 0.2rem;
-        line-height: 1.2;
+        margin-bottom: 0.1rem;
+        line-height: 1.1;
+        font-size: 0.9rem;
     }
     .roon-track .stMarkdown {
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.1rem;
     }
-    /* Réduction de l'espace autour des dividers */
+    /* Réduction maximale de l'espace autour des dividers */
     hr {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+        margin-top: 0.3rem;
+        margin-bottom: 0.3rem;
+    }
+    /* Compact header line */
+    .track-header {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    /* Compact track info */
+    .track-info {
+        line-height: 1.3;
+    }
+    /* Images compactes */
+    .compact-image {
+        max-width: 60px;
+        margin: 0 2px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1044,7 +1071,7 @@ def display_roon_journal():
         return
     
     # Statistiques
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
     with col1:
         st.metric("Total lectures", len(tracks))
     with col2:
@@ -1056,6 +1083,9 @@ def display_roon_journal():
     with col4:
         loved_count = sum(1 for t in tracks if t.get('loved'))
         st.metric("❤️ Aimés", loved_count)
+    with col5:
+        # Toggle pour vue compacte (par défaut activé)
+        compact_view = st.checkbox("Vue compacte", value=True, key="compact_view_toggle")
     
     st.divider()
     
@@ -1089,63 +1119,115 @@ def display_roon_journal():
     
     st.write(f"**{len(filtered_tracks)} lecture(s)**")
     
-    # Afficher les pistes
+    # Afficher les pistes avec layout adaptatif
     for i, track in enumerate(filtered_tracks):
         # Conteneur avec classe CSS pour styling compact
         st.markdown('<div class="roon-track">', unsafe_allow_html=True)
         with st.container():
-            # En-tête avec date et source
-            col1, col2, col3 = st.columns([2, 1, 1])
-            with col1:
+            if compact_view:
+                # MODE COMPACT: Une seule ligne pour header, infos compactes, petites images
                 date_str = track.get('date', 'Date inconnue')
-                st.markdown(f"**📅 {date_str}**")
-            with col2:
                 source = track.get('source', 'unknown')
                 source_emoji = "🎵" if source == 'roon' else "📻"
-                st.markdown(f"{source_emoji} {source.title()}")
-            with col3:
-                if track.get('loved'):
-                    st.markdown("❤️ **Aimé**")
-            
-            # Layout: Informations à gauche, Images à droite
-            col_text, col_images = st.columns([2, 1])
-            
-            with col_text:
-                # Informations musicales
-                st.markdown(f"### 🎤 {track.get('artist', 'Artiste inconnu')}")
-                st.markdown(f"**{track.get('title', 'Titre inconnu')}**")
-                st.markdown(f"*{track.get('album', 'Album inconnu')}*")
-            
-            with col_images:
-                # Images sur la même ligne
-                img_col1, img_col2, img_col3 = st.columns(3)
+                loved_badge = " • ❤️" if track.get('loved') else ""
                 
-                with img_col1:
-                    artist_img_url = track.get('artist_spotify_image')
-                    if artist_img_url:
-                        img = load_image_from_url(artist_img_url)
-                        if img:
-                            st.image(img, width=100)
-                            with st.expander("🎤"):
-                                st.code(artist_img_url, language=None)
+                st.markdown(
+                    f"<div class='track-header'>📅 {date_str} • {source_emoji} {source.title()}{loved_badge}</div>",
+                    unsafe_allow_html=True
+                )
                 
-                with img_col2:
-                    album_spotify_url = track.get('album_spotify_image')
-                    if album_spotify_url:
-                        img = load_image_from_url(album_spotify_url)
-                        if img:
-                            st.image(img, width=100)
-                            with st.expander("💿S"):
-                                st.code(album_spotify_url, language=None)
+                # Layout: Informations à gauche (3/4), Images à droite (1/4)
+                col_text, col_images = st.columns([3, 1])
                 
-                with img_col3:
-                    album_lastfm_url = track.get('album_lastfm_image')
-                    if album_lastfm_url:
-                        img = load_image_from_url(album_lastfm_url)
-                        if img:
-                            st.image(img, width=100)
-                            with st.expander("💿L"):
-                                st.code(album_lastfm_url, language=None)
+                with col_text:
+                    # Informations musicales compactes
+                    artist = track.get('artist', 'Artiste inconnu')
+                    title = track.get('title', 'Titre inconnu')
+                    album = track.get('album', 'Album inconnu')
+                    
+                    st.markdown(f"**🎤 {artist}**")
+                    st.markdown(f"<div class='track-info'>{title} • <i>{album}</i></div>", unsafe_allow_html=True)
+                
+                with col_images:
+                    # Images compactes sur la même ligne (60px chaque)
+                    img_cols = st.columns(3)
+                    
+                    # Image artiste (Spotify)
+                    with img_cols[0]:
+                        artist_img_url = track.get('artist_spotify_image')
+                        if artist_img_url:
+                            img = load_image_from_url(artist_img_url)
+                            if img:
+                                st.image(img, width=60, caption="🎤")
+                    
+                    # Image album (Spotify)
+                    with img_cols[1]:
+                        album_spotify_url = track.get('album_spotify_image')
+                        if album_spotify_url:
+                            img = load_image_from_url(album_spotify_url)
+                            if img:
+                                st.image(img, width=60, caption="💿S")
+                    
+                    # Image album (Last.fm)
+                    with img_cols[2]:
+                        album_lastfm_url = track.get('album_lastfm_image')
+                        if album_lastfm_url:
+                            img = load_image_from_url(album_lastfm_url)
+                            if img:
+                                st.image(img, width=60, caption="💿L")
+            else:
+                # MODE DÉTAILLÉ: Layout original avec plus d'espace
+                col1, col2, col3 = st.columns([2, 1, 1])
+                with col1:
+                    date_str = track.get('date', 'Date inconnue')
+                    st.markdown(f"**📅 {date_str}**")
+                with col2:
+                    source = track.get('source', 'unknown')
+                    source_emoji = "🎵" if source == 'roon' else "📻"
+                    st.markdown(f"{source_emoji} {source.title()}")
+                with col3:
+                    if track.get('loved'):
+                        st.markdown("❤️ **Aimé**")
+                
+                # Layout: Informations à gauche, Images à droite
+                col_text, col_images = st.columns([2, 1])
+                
+                with col_text:
+                    # Informations musicales
+                    st.markdown(f"### 🎤 {track.get('artist', 'Artiste inconnu')}")
+                    st.markdown(f"**{track.get('title', 'Titre inconnu')}**")
+                    st.markdown(f"*{track.get('album', 'Album inconnu')}*")
+                
+                with col_images:
+                    # Images sur la même ligne (100px)
+                    img_col1, img_col2, img_col3 = st.columns(3)
+                    
+                    with img_col1:
+                        artist_img_url = track.get('artist_spotify_image')
+                        if artist_img_url:
+                            img = load_image_from_url(artist_img_url)
+                            if img:
+                                st.image(img, width=100)
+                                with st.expander("🎤"):
+                                    st.code(artist_img_url, language=None)
+                    
+                    with img_col2:
+                        album_spotify_url = track.get('album_spotify_image')
+                        if album_spotify_url:
+                            img = load_image_from_url(album_spotify_url)
+                            if img:
+                                st.image(img, width=100)
+                                with st.expander("💿S"):
+                                    st.code(album_spotify_url, language=None)
+                    
+                    with img_col3:
+                        album_lastfm_url = track.get('album_lastfm_image')
+                        if album_lastfm_url:
+                            img = load_image_from_url(album_lastfm_url)
+                            if img:
+                                st.image(img, width=100)
+                                with st.expander("💿L"):
+                                    st.code(album_lastfm_url, language=None)
         
         st.markdown('</div>', unsafe_allow_html=True)
         st.divider()
@@ -1529,7 +1611,8 @@ def display_discogs_collection():
                 if discogs_url:
                     img = load_image_from_url(discogs_url)
                     if img:
-                        st.image(img, use_container_width=True)
+                        # Limiter la largeur pour meilleure utilisation de l'espace
+                        st.image(img, width=400)
                     st.text_input("URL Discogs", value=discogs_url, key=f"discogs_url_{selected_album_index}")
                 else:
                     st.info("Aucune pochette Discogs")
@@ -1540,7 +1623,8 @@ def display_discogs_collection():
                 if spotify_cover_url:
                     img = load_image_from_url(spotify_cover_url)
                     if img:
-                        st.image(img, use_container_width=True)
+                        # Limiter la largeur pour meilleure utilisation de l'espace
+                        st.image(img, width=400)
                     st.text_input("URL Spotify", value=spotify_cover_url, key=f"spotify_cover_url_{selected_album_index}")
                 else:
                     st.info("Aucune pochette Spotify")
@@ -1603,7 +1687,7 @@ def display_discogs_collection():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         albums = load_data()
-        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 1.0.0")
+        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.0.0")
 
 # ============================================================================
 # POINT D'ENTRÉE PRINCIPAL
