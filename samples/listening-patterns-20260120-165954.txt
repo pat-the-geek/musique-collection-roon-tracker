@@ -1,0 +1,116 @@
+================================================================================
+📊 ANALYSE DES PATTERNS D'ÉCOUTE
+================================================================================
+
+🎵 SESSIONS D'ÉCOUTE
+--------------------------------------------------------------------------------
+Nombre total de sessions : 39
+Sessions de plus de 10 pistes : 14
+
+Top 5 sessions les plus longues :
+  1. 24 pistes (~96 min) - Début: 2026-01-17 11:43
+     Artistes: It's Too Soon To Know (1948 Version), Paolo Conte, Fun to Be Fooled (L...
+  2. 23 pistes (~92 min) - Début: 2026-01-01 12:08
+     Artistes: Avishai Cohen, Plume, John & Yoko / Plastic Ono Band with Elephant’s M...
+  3. 21 pistes (~84 min) - Début: 2026-01-17 18:43
+     Artistes: Serge Gainsbourg / Alain Goraguer et son orchestre / Alain Goraguer, S...
+  4. 17 pistes (~68 min) - Début: 2026-01-03 11:40
+     Artistes: The Boo Radleys, Mint Field, Deftones...
+  5. 16 pistes (~64 min) - Début: 2026-01-02 17:54
+     Artistes: Michel Legrand...
+
+💿 ALBUMS ÉCOUTÉS EN ENTIER (5+ pistes)
+--------------------------------------------------------------------------------
+  1. David Bowie - Lodger - 14 pistes
+  2. Michel Legrand - The Thomas Crown Affair - 9 pistes
+  3. David Bowie - Low - 8 pistes
+  4. David Bowie - Black Tie White Noise - 8 pistes
+  5. Mstislav Rostropovich - Bach - Cello Suites - 7 pistes
+  6. Antônio Carlos Jobim - Wave - 7 pistes
+  7. Pink Floyd - Meddle - 6 pistes
+  8. David Bowie - Station To Station (2016 Remaster) - 5 pistes
+  9. Lou Reed - Transformer - 5 pistes
+  10. Deftones - Private Music - 5 pistes
+
+⏰ PATTERNS TEMPORELS
+--------------------------------------------------------------------------------
+Heure préférée : 12h (58 écoutes)
+Jour préféré : Saturday (101 écoutes)
+
+Distribution par tranche horaire :
+  0h-3h    :  0
+  3h-6h    :  0
+  6h-9h    : █ 4
+  9h-12h   : █████████████████████████████ 69
+  12h-15h  : ████████████████████████████████████████ 95
+  15h-18h  : ███████████████████████ 56
+  18h-21h  : ███████████████████████████████ 74
+  21h-0h   :  2
+
+🔗 CORRÉLATIONS ENTRE ARTISTES
+--------------------------------------------------------------------------------
+Artistes souvent écoutés dans les mêmes sessions :
+
+  • Miles Davis
+    → David Bowie (3× ensemble)
+    → Bryan Ferry (2× ensemble)
+    → Paolo Conte (1× ensemble)
+
+  • David Bowie
+    → Miles Davis (3× ensemble)
+    → Elton John (1× ensemble)
+    → Roxy Music (1× ensemble)
+
+  • Serge Gainsbourg
+    → Serge Gainsbourg / Zenith (2× ensemble)
+    → Paolo Conte (1× ensemble)
+    → Patrick Juvet / Jean‐Michel Jarre (1× ensemble)
+
+  • Serge Gainsbourg / Zenith
+    → Serge Gainsbourg (2× ensemble)
+    → Paolo Conte (1× ensemble)
+    → Patrick Juvet / Jean‐Michel Jarre (1× ensemble)
+
+  • Bryan Ferry
+    → Miles Davis (2× ensemble)
+    → Jeff Beck / Ann Farina / Santo Farina / Johnny Farina / (1× ensemble)
+    → Ella Fitzgerald (1× ensemble)
+
+➡️  TRANSITIONS FRÉQUENTES
+--------------------------------------------------------------------------------
+Après avoir écouté X, vous écoutez souvent Y :
+
+  • Après David Bowie
+    → Roxy Music (1×)
+    → Jefferson Airplane (1×)
+    → The Cure (1×)
+
+  • Après Miles Davis
+    → Elvis Presley (1×)
+    → Miles Davis / Cannonball Adderley / Joseph Kosma / Jacq (1×)
+    → Herbie Hancock (1×)
+
+  • Après Serge Gainsbourg
+    → The Ink Spots (1×)
+    → Serge Gainsbourg / Alain Goraguer et son orchestre / Al (1×)
+    → Serge Gainsbourg / Jean-Claude Vannier (1×)
+
+  • Après Elvis Presley
+    → Irma Thomas (1×)
+    → Martha Wainwright (1×)
+    → The Young Gods (1×)
+
+  • Après John Coltrane
+    → Roy Hargrove (1×)
+    → Billie Eilish (1×)
+    → Milt Jackson / John Coltrane (1×)
+
+📈 RÉSUMÉ STATISTIQUE
+--------------------------------------------------------------------------------
+Durée totale estimée : ~1200 minutes (~20h0min)
+Durée moyenne par session : ~30 minutes
+Artistes différents écoutés : 161
+Albums différents écoutés : 202
+Diversité artistique : 53.7%
+
+================================================================================

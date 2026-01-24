@@ -208,6 +208,10 @@ Musique/
 │   ├── start-streamlit.sh → Lancement interface Web
 │   └── update_python_certificates.sh → Mise à jour certificats SSL
 │
+├── 📂 samples/                      # Exemples de documents générés
+│   ├── discogs-collection.md → Exemple export Markdown collection
+│   └── listening-patterns-*.txt → Exemple rapport analyse d'écoute
+│
 ├── 📂 archive/                      # Archives et code expérimental
 │   └── Autres codes python/ → Scripts expérimentaux
 │
@@ -235,6 +239,7 @@ Musique/
 - **`docs/`**: Documentation complète centralisée
 - **`resources/`**: Ressources statiques (prompts, images)
 - **`scripts/`**: Scripts shell d'administration
+- **`samples/`**: Exemples de documents produits par le système
 
 **Modularité fonctionnelle:**
 - Trackers → Surveillance temps réel
@@ -781,6 +786,117 @@ Documents/DataForIA/
 ```
 
 Si `catalogue.json` absent → `FileNotFoundError`.
+
+## 📂 Exemples de documents produits
+
+### Répertoire `samples/`
+
+Le répertoire `samples/` contient des **exemples de documents générés** par le système, illustrant les différents formats de sortie (JSON, Markdown, PDF). Ces exemples servent de **référence** pour comprendre la structure et le contenu des fichiers produits par les scripts d'analyse et d'export.
+
+#### Documents disponibles
+
+**1. Export Markdown de collection (`discogs-collection.md`)**
+- **Source**: Généré par `Read-discogs-ia.py` via `generate_markdown_from_json()`
+- **Format**: Markdown structuré avec images et métadonnées
+- **Contenu**: 
+  - Albums groupés par artiste (titres de niveau 1)
+  - Chaque album en sous-section (niveau 2)
+  - Métadonnées complètes (année, labels, support, résumé)
+  - Images: priorité à Spotify, fallback sur Discogs
+  - Liens Spotify et Discogs
+- **Structure type**:
+  ```markdown
+  # AIR
+  
+  ## Original Motion Picture Score For The Virgin Suicides
+  
+  **Artiste:** AIR
+  - **Année:** 2000
+  - **Labels:** Virgin, Virgin
+  - **Support:** CD
+  - **Résumé:** [Texte long généré par EurIA API]
+  
+  **Spotify:** [Lien](https://open.spotify.com/album/...)
+  
+  <img src="..." />
+  ```
+- **Usage**: Export pour consultation hors-ligne, partage, archivage
+- **Conversion**: Peut être converti en PDF avec Pandoc ou autres outils Markdown
+
+**2. Rapport d'analyse patterns d'écoute (`listening-patterns-*.txt`)**
+- **Source**: Généré par `analyze-listening-patterns.py`
+- **Format**: Texte brut avec formatage ASCII
+- **Contenu**:
+  - **Sessions d'écoute**: Détection périodes continues, durée estimée
+  - **Albums complets**: Albums écoutés avec 5+ pistes
+  - **Patterns temporels**: Heures/jours préférés, distribution horaire
+  - **Corrélations artistes**: Artistes écoutés dans mêmes sessions
+  - **Transitions fréquentes**: Enchaînements artistes
+  - **Statistiques globales**: Durée totale, diversité, artistes uniques
+- **Structure type**:
+  ```
+  ================================================================================
+  📊 ANALYSE DES PATTERNS D'ÉCOUTE
+  ================================================================================
+  
+  🎵 SESSIONS D'ÉCOUTE
+  Nombre total de sessions : 39
+  Top 5 sessions les plus longues :
+    1. 24 pistes (~96 min) - Début: 2026-01-17 11:43
+  
+  💿 ALBUMS ÉCOUTÉS EN ENTIER (5+ pistes)
+    1. David Bowie - Lodger - 14 pistes
+  
+  ⏰ PATTERNS TEMPORELS
+  Distribution par tranche horaire :
+    12h-15h  : ████████████████████████████████████████ 95
+  ```
+- **Usage**: Analyse comportement d'écoute, insights musicaux
+- **Horodatage**: Nom de fichier avec timestamp pour historique
+
+#### Formats de sortie du système
+
+Le système produit plusieurs types de documents selon le script utilisé :
+
+| Format | Script générateur | Localisation sortie | Description |
+|--------|-------------------|---------------------|-------------|
+| **Markdown** | `Read-discogs-ia.py` | `data/exports/discogs-collection.md` | Export collection avec images |
+| **CSV** | Export manuel | `data/exports/Collection-discogs.csv` | Données tabulaires collection |
+| **PDF** | Conversion externe | `data/exports/discogs-collection.pdf` | Version imprimable collection |
+| **TXT** (Haiku) | `generate-haiku.py` | `output/haikus/generate-haiku-*.txt` | Présentations iA Presenter |
+| **TXT** (Patterns) | `analyze-listening-patterns.py` | `output/reports/listening-patterns-*.txt` | Rapports analytics |
+| **JSON** | Tous les scripts | `data/collection/`, `data/history/` | Données structurées brutes |
+
+#### Workflow de génération
+
+```mermaid
+graph LR
+    A[Collection Discogs JSON] -->|Read-discogs-ia.py| B[Markdown]
+    A -->|Export manuel| C[CSV]
+    B -->|Pandoc/outil| D[PDF]
+    E[Historique Roon JSON] -->|analyze-listening-patterns.py| F[Rapport TXT]
+    E -->|generate-haiku.py| G[Présentation TXT]
+    A -->|generate-haiku.py| G
+```
+
+#### Cas d'usage
+
+- **Consultation hors-ligne**: Markdown/PDF pour lecture sans application
+- **Partage**: Envoyer rapports patterns ou présentations haïku
+- **Archivage**: Snapshots périodiques en Markdown/PDF
+- **Analyse**: Rapports TXT pour insights comportement musical
+- **Présentation**: Fichiers haïku formatés pour iA Presenter
+- **Import externe**: CSV pour Excel, Google Sheets, PowerBI
+
+#### Notes techniques
+
+- **Encodage**: UTF-8 pour tous les fichiers (support caractères spéciaux)
+- **Images**: URLs externes (Spotify CDN, Last.fm CDN, Discogs)
+- **Formatage Markdown**: Compatible GitHub, Pandoc, iA Writer
+- **ASCII art**: Graphiques barres dans rapports TXT (pas d'Unicode étendu)
+- **Horodatage**: Format `YYYYMMDD-HHMMSS` pour versioning automatique
+
+---
 
 ## 📂 Structure des données (v3.0.0)
 
