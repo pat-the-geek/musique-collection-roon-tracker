@@ -4,7 +4,7 @@
 
 ## 🎯 État du Projet
 
-**Version actuelle : 3.0.0** (Architecture modulaire - 23 janvier 2026)
+**Version actuelle : 3.1.0** (Architecture modulaire + Services partagés - 24 janvier 2026)
 
 **Statut :** ✅ Fonctionnel • 🧪 Expérimental • 📊 En évolution
 
@@ -17,6 +17,32 @@
 - ✅ Cross-référence films/soundtracks via projet Cinéma
 - ✅ Détection et traitement intelligent des radios
 - ✅ Système de cache et retry pour robustesse API
+- ✅ **NOUVEAU v3.1**: Services partagés (`spotify_service`, `metadata_cleaner`)
+- ✅ **NOUVEAU v3.1**: Infrastructure de tests unitaires (pytest)
+- ✅ **NOUVEAU v3.1**: Constantes centralisées dans `constants.py`
+
+### 📦 Nouveautés v3.1.0 (24 janvier 2026)
+
+**🔧 Refactoring Majeur**: Création du module `src/services/`
+- `spotify_service.py`: Service Spotify centralisé (560 lignes) avec cache, retry, timeouts
+- `metadata_cleaner.py`: Fonctions de nettoyage métadonnées (240 lignes)
+- `constants.py`: 100+ constantes centralisées (URLs, timeouts, seuils)
+
+**🧪 Infrastructure de Tests**:
+- 27 tests unitaires avec pytest
+- 100% couverture du module `metadata_cleaner`
+- Fixtures réutilisables dans `conftest.py`
+
+**🐛 Corrections**:
+- Suppression imports dupliqués (`generate-haiku.py`, `chk-last-fm.py`)
+- Amélioration gestion d'erreurs avec logging structuré
+- Ajout timeouts sur tous les appels HTTP
+
+**📚 Documentation**:
+- `docs/IMPROVEMENTS-v3.1.0.md`: Guide détaillé des améliorations
+- `ANALYSE-COMPLETE-v3.1.0.md`: Analyse complète + recommandations futures
+
+👉 **Voir le guide complet**: [ANALYSE-COMPLETE-v3.1.0.md](ANALYSE-COMPLETE-v3.1.0.md)
 
 ### 🚀 Pistes d'Amélioration Prioritaires
 
