@@ -2,6 +2,20 @@
 
 Interface web moderne pour visualiser, éditer et gérer une collection musicale avec historique d'écoute Roon/Last.fm.
 
+## 🎯 Objectif Principal
+
+**Créer des fichiers JSON exploitables avec URLs publiques**
+
+En enregistrant les lectures musicales avec des URLs d'images publiques (Spotify, Last.fm) plutôt que des références internes Roon, le système permet:
+
+- ✅ **Exploitation par IA**: Génération de résumés, descriptions, analyses sans accès direct à Roon
+- ✅ **Traitement automatisé**: Scripts Python peuvent accéder aux images et métadonnées
+- ✅ **Intégration externe**: Autres logiciels peuvent consommer les données JSON
+- ✅ **Persistance**: URLs publiques restent accessibles indépendamment de Roon
+- ✅ **Portabilité**: Données utilisables sur n'importe quel système
+
+Le fichier `chk-roon.json` devient ainsi une **source de données universelle** exploitable par n'importe quel outil moderne.
+
 ## 📋 Table des matières
 
 - [Vue d'ensemble](#vue-densemble)
@@ -144,6 +158,23 @@ L'application s'ouvre automatiquement dans le navigateur sur `http://localhost:8
         ▼                               │
 discogs-collection.json ────────────────┘
 ```
+
+## 📸 Captures d'écran
+
+Des captures d'écran de l'interface sont disponibles dans [samples/](../samples/) :
+
+### Interface Streamlit
+- **[Vue principale Collection Discogs](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Main.png)** : Interface complète avec sidebar, recherche et détails album
+- **[Onglet Album Art](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Album%20Art.png)** : Gestion pochettes Discogs et Spotify
+- **[Onglet Liens](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Links%20Spotify%20-%20Discogs.png)** : Liens externes Spotify et Discogs
+- **[Métadonnées Soundtrack](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Soundtrack%20informations.png)** : Affichage enrichi bandes originales avec info film
+- **[Journal Roon](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Roon%20Journal.png)** : Historique écoutes avec triple affichage images
+
+### Exports
+- **[Collection Markdown](../samples/discogs-collection.md)** : Exemple export Markdown complet
+- **[Collection PDF](../samples/discogs-collection.pdf)** : Version imprimable collection
+- **[Présentation Haïku PDF](../samples/generate-haiku-20260124-092110.pdf)** : Exemple génération iA Presenter
+- **[Rapport Patterns](../samples/listening-patterns-20260120-165954.txt)** : Exemple analyse d'écoute
 
 ## 🎨 Interface utilisateur
 
@@ -298,8 +329,39 @@ python -m json.tool chk-roon.json
 - Les URLs doivent être HTTPS
 - User-Agent Mozilla requis pour certains CDN
 
+### ⚠️ Erreurs de cache d'images (Problème connu)
+
+**Symptôme:**
+```
+MediaFileStorageError: Bad filename 'xxx.jpg'. 
+(No media file with id 'xxx')
+```
+
+**Cause:**
+- Problème de cache interne Streamlit lors des reruns
+- Les IDs d'images en mémoire deviennent invalides
+- Se produit aléatoirement lors de la navigation
+
+**Impact:**
+- Messages d'erreur dans la console (rouge)
+- N'empêche pas l'utilisation de l'interface
+- Les images se rechargent au prochain rerun
+
+**Solution actuelle:**
+- Try/except autour des `st.image()` pour éviter les crashs
+- Cache avec `@st.cache_resource` au lieu de `@st.cache_data`
+- **Limitation Streamlit non résolue** - nécessite investigation approfondie
+
+**Workaround utilisateur:**
+- Ignorer les messages rouges dans la console
+- Rafraîchir la page (F5) si les images ne s'affichent pas
+- Les erreurs n'affectent pas les données JSON
+
+**Statut:** 🔴 Non résolu - voir TODO.md
+
 ## 🔮 Évolutions futures
 
+- [ ] **Résoudre erreurs cache d'images Streamlit** (priorité haute)
 - [ ] Export CSV/JSON filtré
 - [ ] Graphiques temporels (lectures par jour)
 - [ ] Tri personnalisé (date, artiste, album)

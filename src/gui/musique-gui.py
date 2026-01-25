@@ -201,40 +201,74 @@ st.markdown("""
     }
     /* Optimisations Journal Roon v3.0 - Ultra-compact */
     .roon-track {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0rem !important;
+        padding: 0rem !important;
     }
     .roon-track h3, .roon-track h4 {
         font-size: 1.0rem;
-        margin-top: 0.1rem;
-        margin-bottom: 0.1rem;
+        margin: 0rem !important;
+        padding: 0rem !important;
         font-weight: 600;
     }
     .roon-track p {
-        margin-bottom: 0.1rem;
-        line-height: 1.1;
+        margin: 0rem !important;
+        padding: 0rem !important;
+        line-height: 0.7;
         font-size: 0.9rem;
     }
     .roon-track .stMarkdown {
-        margin-bottom: 0.1rem;
+        margin: 0rem !important;
+        padding: 0rem !important;
     }
-    /* Réduction maximale de l'espace autour des dividers */
-    hr {
-        margin-top: 0.3rem;
-        margin-bottom: 0.3rem;
+    .roon-track div {
+        margin: 0rem !important;
+        padding: 0rem !important;
+    }
+    /* Réduction des containers Streamlit */
+    .roon-track [data-testid="stVerticalBlock"] {
+        gap: 0rem !important;
+        padding: 0rem !important;
+        margin: 0rem !important;
+    }
+    .roon-track [data-testid="stHorizontalBlock"] {
+        gap: 0rem !important;
+        padding: 0rem !important;
+        margin: 0rem !important;
+    }
+    .roon-track [data-testid="column"] {
+        padding: 0rem !important;
+        margin: 0rem !important;
+    }
+    /* Divider HTML simple ultra-minimal */
+    .track-divider {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 0.1rem 0rem !important;
+        padding: 0rem !important;
+        height: 1px;
     }
     /* Compact header line */
     .track-header {
         font-size: 0.85rem;
         color: #666;
+        margin: 0rem !important;
+        padding: 0rem !important;
     }
     /* Compact track info */
     .track-info {
-        line-height: 1.3;
+        line-height: 1;
+        margin: 0rem !important;
+        padding: 0rem !important;
     }
     /* Images compactes */
     .compact-image {
         max-width: 60px;
         margin: 0 2px;
+    }
+    /* Suppression des marges des images */
+    .roon-track img {
+        margin: 0rem !important;
+        padding: 0rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -703,7 +737,7 @@ def save_data(data: List[Dict]) -> bool:
 # FONCTIONS UTILITAIRES - IMAGES
 # ============================================================================
 
-@st.cache_data(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def load_image_from_url(url: str) -> Optional[Image.Image]:
     """Charge une image depuis une URL avec mise en cache et gestion d'erreurs.
     
@@ -789,8 +823,7 @@ def load_image_from_url(url: str) -> Optional[Image.Image]:
         response.raise_for_status()
         img = Image.open(BytesIO(response.content))
         return img
-    except Exception as e:
-        st.warning(f"⚠️ Impossible de charger l'image : {str(e)[:50]}")
+    except Exception:
         return None
 
 # ============================================================================
@@ -1158,7 +1191,10 @@ def display_roon_journal():
                         if artist_img_url:
                             img = load_image_from_url(artist_img_url)
                             if img:
-                                st.image(img, width=60, caption="🎤")
+                                try:
+                                    st.image(img, width=60, caption="🎤")
+                                except Exception:
+                                    pass  # Ignore cache errors
                     
                     # Image album (Spotify)
                     with img_cols[1]:
@@ -1166,7 +1202,10 @@ def display_roon_journal():
                         if album_spotify_url:
                             img = load_image_from_url(album_spotify_url)
                             if img:
-                                st.image(img, width=60, caption="💿S")
+                                try:
+                                    st.image(img, width=60, caption="💿S")
+                                except Exception:
+                                    pass  # Ignore cache errors
                     
                     # Image album (Last.fm)
                     with img_cols[2]:
@@ -1174,7 +1213,10 @@ def display_roon_journal():
                         if album_lastfm_url:
                             img = load_image_from_url(album_lastfm_url)
                             if img:
-                                st.image(img, width=60, caption="💿L")
+                                try:
+                                    st.image(img, width=60, caption="💿L")
+                                except Exception:
+                                    pass  # Ignore cache errors
             else:
                 # MODE DÉTAILLÉ: Layout original avec plus d'espace
                 col1, col2, col3 = st.columns([2, 1, 1])
@@ -1207,30 +1249,38 @@ def display_roon_journal():
                         if artist_img_url:
                             img = load_image_from_url(artist_img_url)
                             if img:
-                                st.image(img, width=100)
-                                with st.expander("🎤"):
-                                    st.code(artist_img_url, language=None)
+                                try:
+                                    st.image(img, width=100)
+                                    with st.expander("🎤"):
+                                        st.code(artist_img_url, language=None)
+                                except Exception:
+                                    pass  # Ignore cache errors
                     
                     with img_col2:
                         album_spotify_url = track.get('album_spotify_image')
                         if album_spotify_url:
                             img = load_image_from_url(album_spotify_url)
                             if img:
-                                st.image(img, width=100)
-                                with st.expander("💿S"):
-                                    st.code(album_spotify_url, language=None)
+                                try:
+                                    st.image(img, width=100)
+                                    with st.expander("💿S"):
+                                        st.code(album_spotify_url, language=None)
+                                except Exception:
+                                    pass  # Ignore cache errors
                     
                     with img_col3:
                         album_lastfm_url = track.get('album_lastfm_image')
                         if album_lastfm_url:
                             img = load_image_from_url(album_lastfm_url)
                             if img:
-                                st.image(img, width=100)
-                                with st.expander("💿L"):
-                                    st.code(album_lastfm_url, language=None)
+                                try:
+                                    st.image(img, width=100)
+                                    with st.expander("💿L"):
+                                        st.code(album_lastfm_url, language=None)
+                                except Exception:
+                                    pass  # Ignore cache errors
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.divider()
+        st.markdown('</div><hr class="track-divider">', unsafe_allow_html=True)
 
 # ============================================================================
 # VUES PRINCIPALES - COLLECTION DISCOGS

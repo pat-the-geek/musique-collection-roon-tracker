@@ -1,5 +1,47 @@
 # 🎵 Architecture du Projet Musique - Vue d'ensemble
 
+## 🎯 Objectif Principal du Système
+
+**Création de fichiers JSON exploitables avec URLs publiques pour traitement universel**
+
+Le système enregistre les lectures musicales avec des **URLs d'images publiques** (Spotify CDN, Last.fm CDN) au lieu de références internes Roon. Cette approche stratégique offre plusieurs avantages majeurs:
+
+### Exploitation par IA
+- ✅ Génération automatique de résumés d'albums via EurIA API
+- ✅ Création de descriptions courtes pour présentations (haïkus)
+- ✅ Analyse de patterns d'écoute sans accès direct à Roon
+- ✅ Traitement d'images pour reconnaissance visuelle
+
+### Intégration Multi-Plateforme
+- ✅ Scripts Python peuvent accéder aux métadonnées complètes
+- ✅ Autres langages (JavaScript, Java, etc.) peuvent parser les JSON
+- ✅ APIs externes peuvent consommer les données
+- ✅ Applications mobiles peuvent afficher les pochettes
+
+### Portabilité et Pérennité
+- ✅ Indépendance vis-à-vis de l'infrastructure Roon
+- ✅ URLs publiques persistent même si Roon est éteint
+- ✅ Données archivables et partageables facilement
+- ✅ Migration vers d'autres systèmes simplifiée
+
+### Cas d'usage concrets
+```python
+# Exemple: Analyse d'écoute par IA externe
+import json
+with open('chk-roon.json') as f:
+    data = json.load(f)
+    
+for track in data['tracks']:
+    # URLs accessibles directement
+    artist_image = track['artist_spotify_image']
+    album_image = track['album_spotify_image']
+    
+    # Traitement IA possible
+    analyze_with_ai(artist_image, album_image)
+```
+
+Cette architecture fait du fichier `chk-roon.json` une **source de données universelle** exploitable par tout écosystème moderne.
+
 ## 📊 Diagramme de flux principal
 
 
@@ -421,7 +463,10 @@ sequenceDiagram
 | `fix-radio-tracks.py` | `src/maintenance/` | Correction métadonnées pistes radio | `data/history/chk-roon.json` | MAJ JSON |
 | `clean-radio-tracks.py` | `src/maintenance/` | Nettoyage lectures radio invalides | `data/history/chk-roon.json` | MAJ JSON |
 
-## 🌐 Interface Web Streamlit (musique-gui.py v2.1)
+## � Interface Web Streamlit (musique-gui.py v2.1)
+
+![Interface principale](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Biblioth%C3%A8que%20Discogs%20-%20Main.png)
+*Capture d'écran de l'interface principale - Collection Discogs*
 
 ### Fonctionnalités principales
 
@@ -668,6 +713,27 @@ src/collection/generate-soundtrack.py ──► data/collection/soundtrack.json 
 - 🎧 **Intégration Last.fm** dans le tracker principal
 - 🏷️ **Marquage de source** ("roon" ou "lastfm")
 
+---
+
+## 📸 Captures d'écran
+
+Des captures d'écran de l'interface Streamlit sont disponibles dans [samples/](../samples/) :
+
+### Interface Streamlit (musique-gui.py)
+- **[Vue principale Collection Discogs](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Main.png)** : Interface complète avec sidebar, recherche et détails album
+- **[Onglet Album Art](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Album%20Art.png)** : Gestion pochettes Discogs et Spotify
+- **[Onglet Liens](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Links%20Spotify%20-%20Discogs.png)** : Liens externes Spotify et Discogs
+- **[Métadonnées Soundtrack](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Soundtrack%20informations.png)** : Affichage enrichi bandes originales avec info film
+- **[Journal Roon](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Roon%20Journal.png)** : Historique écoutes avec triple affichage images
+
+### Exports
+- **[Collection Markdown](../samples/discogs-collection.md)** : Exemple export Markdown complet
+- **[Collection PDF](../samples/discogs-collection.pdf)** : Version imprimable collection
+- **[Présentation Haïku PDF](../samples/generate-haiku-20260124-092110.pdf)** : Exemple génération iA Presenter
+- **[Rapport Patterns](../samples/listening-patterns-20260120-165954.txt)** : Exemple analyse d'écoute
+
+---
+
 ## 🎯 Workflows typiques (v3.0.0)
 
 ### 1. Démarrage journalier du tracker
@@ -787,7 +853,24 @@ Documents/DataForIA/
 
 Si `catalogue.json` absent → `FileNotFoundError`.
 
-## 📂 Exemples de documents produits
+## � Captures d'écran
+
+Des captures d'écran de l'interface Streamlit sont disponibles dans [samples/](../samples/) :
+
+### Interface Streamlit (musique-gui.py)
+- **[Vue principale Collection Discogs](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Main.png)** : Interface complète avec sidebar, recherche et détails album
+- **[Onglet Album Art](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Album%20Art.png)** : Gestion pochettes Discogs et Spotify
+- **[Onglet Liens](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Links%20Spotify%20-%20Discogs.png)** : Liens externes Spotify et Discogs
+- **[Métadonnées Soundtrack](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Bibliothèque%20Discogs%20-%20Soundtrack%20informations.png)** : Affichage enrichi bandes originales avec info film
+- **[Journal Roon](../samples/Screen%20Capture%20-%20musique-gui.py%20-%20Roon%20Journal.png)** : Historique écoutes avec triple affichage images
+
+### Exports
+- **[Collection Markdown](../samples/discogs-collection.md)** : Exemple export Markdown complet
+- **[Collection PDF](../samples/discogs-collection.pdf)** : Version imprimable collection
+- **[Présentation Haïku PDF](../samples/generate-haiku-20260124-092110.pdf)** : Exemple génération iA Presenter
+- **[Rapport Patterns](../samples/listening-patterns-20260120-165954.txt)** : Exemple analyse d'écoute
+
+## �📂 Exemples de documents produits
 
 ### Répertoire `samples/`
 
@@ -1015,6 +1098,8 @@ backups/
   - [CHANGELOG-generate-haiku-v2.1.0.md](CHANGELOG-generate-haiku-v2.1.0.md) - Haiku v2.1.0
 - **Instructions IA**: [../.github/copilot-instructions.md](../.github/copilot-instructions.md)
 
+---
+
 ## 📈 Évolutions récentes
 
 ### Version 3.0.0 (Architecture) - 23 janvier 2026
@@ -1062,7 +1147,7 @@ backups/
 ---
 
 **Version Architecture:** 3.0.0  
-**Date:** 23 janvier 2026  
+**Date:** 25 janvier 2026  
 **Auteur:** Patrick Ostertag
 
 **Réorganisation complète effectuée:**
