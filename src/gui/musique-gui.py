@@ -1983,24 +1983,53 @@ def display_haikus():
     
     st.divider()
     
-    # Afficher le contenu markdown directement (Streamlit gère les liens automatiquement)
+    # Afficher le contenu en rendant proprement le markdown et les images
     try:
         with open(selected_file, 'r', encoding='utf-8') as f:
             markdown_content = f.read()
         
-        # Nettoyer le contenu: supprimer les tabulations en début de ligne pour éviter les code blocks
-        # Les tabulations font que Markdown interprète le texte comme du code
+        # Nettoyer et traiter le contenu
+        import re
+        
+        # Supprimer les tabulations en début de ligne pour éviter les code blocks
         lines = markdown_content.split('\n')
         cleaned_lines = []
         for line in lines:
-            # Enlever les tabulations au début de chaque ligne
+            # Enlever toutes les tabulations au début de chaque ligne
             cleaned_line = line.lstrip('\t')
             cleaned_lines.append(cleaned_line)
         cleaned_content = '\n'.join(cleaned_lines)
         
-        # Afficher le contenu Markdown nettoyé
-        # Streamlit rend automatiquement les liens cliquables
-        st.markdown(cleaned_content, unsafe_allow_html=True)
+        # Extraire et afficher le contenu par blocs (markdown + images séparément)
+        # Séparer le contenu en sections délimitées par ---
+        sections = cleaned_content.split('---')
+        
+        for i, section in enumerate(sections):
+            section = section.strip()
+            if not section:
+                continue
+            
+            # Chercher les balises <img> dans cette section
+            img_pattern = r"<img\s+src=['\"]([^'\"]+)['\"]\s*/>"
+            images = re.findall(img_pattern, section)
+            
+            # Retirer les balises <img> du markdown
+            markdown_only = re.sub(img_pattern, '', section).strip()
+            
+            # Afficher le markdown proprement
+            if markdown_only:
+                st.markdown(markdown_only, unsafe_allow_html=False)
+            
+            # Afficher les images avec st.image pour un meilleur rendu
+            for img_url in images:
+                try:
+                    st.image(img_url, use_container_width=True)
+                except Exception as img_error:
+                    st.warning(f"⚠️ Impossible de charger l'image: {img_url}")
+            
+            # Ajouter un séparateur visuel entre sections (sauf pour la dernière)
+            if i < len(sections) - 1 and section:
+                st.divider()
         
     except Exception as e:
         st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
