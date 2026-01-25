@@ -22,6 +22,7 @@ mutagen>=1.47.0               # Lecture métadonnées audio FLAC/MP3 (List_all_m
 # ---- Web Interface (src/gui/) ----
 streamlit>=1.53.0             # Interface Web (musique-gui.py)
 pillow>=12.1.0                # Traitement images (musique-gui.py)
+markdown>=3.4.0               # Conversion Markdown vers HTML (musique-gui.py)
 
 # ---- Testing (src/tests/) ----
 pytest>=7.0.0                 # Framework de tests unitaires
