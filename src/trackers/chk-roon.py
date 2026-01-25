@@ -63,6 +63,15 @@ import pylast
 from datetime import datetime, timezone, timedelta
 from roonapi import RoonApi, RoonDiscovery
 from dotenv import load_dotenv
+from pathlib import Path
+
+# Déterminer le répertoire du script pour les chemins relatifs
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
+# Ajouter le répertoire racine au path pour l'import du scheduler
+sys.path.insert(0, PROJECT_ROOT)
+from src.utils.scheduler import TaskScheduler
 
 # Déterminer le répertoire du script pour les chemins relatifs
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1468,11 +1477,25 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
     else:
         print("⚠️ Impossible de récupérer le token Spotify - les images Spotify ne seront pas disponibles")
     
+    # Initialiser le scheduler de tâches
+    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'roon-config.json'
+    state_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'scheduler-state.json'
+    try:
+        scheduler = TaskScheduler(config_path, state_path)
+        print("✅ Task scheduler initialized")
+    except Exception as e:
+        print(f"⚠️ Failed to initialize scheduler: {e}")
+        scheduler = None
+    
     # Variable pour suivre la dernière piste jouée
     last_track_key = None
     
     # Variable pour suivre le dernier timestamp Last.fm traité
     last_lastfm_timestamp = 0
+    
+    # Compteur pour les vérifications périodiques des tâches planifiées
+    check_counter = 0
+    CHECK_INTERVAL = 60  # Vérifier toutes les 60 itérations (~45 minutes à 45s par itération)
     
     try:
         while True:
@@ -1647,6 +1670,16 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                                 f"   Album Spotify img: {album_spotify_image}\n"
                                 f"   Album Last.fm img: {album_lastfm_image}"
                             )
+            
+            # Vérifier les tâches planifiées périodiquement
+            check_counter += 1
+            if scheduler and check_counter >= CHECK_INTERVAL:
+                print("\n[SCHEDULER] Checking scheduled tasks...")
+                try:
+                    scheduler.check_and_execute_tasks()
+                except Exception as e:
+                    print(f"[SCHEDULER] Error checking tasks: {e}")
+                check_counter = 0
             
             # Attendre un peu avant de revérifier
             time.sleep(45)

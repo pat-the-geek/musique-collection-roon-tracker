@@ -119,44 +119,6 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 # DataForIA est un niveau au-dessus de Musique
 DATAFORLA_ROOT = os.path.dirname(PROJECT_ROOT)
 
-# 1. Charger les fichiers JSON
-with open(os.path.join(DATAFORLA_ROOT, 'Cinéma', 'catalogue.json'), 'r', encoding='utf-8') as f:
-    catalogue = json.load(f)
-
-with open(os.path.join(PROJECT_ROOT, 'data', 'collection', 'discogs-collection.json'), 'r', encoding='utf-8') as f:
-    discogs_collection = json.load(f)
-
-# 2. Extraire les titres des films (OriginalTitle) et des albums
-film_titles = {item['OriginalTitle'].lower() for item in catalogue}
-album_titles = {item['Titre'].lower() for item in discogs_collection}
-
-# 3. Trouver les titres communs (OriginalTitle au début du titre de l'album)
-common_titles = [
-    (film, album)
-    for film in film_titles
-    for album in album_titles
-    if album.startswith(film)
-]
-
-# 4. Créer des dictionnaires pour l'année et le réalisateur (OriginalTitle)
-film_titles_with_year = {item['OriginalTitle'].lower(): item.get('ProductionYear', 'N/A') for item in catalogue}
-film_titles_with_director = {
-    item['OriginalTitle'].lower(): item['TMDB'].get('realisateur', 'N/A') if item.get('TMDB') else 'N/A'
-    for item in catalogue
-}
-
-# 5. Ajouter l'année et le réalisateur aux correspondances
-common_titles_with_info = [
-    {
-        "film_title": film,
-        "album_title": album,
-        "year": film_titles_with_year[film],
-        "director": film_titles_with_director[film]
-    }
-    for film, album in common_titles
-]
-
-# 6. Fonction pour normaliser les caractères accentués
 def normalize_title(title: str) -> str:
     """Normalise un titre en supprimant les accents pour tri alphabétique.
     
@@ -183,12 +145,76 @@ def normalize_title(title: str) -> str:
     """
     return unicodedata.normalize('NFKD', title).encode('ASCII', 'ignore').decode('ASCII').lower()
 
-# 7. Trier par ordre alphabétique (en ignorant les accents)
-common_titles_sorted = sorted(
-    common_titles_with_info,
-    key=lambda x: normalize_title(x["film_title"])
-)
+def main():
+    """Fonction principale pour générer la cross-référence films/soundtracks."""
+    print("📂 Chargement des données...")
+    
+    # 1. Charger les fichiers JSON
+    try:
+        with open(os.path.join(DATAFORLA_ROOT, 'Cinéma', 'catalogue.json'), 'r', encoding='utf-8') as f:
+            catalogue = json.load(f)
+        print(f"✅ {len(catalogue)} films chargés depuis catalogue.json")
+    except FileNotFoundError:
+        print("❌ Erreur : Le fichier catalogue.json n'existe pas dans le projet Cinéma")
+        print(f"   Chemin attendu: {os.path.join(DATAFORLA_ROOT, 'Cinéma', 'catalogue.json')}")
+        return
+    
+    try:
+        with open(os.path.join(PROJECT_ROOT, 'data', 'collection', 'discogs-collection.json'), 'r', encoding='utf-8') as f:
+            discogs_collection = json.load(f)
+        print(f"✅ {len(discogs_collection)} albums chargés depuis discogs-collection.json")
+    except FileNotFoundError:
+        print("❌ Erreur : Le fichier discogs-collection.json n'existe pas")
+        return
+    
+    # 2. Extraire les titres des films (OriginalTitle) et des albums
+    film_titles = {item['OriginalTitle'].lower() for item in catalogue}
+    album_titles = {item['Titre'].lower() for item in discogs_collection}
+    
+    # 3. Trouver les titres communs (OriginalTitle au début du titre de l'album)
+    print("\n🔍 Recherche des correspondances films/albums...")
+    common_titles = [
+        (film, album)
+        for film in film_titles
+        for album in album_titles
+        if album.startswith(film)
+    ]
+    
+    # 4. Créer des dictionnaires pour l'année et le réalisateur (OriginalTitle)
+    film_titles_with_year = {item['OriginalTitle'].lower(): item.get('ProductionYear', 'N/A') for item in catalogue}
+    film_titles_with_director = {
+        item['OriginalTitle'].lower(): item['TMDB'].get('realisateur', 'N/A') if item.get('TMDB') else 'N/A'
+        for item in catalogue
+    }
+    
+    # 5. Ajouter l'année et le réalisateur aux correspondances
+    common_titles_with_info = [
+        {
+            "film_title": film,
+            "album_title": album,
+            "year": film_titles_with_year[film],
+            "director": film_titles_with_director[film]
+        }
+        for film, album in common_titles
+    ]
+    
+    print(f"✅ {len(common_titles_with_info)} soundtracks détectées")
+    
+    # 6. Trier par ordre alphabétique (en ignorant les accents)
+    common_titles_sorted = sorted(
+        common_titles_with_info,
+        key=lambda x: normalize_title(x["film_title"])
+    )
+    
+    # 7. Sauvegarder dans un fichier JSON nommé soundtrack.json
+    output_path = os.path.join(PROJECT_ROOT, 'data', 'collection', 'soundtrack.json')
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(common_titles_sorted, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n💾 Résultats sauvegardés dans : {output_path}")
+    print("\n🎬 Exemples de soundtracks détectées :")
+    for i, item in enumerate(common_titles_sorted[:5]):
+        print(f"   {i+1}. {item['film_title']} ({item['year']}) - {item['director']}")
 
-# 8. Sauvegarder dans un fichier JSON nommé soundtrack.json
-with open(os.path.join(PROJECT_ROOT, 'data', 'collection', 'soundtrack.json'), 'w', encoding='utf-8') as f:
-    json.dump(common_titles_sorted, f, indent=2, ensure_ascii=False)
+if __name__ == "__main__":
+    main()

@@ -20,6 +20,9 @@
 - ✅ **NOUVEAU v3.1**: Services partagés (`spotify_service`, `metadata_cleaner`)
 - ✅ **NOUVEAU v3.1**: Infrastructure de tests unitaires (pytest)
 - ✅ **NOUVEAU v3.1**: Constantes centralisées dans `constants.py`
+- ✅ **NOUVEAU v3.2**: Système de planification automatique (scheduler) intégré au tracker
+- ✅ **NOUVEAU v3.2**: Interface GUI pour configuration et monitoring des tâches
+- ✅ **NOUVEAU v3.2**: Visualisation des haïkus et rapports d'analyse dans la GUI
 
 ### 📦 Nouveautés v3.1.0 (24 janvier 2026)
 
@@ -436,6 +439,7 @@ Fichier: `data/config/roon-config.json`
 ### Guides d'utilisation
 - **[docs/README-ROON-TRACKER.md](docs/README-ROON-TRACKER.md)**: Configuration tracker Roon
 - **[docs/README-MUSIQUE-GUI.md](docs/README-MUSIQUE-GUI.md)**: Utilisation interface Streamlit
+- **[docs/README-SCHEDULER.md](docs/README-SCHEDULER.md)**: Planification automatique des tâches
 - **[docs/README-ROON-CONFIG.md](docs/README-ROON-CONFIG.md)**: Configuration roon-config.json
 
 ### Documentation technique

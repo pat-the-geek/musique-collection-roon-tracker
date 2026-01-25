@@ -136,15 +136,23 @@ See Also:
 import streamlit as st
 import json
 import os
+import sys
+import markdown
+from pathlib import Path
 from PIL import Image
 import requests
 from io import BytesIO
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Déterminer le répertoire racine du projet (2 niveaux au-dessus de ce script)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
+# Ajouter le répertoire racine au path pour l'import du scheduler
+sys.path.insert(0, PROJECT_ROOT)
+from src.utils.scheduler import TaskScheduler
 
 # Charger les variables d'environnement
 load_dotenv(os.path.join(PROJECT_ROOT, "data", "config", ".env"))
@@ -1739,6 +1747,299 @@ def display_discogs_collection():
         albums = load_data()
         st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.0.0")
 
+
+# ============================================================================
+# Page: Configuration (Scheduler & Roon Config)
+# ============================================================================
+
+def display_configuration():
+    """Affiche la page de configuration du scheduler et des paramètres Roon."""
+    st.title("⚙️ Configuration")
+    
+    # Initialiser le scheduler
+    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'roon-config.json'
+    state_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'scheduler-state.json'
+    
+    try:
+        scheduler = TaskScheduler(config_path, state_path)
+    except Exception as e:
+        st.error(f"❌ Erreur lors de l'initialisation du scheduler: {e}")
+        return
+    
+    # Section 1: Configuration Roon (lecture seule)
+    st.header("🎵 Configuration Roon")
+    st.info("Ces valeurs sont détectées automatiquement par le tracker Roon")
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            roon_config = json.load(f)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            token = roon_config.get('token', 'Non configuré')
+            masked_token = token[:10] + "..." + token[-10:] if len(token) > 20 else token
+            st.text_input("Token Roon", masked_token, disabled=True)
+        with col2:
+            st.text_input("Host", roon_config.get('host', 'Non configuré'), disabled=True)
+        
+        st.caption("💡 Les credentials API (Last.fm, Discogs, EurIA) sont gérés via le fichier `.env`")
+    except Exception as e:
+        st.error(f"Erreur lors du chargement de la configuration: {e}")
+    
+    st.divider()
+    
+    # Section 2: Planification des traitements
+    st.header("📅 Planification des Traitements")
+    
+    # Métriques globales
+    statuses = scheduler.get_all_tasks_status()
+    enabled_count = sum(1 for s in statuses.values() if s.get('enabled', False))
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total tâches", len(statuses))
+    with col2:
+        st.metric("Tâches actives", enabled_count)
+    with col3:
+        success_count = sum(1 for s in statuses.values() if s.get('last_status') == 'success')
+        st.metric("Succès récents", success_count)
+    
+    st.divider()
+    
+    # Afficher chaque tâche
+    for task_name, status in statuses.items():
+        with st.expander(f"📋 {status['description']}", expanded=False):
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                # Configuration
+                enabled = st.checkbox(
+                    "Activé", 
+                    value=status['enabled'],
+                    key=f"enabled_{task_name}"
+                )
+                
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    frequency_count = st.number_input(
+                        "Fréquence (nombre)",
+                        min_value=1,
+                        max_value=365,
+                        value=status['frequency_count'],
+                        key=f"freq_count_{task_name}"
+                    )
+                with col_b:
+                    unit_map = {
+                        "hour": "Heure(s)",
+                        "day": "Jour(s)",
+                        "month": "Mois",
+                        "year": "Année(s)"
+                    }
+                    reverse_unit_map = {v: k for k, v in unit_map.items()}
+                    
+                    frequency_unit = st.selectbox(
+                        "Unité",
+                        options=list(unit_map.values()),
+                        index=list(unit_map.keys()).index(status['frequency_unit']),
+                        key=f"freq_unit_{task_name}"
+                    )
+                
+                # Afficher le résumé
+                st.caption(f"⏰ Exécution: tous les {frequency_count} {frequency_unit.lower()}")
+                
+                # Boutons d'action
+                col_save, col_exec = st.columns(2)
+                with col_save:
+                    if st.button("💾 Sauvegarder", key=f"save_{task_name}"):
+                        success, message = scheduler.update_task_config(
+                            task_name,
+                            enabled,
+                            frequency_count,
+                            reverse_unit_map[frequency_unit]
+                        )
+                        if success:
+                            st.success("✅ Configuration sauvegardée")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {message}")
+                
+                with col_exec:
+                    if st.button("▶️ Exécuter maintenant", key=f"exec_{task_name}"):
+                        with st.spinner("Exécution en cours..."):
+                            success, message = scheduler.execute_task(task_name, manual=True)
+                            if success:
+                                st.success(f"✅ {message}")
+                                st.rerun()
+                            else:
+                                st.error(f"❌ {message}")
+            
+            with col2:
+                # Statut et historique
+                st.subheader("📊 Statut")
+                
+                # Badge de statut
+                if status['last_status'] == 'success':
+                    st.success("✅ Succès")
+                elif status['last_status'] == 'error':
+                    st.error("❌ Erreur")
+                else:
+                    st.info("⏳ Jamais exécutée")
+                
+                # Dernière exécution
+                if status['last_execution']:
+                    try:
+                        last_exec = datetime.fromisoformat(status['last_execution'])
+                        st.caption(f"📅 Dernière exécution:")
+                        st.caption(last_exec.strftime("%d/%m/%Y %H:%M"))
+                    except:
+                        st.caption("📅 Dernière exécution: N/A")
+                else:
+                    st.caption("📅 Jamais exécutée")
+                
+                # Prochaine exécution
+                if status['next_execution']:
+                    try:
+                        next_exec = datetime.fromisoformat(status['next_execution'])
+                        st.caption(f"⏰ Prochaine exécution:")
+                        st.caption(next_exec.strftime("%d/%m/%Y %H:%M"))
+                    except:
+                        st.caption("⏰ Prochaine exécution: N/A")
+                
+                # Nombre d'exécutions
+                if status['execution_count'] > 0:
+                    st.caption(f"🔢 Exécutions: {status['execution_count']}")
+                
+                # Durée dernière exécution
+                if status['last_duration_seconds']:
+                    duration = status['last_duration_seconds']
+                    st.caption(f"⏱️ Durée: {duration:.1f}s")
+                
+                # Afficher l'erreur si présente
+                if status['last_error']:
+                    with st.expander("⚠️ Détails erreur"):
+                        st.code(status['last_error'], language=None)
+
+
+# ============================================================================
+# Page: Haïkus
+# ============================================================================
+
+def display_haikus():
+    """Affiche la page de visualisation des haïkus générés."""
+    st.title("🎭 Haïkus Musicaux")
+    st.caption("Présentations poétiques générées par IA pour albums sélectionnés")
+    
+    # Lister les fichiers haiku
+    haikus_dir = Path(PROJECT_ROOT) / "output" / "haikus"
+    haikus_dir.mkdir(parents=True, exist_ok=True)
+    
+    haiku_files = sorted(haikus_dir.glob("generate-haiku-*.txt"), reverse=True)
+    
+    if not haiku_files:
+        st.info("💡 Aucun haïku généré pour le moment.")
+        st.write("Lancez la génération depuis la page **Configuration** → `generate_haiku`")
+        return
+    
+    # Sélection du fichier
+    file_options = {f.name: f for f in haiku_files}
+    selected_file_name = st.selectbox(
+        "Choisir un haïku",
+        options=list(file_options.keys()),
+        format_func=lambda x: x.replace("generate-haiku-", "").replace(".txt", "")
+    )
+    
+    selected_file = file_options[selected_file_name]
+    
+    # Bouton de téléchargement
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        with open(selected_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        st.download_button(
+            label="📥 Télécharger",
+            data=content,
+            file_name=selected_file.name,
+            mime="text/plain"
+        )
+    
+    st.divider()
+    
+    # Convertir le contenu en HTML (le fichier est déjà en markdown)
+    try:
+        with open(selected_file, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+        
+        # Convertir Markdown en HTML
+        html_content = markdown.markdown(
+            markdown_content,
+            extensions=['extra', 'codehilite', 'nl2br']
+        )
+        
+        # Afficher le contenu HTML
+        st.markdown(html_content, unsafe_allow_html=True)
+        
+    except Exception as e:
+        st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
+        st.code(str(e))
+
+
+# ============================================================================
+# Page: Rapports d'analyse
+# ============================================================================
+
+def display_reports():
+    """Affiche la page de visualisation des rapports d'analyse."""
+    st.title("📊 Rapports d'Analyse")
+    st.caption("Analyses détaillées des patterns d'écoute et statistiques")
+    
+    # Lister les fichiers de rapport
+    reports_dir = Path(PROJECT_ROOT) / "output" / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    
+    report_files = sorted(reports_dir.glob("listening-patterns-*.txt"), reverse=True)
+    
+    if not report_files:
+        st.info("💡 Aucun rapport d'analyse généré pour le moment.")
+        st.write("Lancez l'analyse depuis la page **Configuration** → `analyze_listening_patterns`")
+        return
+    
+    # Sélection du fichier
+    file_options = {f.name: f for f in report_files}
+    selected_file_name = st.selectbox(
+        "Choisir un rapport",
+        options=list(file_options.keys()),
+        format_func=lambda x: x.replace("listening-patterns-", "").replace(".txt", "")
+    )
+    
+    selected_file = file_options[selected_file_name]
+    
+    # Bouton de téléchargement
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        with open(selected_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        st.download_button(
+            label="📥 Télécharger",
+            data=content,
+            file_name=selected_file.name,
+            mime="text/plain"
+        )
+    
+    st.divider()
+    
+    # Afficher le rapport (format texte brut avec formatting)
+    try:
+        with open(selected_file, 'r', encoding='utf-8') as f:
+            report_content = f.read()
+        
+        # Afficher dans un code block pour préserver le formatting
+        st.code(report_content, language=None)
+        
+    except Exception as e:
+        st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
+        st.code(str(e))
+
+
 # ============================================================================
 # POINT D'ENTRÉE PRINCIPAL
 # ============================================================================
@@ -1877,7 +2178,7 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "🎭 Haïkus", "📊 Rapports d'analyse", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
@@ -1885,6 +2186,12 @@ def main():
     # Afficher la page sélectionnée
     if page == "📻 Journal Roon":
         display_roon_journal()
+    elif page == "🎭 Haïkus":
+        display_haikus()
+    elif page == "📊 Rapports d'analyse":
+        display_reports()
+    elif page == "⚙️ Configuration":
+        display_configuration()
     else:
         display_discogs_collection()
 
