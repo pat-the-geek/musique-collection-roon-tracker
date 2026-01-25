@@ -113,6 +113,12 @@ Intégration écosystème:
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
 
+Changelog v3.1.0 (25 janvier 2026):
+    - Haïkus: URLs Spotify et Discogs maintenant cliquables (correction indentation)
+    - Rapports: Amélioration lisibilité avec style CSS personnalisé
+    - Configuration Roon: Contraste amélioré pour champs désactivés
+    - Dropdowns: Meilleure visibilité avec police en gras et bordure verte
+    
 Changelog v3.0 (24 janvier 2026):
     - Vue compacte pour Journal Roon: images réduites à 60px, layout optimisé
     - Toggle "Vue compacte / Vue détaillée" pour basculer entre modes
@@ -122,8 +128,8 @@ Changelog v3.0 (24 janvier 2026):
     - Amélioration densité globale de l'interface
 
 Auteur: Patrick Ostertag
-Version: 3.0.0
-Date: 24 janvier 2026
+Version: 3.1.0
+Date: 25 janvier 2026
 License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
@@ -1758,7 +1764,7 @@ def display_discogs_collection():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         albums = load_data()
-        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.0.0")
+        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.1.0")
 
 
 # ============================================================================
