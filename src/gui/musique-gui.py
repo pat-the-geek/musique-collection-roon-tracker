@@ -113,6 +113,12 @@ Intégration écosystème:
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
 
+Changelog v3.1.0 (25 janvier 2026):
+    - Haïkus: URLs Spotify et Discogs maintenant cliquables (correction indentation)
+    - Rapports: Amélioration lisibilité avec style CSS personnalisé
+    - Configuration Roon: Contraste amélioré pour champs désactivés
+    - Dropdowns: Meilleure visibilité avec police en gras et bordure verte
+    
 Changelog v3.0 (24 janvier 2026):
     - Vue compacte pour Journal Roon: images réduites à 60px, layout optimisé
     - Toggle "Vue compacte / Vue détaillée" pour basculer entre modes
@@ -122,8 +128,8 @@ Changelog v3.0 (24 janvier 2026):
     - Amélioration densité globale de l'interface
 
 Auteur: Patrick Ostertag
-Version: 3.0.0
-Date: 24 janvier 2026
+Version: 3.1.0
+Date: 25 janvier 2026
 License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
@@ -206,6 +212,19 @@ st.markdown("""
     .stSelectbox>div>div>div {
         background-color: #f0f2f6;
         color: #000000;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .stSelectbox [data-baseweb="select"] {
+        background-color: #ffffff;
+        border: 2px solid #4CAF50;
+    }
+    /* Disabled inputs - improve visibility */
+    .stTextInput>div>div>input:disabled {
+        background-color: #e8e8e8;
+        color: #333333;
+        opacity: 1;
+        -webkit-text-fill-color: #333333;
     }
     /* Optimisations Journal Roon v3.0 - Ultra-compact */
     .roon-track {
@@ -1745,7 +1764,7 @@ def display_discogs_collection():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         albums = load_data()
-        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.0.0")
+        st.caption(f"🎵 Musique - GUI • {len(albums)} albums • Version 3.1.0")
 
 
 # ============================================================================
@@ -1964,19 +1983,24 @@ def display_haikus():
     
     st.divider()
     
-    # Convertir le contenu en HTML (le fichier est déjà en markdown)
+    # Afficher le contenu markdown directement (Streamlit gère les liens automatiquement)
     try:
         with open(selected_file, 'r', encoding='utf-8') as f:
             markdown_content = f.read()
         
-        # Convertir Markdown en HTML
-        html_content = markdown.markdown(
-            markdown_content,
-            extensions=['extra', 'codehilite', 'nl2br']
-        )
+        # Nettoyer le contenu: supprimer les tabulations en début de ligne pour éviter les code blocks
+        # Les tabulations font que Markdown interprète le texte comme du code
+        lines = markdown_content.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Enlever les tabulations au début de chaque ligne
+            cleaned_line = line.lstrip('\t')
+            cleaned_lines.append(cleaned_line)
+        cleaned_content = '\n'.join(cleaned_lines)
         
-        # Afficher le contenu HTML
-        st.markdown(html_content, unsafe_allow_html=True)
+        # Afficher le contenu Markdown nettoyé
+        # Streamlit rend automatiquement les liens cliquables
+        st.markdown(cleaned_content, unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
@@ -2027,13 +2051,31 @@ def display_reports():
     
     st.divider()
     
-    # Afficher le rapport (format texte brut avec formatting)
+    # Afficher le rapport avec meilleur formatage
     try:
         with open(selected_file, 'r', encoding='utf-8') as f:
             report_content = f.read()
         
-        # Afficher dans un code block pour préserver le formatting
-        st.code(report_content, language=None)
+        # Afficher avec une meilleure lisibilité en utilisant un conteneur
+        st.markdown("""
+        <style>
+            .report-content {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 5px;
+                border: 1px solid #dee2e6;
+                font-family: 'Courier New', monospace;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                color: #212529;
+                overflow-x: auto;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Afficher le rapport dans un div personnalisé
+        st.markdown(f'<div class="report-content">{report_content}</div>', unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
