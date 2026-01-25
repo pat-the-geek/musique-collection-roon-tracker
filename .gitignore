@@ -15,6 +15,7 @@ data/config/.env
 
 # Données sensibles - Configuration
 data/config/roon-config.json
+data/config/scheduler-state.json
 data/config/Liste_sites_musique-favoris.json
 data/history/chk-roon.lock
 
