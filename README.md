@@ -265,6 +265,7 @@ Musique/
 ├── 📂 scripts/                      # Scripts shell
 │   ├── setup-roon-tracker.sh       # Installation
 │   ├── start-streamlit.sh          # Lancement GUI
+│   ├── start-all.sh                # 🚀 Lancement simultané (tracker + GUI)
 │   └── update_python_certificates.sh
 │
 ├── 📂 archive/                      # Archives
@@ -274,6 +275,7 @@ Musique/
 │   └── copilot-instructions.md     # Instructions IA
 │
 ├── start-roon-tracker.sh           # 🚀 Lancer tracker (racine)
+├── start-all.sh                    # 🚀 Lancer tout (tracker + GUI) - RECOMMANDÉ
 ├── requirements-roon.txt           # Dépendances Python
 └── .gitignore
 ```
@@ -310,6 +312,14 @@ cp data/config/.env.example data/config/.env
 ### Utilisation Quotidienne
 
 ```bash
+# 🚀 Lancer TOUT en même temps (Tracker Roon + Interface Web) - RECOMMANDÉ
+./start-all.sh
+
+# 🚀 Lancer sans ouvrir le navigateur automatiquement
+./start-all.sh --no-browser
+
+# Ou lancer séparément:
+
 # Tracker Roon (temps réel)
 ./start-roon-tracker.sh
 
@@ -437,6 +447,7 @@ Fichier: `data/config/roon-config.json`
 ## 📚 Documentation Détaillée
 
 ### Guides d'utilisation
+- **[docs/README-START-ALL.md](docs/README-START-ALL.md)**: Lancement simultané (tracker + GUI)
 - **[docs/README-ROON-TRACKER.md](docs/README-ROON-TRACKER.md)**: Configuration tracker Roon
 - **[docs/README-MUSIQUE-GUI.md](docs/README-MUSIQUE-GUI.md)**: Utilisation interface Streamlit
 - **[docs/README-SCHEDULER.md](docs/README-SCHEDULER.md)**: Planification automatique des tâches
