@@ -1,5 +1,7 @@
 # 📋 TODO - Liste des tâches et améliorations
 
+> 📌 **Voir aussi**: [ROADMAP.md](ROADMAP.md) pour la vision stratégique à long terme (court, moyen et long terme)
+
 ## 🔴 Priorité Haute
 
 ### Problème de cache d'images Streamlit
