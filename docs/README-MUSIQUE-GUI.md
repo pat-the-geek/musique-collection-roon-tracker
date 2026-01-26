@@ -84,6 +84,22 @@ URL=https://api.infomaniak.com/2/ai/106561/openai/v1/chat/completions
 bearer=votre_token_euria
 ```
 
+### Configuration Streamlit (réseau)
+
+Le projet inclut une configuration Streamlit (`.streamlit/config.toml`) qui permet l'accès depuis d'autres machines du réseau :
+
+```toml
+[server]
+address = "0.0.0.0"           # Écoute sur toutes les interfaces
+port = 8501                    # Port par défaut
+enableCORS = false             # Désactive CORS
+enableXsrfProtection = false   # Désactive protection XSRF
+```
+
+Cette configuration est **automatiquement appliquée** au lancement de Streamlit. Aucune action supplémentaire requise.
+
+**Personnalisation :** Vous pouvez modifier `.streamlit/config.toml` pour ajuster le port ou d'autres paramètres selon vos besoins.
+
 ## 🚀 Utilisation
 
 ### Lancement simple
@@ -96,7 +112,30 @@ streamlit run musique-gui.py
 ./start-streamlit.sh
 ```
 
+### Accès à l'interface
+
+#### Accès local
 L'application s'ouvre automatiquement dans le navigateur sur `http://localhost:8501`
+
+#### Accès réseau
+Grâce à la configuration `.streamlit/config.toml`, l'interface est accessible depuis d'autres machines du réseau local :
+
+```
+http://[adresse-ip-serveur]:8501
+```
+
+**Exemple :** Si le serveur a l'IP `192.168.1.100`, accédez via `http://192.168.1.100:8501`
+
+**Pour trouver l'adresse IP du serveur :**
+```bash
+# Linux/macOS
+hostname -I
+
+# Ou
+ip addr show
+```
+
+**Note de sécurité :** Cette configuration désactive CORS et XSRF pour faciliter l'accès réseau. À utiliser uniquement dans un réseau local de confiance.
 
 ## 🏗️ Architecture
 

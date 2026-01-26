@@ -1,0 +1,22 @@
+# Configuration Streamlit pour accès réseau
+# 
+# Cette configuration permet l'accès à l'interface Streamlit depuis
+# d'autres machines du réseau local (pas seulement localhost).
+# 
+# Documentation Streamlit: https://docs.streamlit.io/develop/api-reference/configuration/config.toml
+
+[server]
+# Écoute sur toutes les interfaces réseau (0.0.0.0 au lieu de localhost)
+# Cela permet aux autres machines du réseau d'accéder à l'interface
+address = "0.0.0.0"
+
+# Port par défaut Streamlit
+port = 8501
+
+# Désactive CORS pour permettre l'accès cross-origin
+# Nécessaire pour accès depuis réseau local
+enableCORS = false
+
+# Désactive protection XSRF pour simplifier l'accès réseau
+# Note: À n'utiliser que dans un réseau local de confiance
+enableXsrfProtection = false

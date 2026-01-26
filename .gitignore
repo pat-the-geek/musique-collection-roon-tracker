@@ -53,8 +53,9 @@ backups/
 *.swo
 *~
 
-# Streamlit
-.streamlit/
+# Streamlit (ignorer secrets et cache, mais garder config.toml)
+.streamlit/*
+!.streamlit/config.toml
 
 # Cache
 .cache/
