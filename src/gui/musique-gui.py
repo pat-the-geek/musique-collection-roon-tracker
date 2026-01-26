@@ -118,6 +118,13 @@ Changelog v3.1.0 (25 janvier 2026):
     - Rapports: Amélioration lisibilité avec style CSS personnalisé
     - Configuration Roon: Contraste amélioré pour champs désactivés
     - Dropdowns: Meilleure visibilité avec police en gras et bordure verte
+
+Changelog v3.2.0 (26 janvier 2026):
+    - **Nouveau**: Affichage des informations IA sur les albums dans Journal Roon
+    - **Nouveau**: Vue "Journal IA" pour consulter les logs techniques quotidiens
+    - Info IA accessible via expandeur dans les modes compact et détaillé
+    - Informations sources: Discogs collection (priorité) ou génération via EurIA API
+    - Logs conservés 24h avec nettoyage automatique
     
 Changelog v3.0 (24 janvier 2026):
     - Vue compacte pour Journal Roon: images réduites à 60px, layout optimisé
@@ -128,8 +135,8 @@ Changelog v3.0 (24 janvier 2026):
     - Amélioration densité globale de l'interface
 
 Auteur: Patrick Ostertag
-Version: 3.1.0
-Date: 25 janvier 2026
+Version: 3.2.0
+Date: 26 janvier 2026
 License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
@@ -1207,6 +1214,12 @@ def display_roon_journal():
                     
                     st.markdown(f"**🎤 {artist}**")
                     st.markdown(f"<div class='track-info'>{title} • <i>{album}</i></div>", unsafe_allow_html=True)
+                    
+                    # Afficher les informations IA si disponibles
+                    ai_info = track.get('ai_info')
+                    if ai_info and ai_info != "Aucune information disponible":
+                        with st.expander("🤖 Info IA", expanded=False):
+                            st.markdown(f"<small>{ai_info}</small>", unsafe_allow_html=True)
                 
                 with col_images:
                     # Images compactes sur la même ligne (60px chaque)
@@ -1266,6 +1279,12 @@ def display_roon_journal():
                     st.markdown(f"### 🎤 {track.get('artist', 'Artiste inconnu')}")
                     st.markdown(f"**{track.get('title', 'Titre inconnu')}**")
                     st.markdown(f"*{track.get('album', 'Album inconnu')}*")
+                    
+                    # Afficher les informations IA si disponibles
+                    ai_info = track.get('ai_info')
+                    if ai_info and ai_info != "Aucune information disponible":
+                        with st.expander("🤖 Information IA sur l'album", expanded=False):
+                            st.write(ai_info)
                 
                 with col_images:
                     # Images sur la même ligne (100px)
@@ -1308,6 +1327,105 @@ def display_roon_journal():
                                     pass  # Ignore cache errors
         
         st.markdown('</div><hr class="track-divider">', unsafe_allow_html=True)
+
+
+def display_ai_logs():
+    """Affiche le journal technique des informations IA générées.
+    
+    Interface de visualisation des logs quotidiens des informations IA.
+    Affiche les logs du jour et permet de consulter les logs récents.
+    
+    Features:
+        - Liste des fichiers de logs disponibles (triés par date)
+        - Sélection du fichier à afficher
+        - Affichage formaté du contenu du log
+        - Statistiques: nombre d'albums traités
+    
+    Layout:
+        - Titre: "🤖 Journal IA"
+        - Statistiques: Nombre de fichiers de logs disponibles
+        - Sélecteur: Choix du fichier à afficher
+        - Contenu: Affichage formaté des logs
+    
+    Note:
+        - Logs conservés 24h (nettoyage automatique par chk-roon.py)
+        - Format de log: ai-log-YYYY-MM-DD.txt
+    """
+    st.title("🤖 Journal technique IA")
+    
+    # Charger les fichiers de logs disponibles
+    ai_log_dir = os.path.join(PROJECT_ROOT, "output", "ai-logs")
+    
+    if not os.path.exists(ai_log_dir):
+        st.info("📁 Aucun log IA trouvé. Les logs seront créés automatiquement lors de la prochaine détection d'album.")
+        return
+    
+    # Lister les fichiers de logs (triés par date décroissante)
+    log_files = []
+    for filename in os.listdir(ai_log_dir):
+        if filename.startswith('ai-log-') and filename.endswith('.txt'):
+            log_files.append(filename)
+    
+    log_files.sort(reverse=True)
+    
+    if not log_files:
+        st.info("📁 Aucun log IA trouvé. Les logs seront créés automatiquement lors de la prochaine détection d'album.")
+        return
+    
+    # Statistiques
+    st.metric("Fichiers de logs disponibles", len(log_files))
+    
+    st.divider()
+    
+    # Sélecteur de fichier
+    selected_log = st.selectbox(
+        "Sélectionner un fichier de log",
+        log_files,
+        index=0
+    )
+    
+    if selected_log:
+        log_path = os.path.join(ai_log_dir, selected_log)
+        
+        try:
+            with open(log_path, 'r', encoding='utf-8') as f:
+                log_content = f.read()
+            
+            # Compter le nombre d'entrées (chaque entrée commence par "===")
+            entry_count = log_content.count("===")
+            st.caption(f"📊 Nombre d'albums dans ce log: {entry_count}")
+            
+            # Afficher le contenu dans un expander
+            with st.expander("📄 Contenu complet du log", expanded=True):
+                st.code(log_content, language=None)
+            
+            # Parser et afficher de manière formatée
+            st.subheader("📋 Entrées formatées")
+            
+            # Diviser le contenu en entrées individuelles
+            entries = log_content.split("=== ")[1:]  # Skip the first empty element
+            
+            for entry in entries:
+                lines = entry.strip().split('\n')
+                if len(lines) >= 4:
+                    # Extraire les informations
+                    datetime_str = lines[0].strip().replace(" ===", "")
+                    artist = lines[1].replace("Artiste: ", "").strip()
+                    album = lines[2].replace("Album: ", "").strip()
+                    info = lines[3].replace("Info: ", "").strip()
+                    
+                    # Afficher dans une carte
+                    with st.container():
+                        col1, col2 = st.columns([1, 4])
+                        with col1:
+                            st.markdown(f"**📅 {datetime_str}**")
+                        with col2:
+                            st.markdown(f"**🎤 {artist}** - *{album}*")
+                            st.markdown(f"<small>{info}</small>", unsafe_allow_html=True)
+                        st.divider()
+        
+        except Exception as e:
+            st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
 
 # ============================================================================
 # VUES PRINCIPALES - COLLECTION DISCOGS
@@ -2249,7 +2367,7 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "🎭 Haïkus", "📊 Rapports d'analyse", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "📊 Rapports d'analyse", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
@@ -2257,6 +2375,8 @@ def main():
     # Afficher la page sélectionnée
     if page == "📻 Journal Roon":
         display_roon_journal()
+    elif page == "🤖 Journal IA":
+        display_ai_logs()
     elif page == "🎭 Haïkus":
         display_haikus()
     elif page == "📊 Rapports d'analyse":
