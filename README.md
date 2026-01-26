@@ -447,6 +447,7 @@ Fichier: `data/config/roon-config.json`
 ## 📚 Documentation Détaillée
 
 ### Guides d'utilisation
+- **[docs/README-START-ALL.md](docs/README-START-ALL.md)**: Lancement simultané (tracker + GUI)
 - **[docs/README-ROON-TRACKER.md](docs/README-ROON-TRACKER.md)**: Configuration tracker Roon
 - **[docs/README-MUSIQUE-GUI.md](docs/README-MUSIQUE-GUI.md)**: Utilisation interface Streamlit
 - **[docs/README-SCHEDULER.md](docs/README-SCHEDULER.md)**: Planification automatique des tâches
