@@ -53,7 +53,7 @@ def get_euria_config():
     
     return url, bearer, max_attempts, default_error
 
-def ask_for_ia(prompt: str, max_attempts: int = 3, timeout: int = 60) -> str:
+def ask_for_ia(prompt: str, max_attempts: int = None, timeout: int = 60) -> str:
     """Envoie un prompt à l'API EurIA et retourne la réponse textuelle.
     
     Interroge l'API EurIA (basée sur Qwen3) avec recherche web activée pour
@@ -62,7 +62,8 @@ def ask_for_ia(prompt: str, max_attempts: int = 3, timeout: int = 60) -> str:
     
     Args:
         prompt: Question ou instruction à envoyer à l'IA.
-        max_attempts: Nombre maximum de tentatives (défaut: 3).
+        max_attempts: Nombre maximum de tentatives. Si None, utilise la valeur
+            de la variable d'environnement max_attempts (défaut: 5).
         timeout: Délai d'attente maximum en secondes (défaut: 60).
         
     Returns:
@@ -79,7 +80,11 @@ def ask_for_ia(prompt: str, max_attempts: int = 3, timeout: int = 60) -> str:
         - Active automatiquement la recherche web (enable_web_search=True)
         - Gère les timeouts et erreurs réseau avec réessais automatiques
     """
-    url, bearer, _, default_error = get_euria_config()
+    url, bearer, default_max_attempts, default_error = get_euria_config()
+    
+    # Use configured max_attempts if not explicitly provided
+    if max_attempts is None:
+        max_attempts = default_max_attempts
     
     if not url or not bearer:
         print("⚠️ Configuration EurIA manquante (URL ou bearer)")

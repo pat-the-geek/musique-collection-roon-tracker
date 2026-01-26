@@ -1378,31 +1378,33 @@ def cleanup_old_ai_logs() -> int:
     """Supprime les fichiers de log IA de plus de 24 heures.
     
     Parcourt le répertoire des logs IA et supprime les fichiers
-    dont la date est antérieure à hier.
+    dont la date de création est antérieure à 24 heures.
     
     Returns:
         Nombre de fichiers supprimés.
         
     Note:
-        - Conserve seulement les logs de la journée en cours
+        - Conserve les logs de moins de 24 heures
         - Supprime automatiquement les logs plus anciens
         - Appelé au démarrage du tracker
+        - Basé sur la date dans le nom de fichier, pas la date de modification
     """
     try:
         if not os.path.exists(AI_LOG_DIR):
             return 0
         
         deleted_count = 0
-        today_str = datetime.now().strftime('%Y-%m-%d')
-        yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        # Calculate cutoff: 24 hours ago
+        cutoff_date = datetime.now() - timedelta(hours=24)
+        cutoff_str = cutoff_date.strftime('%Y-%m-%d')
         
         for filename in os.listdir(AI_LOG_DIR):
             if filename.startswith('ai-log-') and filename.endswith('.txt'):
                 # Extraire la date du nom de fichier
                 date_part = filename.replace('ai-log-', '').replace('.txt', '')
                 
-                # Supprimer si ce n'est pas aujourd'hui ou hier
-                if date_part != today_str and date_part != yesterday_str:
+                # Supprimer si la date est antérieure au cutoff (24h)
+                if date_part < cutoff_str:
                     file_path = os.path.join(AI_LOG_DIR, filename)
                     os.remove(file_path)
                     deleted_count += 1
