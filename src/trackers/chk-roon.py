@@ -4,7 +4,7 @@
 Ce module se connecte à l'API Roon pour surveiller en temps réel les pistes musicales
 jouées et vérifie également les lectures Last.fm. Il enregistre les métadonnées enrichies 
 (artiste, titre, album) avec les URLs d'images provenant de Spotify et Last.fm dans un 
-fichier JSON unique.
+fichier JSON unique. Il génère également des informations IA sur chaque album détecté.
 
 Fonctionnalités principales:
     - Connexion automatique à Roon Core via découverte réseau
@@ -12,6 +12,11 @@ Fonctionnalités principales:
     - Vérification périodique des lectures Last.fm du mois en cours
     - Détection automatique des doublons (évite l'enregistrement multiple)
     - Enrichissement avec images d'artistes et d'albums (Spotify, Last.fm)
+    - **NOUVEAU**: Informations IA générées pour chaque album détecté
+      * Vérifie d'abord si l'album existe dans discogs-collection.json
+      * Si non trouvé, génère une description via l'API EurIA
+      * Enregistre les informations dans un log quotidien (output/ai-logs/)
+      * Nettoie automatiquement les logs de plus de 24h
     - Recherche d'URLs d'images publiques pour traitement ultérieur:
       * Pochettes d'albums (Spotify, Last.fm)
       * Vignettes d'artistes (Spotify)
@@ -26,14 +31,17 @@ Fonctionnalités principales:
 
 Fichiers utilisés:
     - roon-config.json: Configuration Roon (token, host, port, heures d'écoute)
-    - chk-roon.json: Historique des lectures avec métadonnées enrichies
-    - .env: Variables d'environnement (clés API Spotify, Last.fm et username)
+    - chk-roon.json: Historique des lectures avec métadonnées enrichies + infos IA
+    - discogs-collection.json: Collection Discogs (source prioritaire pour infos albums)
+    - output/ai-logs/ai-log-YYYY-MM-DD.txt: Logs quotidiens des informations IA
+    - .env: Variables d'environnement (clés API Spotify, Last.fm, EurIA et username)
 
 Dépendances:
     - roonapi: Interface avec l'API Roon
     - pylast: Interface avec l'API Last.fm
     - python-dotenv: Chargement des variables d'environnement
     - certifi: Gestion des certificats SSL
+    - requests: Appels API EurIA pour génération d'informations IA
 
 Exemple d'utilisation:
     $ python chk-roon.py
@@ -44,10 +52,12 @@ Configuration requise dans .env:
     API_KEY=votre_lastfm_api_key
     API_SECRET=votre_lastfm_api_secret
     LASTFM_USERNAME=votre_username_lastfm
+    URL=https://api.infomaniak.com/2/ai/106561/openai/v1/chat/completions
+    bearer=votre_token_euria
 
 Auteur: Patrick Ostertag
-Version: 2.2.0
-Date: 21 janvier 2026
+Version: 2.3.0
+Date: 26 janvier 2026
 """
 
 import json
@@ -69,9 +79,10 @@ from pathlib import Path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
-# Ajouter le répertoire racine au path pour l'import du scheduler
+# Ajouter le répertoire racine au path pour les imports
 sys.path.insert(0, PROJECT_ROOT)
 from src.utils.scheduler import TaskScheduler
+from src.services.ai_service import generate_album_info, get_album_info_from_discogs
 
 # Déterminer le répertoire du script pour les chemins relatifs
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -95,6 +106,10 @@ ROON_EMAIL = "patrick.ostertag@gmail.com"
 ROON_CONFIG_FILE = os.path.join(PROJECT_ROOT, "data", "config", "roon-config.json")
 ROON_TRACKS_FILE = os.path.join(PROJECT_ROOT, "data", "history", "chk-roon.json")
 ROON_LOCK_FILE = os.path.join(PROJECT_ROOT, "data", "history", "chk-roon.lock")
+
+# Configuration pour les informations IA
+DISCOGS_COLLECTION_FILE = os.path.join(PROJECT_ROOT, "data", "collection", "discogs-collection.json")
+AI_LOG_DIR = os.path.join(PROJECT_ROOT, "output", "ai-logs")
 
 # Configuration Spotify
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
@@ -1287,6 +1302,123 @@ def repair_null_spotify_images() -> int:
     return repaired_count
 
 
+def get_album_ai_info(artist: str, album: str) -> str:
+    """Obtient les informations IA pour un album.
+    
+    Vérifie d'abord si l'album existe dans la collection Discogs et utilise
+    son résumé existant. Si non trouvé, génère de nouvelles informations via l'IA.
+    
+    Args:
+        artist: Nom de l'artiste.
+        album: Titre de l'album.
+        
+    Returns:
+        Informations sur l'album (résumé Discogs ou description IA).
+        Message par défaut si la génération échoue.
+        
+    Note:
+        - Priorité: Discogs collection > API EurIA
+        - Cache les résultats pour éviter les appels multiples
+        - Gère gracieusement les erreurs (retourne message par défaut)
+    """
+    # D'abord, vérifier si l'album existe dans Discogs
+    discogs_info = get_album_info_from_discogs(album, DISCOGS_COLLECTION_FILE)
+    if discogs_info:
+        print(f"[AI] ✅ Info trouvée dans Discogs pour '{album}' de {artist}")
+        return f"[Discogs] {discogs_info}"
+    
+    # Sinon, générer via l'IA
+    print(f"[AI] 🤖 Génération info IA pour '{album}' de {artist}...")
+    ai_info = generate_album_info(artist, album, max_words=35)
+    return f"[IA] {ai_info}"
+
+
+def log_ai_info_to_file(artist: str, album: str, ai_info: str, timestamp: int) -> None:
+    """Enregistre les informations IA dans un fichier de log quotidien.
+    
+    Crée ou met à jour un fichier de log quotidien contenant toutes les
+    informations IA générées pour les albums détectés ce jour-là.
+    
+    Args:
+        artist: Nom de l'artiste.
+        album: Titre de l'album.
+        ai_info: Informations générées par l'IA.
+        timestamp: Timestamp Unix de la détection.
+        
+    Note:
+        - Format de fichier: ai-log-YYYY-MM-DD.txt
+        - Un fichier par jour
+        - Append mode: ajoute les nouvelles entrées à la fin
+        - Format d'entrée: timestamp, artiste, album, info
+    """
+    try:
+        # Créer le répertoire s'il n'existe pas
+        os.makedirs(AI_LOG_DIR, exist_ok=True)
+        
+        # Nom du fichier basé sur la date
+        date_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d')
+        log_file = os.path.join(AI_LOG_DIR, f"ai-log-{date_str}.txt")
+        
+        # Écrire l'entrée de log
+        with open(log_file, 'a', encoding='utf-8') as f:
+            datetime_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            f.write(f"=== {datetime_str} ===\n")
+            f.write(f"Artiste: {artist}\n")
+            f.write(f"Album: {album}\n")
+            f.write(f"Info: {ai_info}\n")
+            f.write("\n")
+        
+        print(f"[AI] 📝 Log enregistré dans {log_file}")
+        
+    except Exception as e:
+        print(f"[AI] ⚠️ Erreur lors de l'écriture du log: {e}")
+
+
+def cleanup_old_ai_logs() -> int:
+    """Supprime les fichiers de log IA de plus de 24 heures.
+    
+    Parcourt le répertoire des logs IA et supprime les fichiers
+    dont la date est antérieure à hier.
+    
+    Returns:
+        Nombre de fichiers supprimés.
+        
+    Note:
+        - Conserve seulement les logs de la journée en cours
+        - Supprime automatiquement les logs plus anciens
+        - Appelé au démarrage du tracker
+    """
+    try:
+        if not os.path.exists(AI_LOG_DIR):
+            return 0
+        
+        deleted_count = 0
+        today_str = datetime.now().strftime('%Y-%m-%d')
+        yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        for filename in os.listdir(AI_LOG_DIR):
+            if filename.startswith('ai-log-') and filename.endswith('.txt'):
+                # Extraire la date du nom de fichier
+                date_part = filename.replace('ai-log-', '').replace('.txt', '')
+                
+                # Supprimer si ce n'est pas aujourd'hui ou hier
+                if date_part != today_str and date_part != yesterday_str:
+                    file_path = os.path.join(AI_LOG_DIR, filename)
+                    os.remove(file_path)
+                    deleted_count += 1
+                    print(f"[AI] 🗑️ Log supprimé: {filename}")
+        
+        if deleted_count > 0:
+            print(f"[AI] ✅ {deleted_count} ancien(s) log(s) supprimé(s)")
+        
+        return deleted_count
+        
+    except Exception as e:
+        print(f"[AI] ⚠️ Erreur lors du nettoyage des logs: {e}")
+        return 0
+
+
+
 def is_within_listening_hours(start_hour: int, end_hour: int) -> bool:
     """Vérifie si l'heure actuelle est dans la plage d'écoute configurée.
     
@@ -1537,6 +1669,13 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                         album_spotify_image = search_spotify_album_image(spotify_token, artist, album) if album != "Album inconnu" else None
                         album_lastfm_image = search_lastfm_album_image(artist, album) if album != "Album inconnu" else None
                         
+                        # Obtenir les informations IA sur l'album
+                        ai_info = get_album_ai_info(artist, album) if album != "Album inconnu" else "Aucune information disponible"
+                        
+                        # Enregistrer dans le log quotidien
+                        if album != "Album inconnu":
+                            log_ai_info_to_file(artist, album, ai_info, timestamp)
+                        
                         # Créer l'entrée
                         date_str = track_datetime.strftime('%Y-%m-%d %H:%M')
                         track_info = {
@@ -1549,7 +1688,8 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                             "artist_spotify_image": artist_spotify_image,
                             "album_spotify_image": album_spotify_image,
                             "album_lastfm_image": album_lastfm_image,
-                            "source": "lastfm"
+                            "source": "lastfm",
+                            "ai_info": ai_info
                         }
                         
                         # Sauvegarder
@@ -1643,11 +1783,18 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                         album_spotify_image = search_spotify_album_image(spotify_token, artist, album) if album != 'Inconnu' else None
                         album_lastfm_image = search_lastfm_album_image(artist, album) if album != 'Inconnu' else None
                         
+                        # Obtenir les informations IA sur l'album
+                        ai_info = get_album_ai_info(artist, album) if album != 'Inconnu' else "Aucune information disponible"
+                        
                         print(f"[DEBUG] Résultats - Artist Spotify: {artist_spotify_image}, Album Spotify: {album_spotify_image}, Album Last.fm: {album_lastfm_image}")
                         
                         # Créer l'entrée de données
                         timestamp = int(time.time())
                         date_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d %H:%M')
+                        
+                        # Enregistrer dans le log quotidien
+                        if album != 'Inconnu':
+                            log_ai_info_to_file(artist, album, ai_info, timestamp)
                         
                         track_info = {
                             "timestamp": timestamp,
@@ -1659,7 +1806,8 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                             "artist_spotify_image": artist_spotify_image,
                             "album_spotify_image": album_spotify_image,
                             "album_lastfm_image": album_lastfm_image,
-                            "source": "roon"
+                            "source": "roon",
+                            "ai_info": ai_info
                         }
                         
                         # Sauvegarder et afficher
@@ -1729,6 +1877,9 @@ def main() -> None:
         
         # Vérifier et réparer les images Spotify manquantes au démarrage
         repair_null_spotify_images()
+        
+        # Nettoyer les anciens logs IA (> 24h)
+        cleanup_old_ai_logs()
         
         # Test de connexion
         roonapi = test_roon_connection()
