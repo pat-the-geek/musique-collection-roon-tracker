@@ -2,6 +2,17 @@
 
 > ⚠️ **PROOF OF CONCEPT** - Ce projet est une démonstration de faisabilité technique explorant l'intégration de multiples APIs musicales (Roon, Last.fm, Spotify, Discogs) avec enrichissement IA (EurIA/Qwen3) pour le tracking, l'analyse et la présentation de données musicales personnelles.
 
+## 🗺️ Roadmap et Plan d'Évolution
+
+**📌 Nouveau**: Consultez le **[ROADMAP.md](ROADMAP.md)** pour la vision stratégique complète du projet avec:
+- 📊 Analyse des modifications récentes (v3.0.0 → v3.2.0)
+- 🎯 Problèmes identifiés et issues en cours
+- 📅 Plan d'action court terme (0-3 mois)
+- 📅 Plan d'action moyen terme (3-12 mois)
+- 📅 Plan d'action long terme (12+ mois)
+- 🚀 Recommandations prioritaires (Top 5 actions immédiates)
+- 📈 Métriques de succès et KPIs
+
 ## 🎯 État du Projet
 
 **Version actuelle : 3.1.0** (Architecture modulaire + Services partagés - 24 janvier 2026)
@@ -48,6 +59,8 @@
 👉 **Voir le guide complet**: [ANALYSE-COMPLETE-v3.1.0.md](ANALYSE-COMPLETE-v3.1.0.md)
 
 ### 🚀 Pistes d'Amélioration Prioritaires
+
+> 📌 **Voir**: [ROADMAP.md](ROADMAP.md) pour le plan d'évolution détaillé à court (0-3 mois), moyen (3-12 mois) et long terme (12+ mois)
 
 #### 📊 **1. Base de données relationnelle**
 Remplacer les fichiers JSON par SQLite ou PostgreSQL pour :
