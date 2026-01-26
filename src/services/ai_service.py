@@ -23,6 +23,7 @@ Date: 26 janvier 2026
 """
 
 import os
+import json
 import requests
 import time
 from typing import Optional
@@ -189,8 +190,6 @@ def get_album_info_from_discogs(album_title: str, discogs_collection_path: str) 
         - Ne lève pas d'exception si le fichier est absent
     """
     try:
-        import json
-        
         if not os.path.exists(discogs_collection_path):
             return None
         

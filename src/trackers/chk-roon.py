@@ -135,6 +135,7 @@ else:
 cache_artist_images_spotify = {}
 cache_album_images_spotify = {}
 cache_album_images_lastfm = {}
+cache_discogs_info = {}  # Cache for Discogs album info lookups
 spotify_token_cache = {"access_token": None, "expires_at": 0}
 
 # Fichier de verrouillage global
@@ -1307,6 +1308,7 @@ def get_album_ai_info(artist: str, album: str) -> str:
     
     Vérifie d'abord si l'album existe dans la collection Discogs et utilise
     son résumé existant. Si non trouvé, génère de nouvelles informations via l'IA.
+    Utilise un cache en mémoire pour éviter les recherches répétées.
     
     Args:
         artist: Nom de l'artiste.
@@ -1317,20 +1319,32 @@ def get_album_ai_info(artist: str, album: str) -> str:
         Message par défaut si la génération échoue.
         
     Note:
-        - Priorité: Discogs collection > API EurIA
+        - Priorité: Cache > Discogs collection > API EurIA
         - Cache les résultats pour éviter les appels multiples
         - Gère gracieusement les erreurs (retourne message par défaut)
     """
-    # D'abord, vérifier si l'album existe dans Discogs
+    # Vérifier le cache d'abord
+    cache_key = (artist.lower(), album.lower())
+    if cache_key in cache_discogs_info:
+        print(f"[AI] ✅ Info trouvée dans le cache pour '{album}' de {artist}")
+        return cache_discogs_info[cache_key]
+    
+    # Vérifier si l'album existe dans Discogs
     discogs_info = get_album_info_from_discogs(album, DISCOGS_COLLECTION_FILE)
     if discogs_info:
+        result = f"[Discogs] {discogs_info}"
         print(f"[AI] ✅ Info trouvée dans Discogs pour '{album}' de {artist}")
-        return f"[Discogs] {discogs_info}"
+        # Mettre en cache
+        cache_discogs_info[cache_key] = result
+        return result
     
     # Sinon, générer via l'IA
     print(f"[AI] 🤖 Génération info IA pour '{album}' de {artist}...")
     ai_info = generate_album_info(artist, album, max_words=35)
-    return f"[IA] {ai_info}"
+    result = f"[IA] {ai_info}"
+    # Mettre en cache
+    cache_discogs_info[cache_key] = result
+    return result
 
 
 def log_ai_info_to_file(artist: str, album: str, ai_info: str, timestamp: int) -> None:
@@ -1388,14 +1402,15 @@ def cleanup_old_ai_logs() -> int:
         - Supprime automatiquement les logs plus anciens
         - Appelé au démarrage du tracker
         - Basé sur la date dans le nom de fichier, pas la date de modification
+        - Utilise UTC pour cohérence avec les timestamps de log
     """
     try:
         if not os.path.exists(AI_LOG_DIR):
             return 0
         
         deleted_count = 0
-        # Calculate cutoff: 24 hours ago
-        cutoff_date = datetime.now() - timedelta(hours=24)
+        # Calculate cutoff: 24 hours ago in UTC (consistent with log timestamps)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(hours=24)
         cutoff_str = cutoff_date.strftime('%Y-%m-%d')
         
         for filename in os.listdir(AI_LOG_DIR):
