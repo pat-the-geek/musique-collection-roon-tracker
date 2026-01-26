@@ -100,6 +100,8 @@ Cette configuration est **automatiquement appliquée** au lancement de Streamlit
 
 **Personnalisation :** Vous pouvez modifier `.streamlit/config.toml` pour ajuster le port ou d'autres paramètres selon vos besoins.
 
+**🦁 Safari :** Pour accès réseau, changez l'User-Agent en "Edge" (Safari > Développement > Agent utilisateur > Microsoft Edge). Safari fonctionne ensuite parfaitement.
+
 ## 🚀 Utilisation
 
 ### Lancement simple
@@ -136,6 +138,24 @@ ip addr show
 ```
 
 **Note de sécurité :** Cette configuration désactive CORS et XSRF pour faciliter l'accès réseau. À utiliser uniquement dans un réseau local de confiance.
+
+#### Compatibilité navigateurs (accès réseau)
+
+✅ **Tous les navigateurs supportés** - y compris Safari avec configuration spéciale :
+
+**Navigateurs fonctionnant nativement :**
+- **Microsoft Edge** : Fonctionne parfaitement
+- **Google Chrome** : Fonctionne parfaitement
+- **Mozilla Firefox** : Fonctionne parfaitement
+
+**Safari - Solution de contournement :**
+- ⚠️ Safari bloque les WebSockets Streamlit en accès réseau par défaut
+- ✅ **Solution** : Changer l'User-Agent en "Edge" dans Safari
+  - **Safari > Développement > Agent utilisateur > Microsoft Edge**
+  - L'interface fonctionnera alors parfaitement
+- Cette restriction Safari est basée sur l'User-Agent, pas sur la technologie
+
+**Note :** En accès local (`localhost:8501`), Safari fonctionne normalement sans configuration. Le problème n'affecte que l'accès depuis d'autres machines du réseau.
 
 ## 🏗️ Architecture
 

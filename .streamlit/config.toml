@@ -3,6 +3,11 @@
 # Cette configuration permet l'accès à l'interface Streamlit depuis
 # d'autres machines du réseau local (pas seulement localhost).
 # 
+# 🦁 SAFARI: Pour accès réseau, changez l'User-Agent en "Edge"
+# (Safari > Développement > Agent utilisateur > Microsoft Edge)
+# Safari fonctionne alors parfaitement. En accès local (localhost), Safari
+# fonctionne normalement sans configuration.
+# 
 # Documentation Streamlit: https://docs.streamlit.io/develop/api-reference/configuration/config.toml
 
 [server]
