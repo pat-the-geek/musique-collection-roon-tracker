@@ -250,11 +250,12 @@ The project uses a **modular architecture** with clear separation:
    - [test_constants.py](../src/tests/test_constants.py): 57 tests for constants validation (100% coverage)
    - [test_metadata_cleaner.py](../src/tests/test_metadata_cleaner.py): 27 tests for metadata normalization (~95% coverage)
    - [test_scheduler.py](../src/tests/test_scheduler.py): 29 tests for task scheduler (~90% coverage)
+   - [test_models.py](../src/tests/test_models.py): 26 tests for SQLite data models (100% coverage)
    - [test_ai_service.py](../src/tests/test_ai_service.py): Manual test script for AI service (needs pytest conversion)
 
 **Test Infrastructure Details**:
-- **Total**: 162 tests unitaires, ~2034 lignes de code de tests
-- **Coverage**: ~91% pour les modules testés (spotify_service, constants, metadata_cleaner, scheduler)
+- **Total**: 260 tests unitaires, ~3100 lignes de code de tests
+- **Coverage**: ~92% pour les modules testés (spotify_service, constants, metadata_cleaner, scheduler, models)
 - **Framework**: pytest + pytest-cov + pytest-mock
 - **Fixtures**: Shared fixtures in conftest.py (mock tokens, sample data, env vars)
 - **Markers**: @pytest.mark.unit, @pytest.mark.integration, @pytest.mark.slow
@@ -266,16 +267,41 @@ The project uses a **modular architecture** with clear separation:
 python3 -m pytest src/tests/ -v
 
 # With coverage
-python3 -m pytest src/tests/ -v --cov=src/services --cov=src/constants --cov-report=term-missing
+python3 -m pytest src/tests/ -v --cov=src/services --cov=src/constants --cov=src/models --cov-report=term-missing
 
 # Specific module
-python3 -m pytest src/tests/test_spotify_service.py -v
+python3 -m pytest src/tests/test_models.py -v
 ```
 
 **Next Steps** (see ROADMAP.md):
 - Convert test_ai_service.py to proper pytest unit tests
 - Add integration tests for chk-roon.py
 - Implement CI/CD with GitHub Actions to run tests automatically
+
+#### 10. **Models** (`src/models/`) - Database schema (NEW v3.4.0)
+   - [schema.py](../src/models/schema.py): SQLAlchemy ORM models for SQLite migration
+     - **7 tables**: artists, albums, tracks, listening_history, images, metadata, album_artist
+     - **Relations**: Many-to-Many (artists/albums), One-to-Many (albums/tracks), One-to-One (albums/metadata)
+     - **Index**: artist_name, album_name, timestamp, source for performance
+     - **Constraints**: Unique keys, foreign keys, cascade delete
+   - [__init__.py](../src/models/__init__.py): Module exports
+
+**Database Schema Features**:
+- **Normalization**: Élimine la redondance (artistes/albums uniques)
+- **Relations**: Support natif des albums multi-artistes (Many-to-Many)
+- **Performance**: Index optimisés pour recherches par nom, date, source
+- **Intégrité**: Contraintes relationnelles et validation automatique
+- **Scalabilité**: Gestion de millions d'écoutes sans dégradation
+
+**Migration Script**:
+- [migrate_to_sqlite.py](../src/maintenance/migrate_to_sqlite.py): Script de migration JSON → SQLite
+  - Phase 1: Import Collection Discogs (artistes, albums, images, metadata)
+  - Phase 2: Import Historique Roon (tracks, listening_history, images)
+  - Phase 3: Validation et statistiques
+  - Support: `--dry-run` (simulation), `--db-path` (custom path), `--skip-backup`
+  - Backup automatique des JSON avant migration
+
+**Documentation**: Voir [docs/DATABASE-SCHEMA.md](../docs/DATABASE-SCHEMA.md) avec diagramme Mermaid complet, exemples SQL, stratégie de migration
 
 ### Data Files (JSON)
 
