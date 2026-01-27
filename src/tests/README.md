@@ -20,6 +20,7 @@ src/tests/
 |--------|-------|-----------|--------|
 | `constants.py` | 57 | 100% | ✅ |
 | `spotify_service.py` | 49 | 88% | ✅ |
+| `ai_service.py` | 31 | ~85% | ✅ |
 | `metadata_cleaner.py` | 27 | ~95% | ✅ |
 | `scheduler.py` | 29 | ~90% | ✅ |
 | `ai_service.py` | 37 | 97% | ✅ |
@@ -323,6 +324,12 @@ Configuration GitHub Actions: `.github/workflows/tests.yml` (à créer)
   - Cache et retry logic
   - Gestion d'erreurs 401/429
   - Timeouts et rate limiting
+- [x] `test_ai_service.py`: 31 tests (~85% couverture) ✨ Complété Issue #28
+  - Appels API EurIA avec mocking complet
+  - Génération de descriptions d'albums
+  - Recherche dans collection Discogs
+  - Retry automatique et gestion d'erreurs
+  - Tests de cas limites et Unicode
 - [x] `test_constants.py`: 57 tests (100% couverture)
   - Validation de toutes les constantes du projet
   - Tests de cohérence et utilisation en contexte
@@ -334,30 +341,26 @@ Configuration GitHub Actions: `.github/workflows/tests.yml` (à créer)
   - Initialisation et configuration
   - Gestion des tâches planifiées
   - Persistance de l'état
+- [x] `test_chk_roon_integration.py`: 28 tests (intégration) ✨ Complété Issue #28
+  - Tests end-to-end du tracker Roon
+  - Mock des APIs Roon, Spotify, Last.fm, EurIA
+  - Validation du flux complet de traitement
+  - Gestion des radios et enrichissement AI
+  - Tests de persistance et résilience
 
-### Prochaines étapes (Priorité Haute)
+### Prochaines étapes (Priorité Basse)
 
-#### Tests unitaires AI service (Issue #23 - Priorité Haute)
-- [ ] Convertir `test_ai_service.py` en tests pytest
-  - Tests unitaires pour `ask_for_ia()` avec mock API
-  - Tests unitaires pour `generate_album_info()`
-  - Tests unitaires pour `get_album_info_from_discogs()`
-  - Mock des appels HTTP vers EurIA API
-  - Tests de gestion d'erreurs et retry
+#### Tests d'intégration avancés
+- [ ] Tests avec vraies APIs (optionnels, marqueur @slow)
+  - Validation des résultats réels vs mocks
+  - Rate limiting et retry logic en conditions réelles
+- [ ] CI/CD automatisé avec GitHub Actions
+  - Exécution automatique des tests sur chaque PR
+  - Rapport de couverture de code
+  - Notifications sur échecs
 
-**Estimation**: 3-5 jours  
-**Bénéfice**: Couverture complète des services centraux
-
-#### Tests d'intégration
-- [ ] `test_chk_roon_integration.py`: Tests end-to-end du tracker Roon
-  - Mock des réponses Roon API
-  - Vérification écriture `chk-roon.json`
-  - Test enrichissement Spotify/Last.fm
-  - Validation gestion des radios
-- [ ] `test_scheduler_integration.py`: Tests d'intégration du scheduler
-  - Exécution réelle des tâches (sandbox)
-  - Persistance de l'état
-  - Configuration dynamique
+**Estimation**: 1 semaine  
+**Bénéfice**: Confiance accrue dans les déploiements
 
 #### Tests API réels (marqueur @slow)
 - [ ] Tests avec vraies APIs (rate-limited, optionnels)
