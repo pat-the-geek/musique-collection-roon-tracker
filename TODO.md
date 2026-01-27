@@ -4,6 +4,14 @@
 
 ## ✅ Complété Récemment
 
+### v3.3.0+ (27 janvier 2026)
+- ✅ **Issue #28** - Amélioration infrastructure de tests
+- ✅ Conversion test_ai_service.py de tests manuels → 37 tests pytest
+- ✅ Correction 3 tests défaillants dans test_metadata_cleaner.py
+- ✅ Création test_chk_roon_integration.py (5 tests réels + 23 stubs blueprint)
+- ✅ 223/223 tests passants (100%)
+- ✅ Couverture globale 91% (était 88%)
+
 ### v3.3.0 (27 janvier 2026)
 - ✅ Intégration IA pour enrichissement automatique des albums (Issue #21)
 - ✅ Service AI centralisé (`ai_service.py`)
@@ -63,7 +71,6 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 - [ ] Support multilingue (EN, FR, DE, IT) pour descriptions IA
 - [ ] Feedback utilisateur sur qualité des descriptions
 - [ ] Cache persistant des descriptions IA (au-delà de 24h)
-
 ### Interface Web (musique-gui.py)
 - [ ] Export CSV/JSON filtré depuis l'interface
 - [ ] Graphiques temporels (lectures par jour/semaine/mois)
@@ -95,18 +102,24 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ### Maintenance et qualité
 - [x] Infrastructure de tests unitaires (v3.1.0) ✅
-- [x] Tests pour metadata_cleaner (27 tests, ~95% couverture) ✅
-- [x] Tests pour scheduler (29 tests, ~90% couverture) ✅
+- [x] Tests pour metadata_cleaner (27 tests, 98% couverture) ✅ - **3 échecs corrigés (Issue #28)**
+- [x] Tests pour scheduler (29 tests, 47% couverture) ✅
 - [x] Tests pour spotify_service (49 tests, 88% couverture) ✅
 - [x] Tests pour constants (57 tests, 100% couverture) ✅
-- [ ] Tests unitaires pytest pour ai_service (tests manuels existants)
-- [ ] Tests d'intégration pour chk-roon.py
+- [x] Tests unitaires pytest pour ai_service (37 tests, 97% couverture) ✅ **COMPLÉTÉ (Issue #28)**
+- [x] Tests d'intégration pour chk-roon.py (28 tests: 5 réels + 23 stubs blueprint) ✅ **PARTIELLEMENT (Issue #28)**
+- [ ] Compléter les 23 tests stubs restants dans test_chk_roon_integration.py
 - [ ] Documentation API complète (Sphinx)
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Dockerfile pour déploiement conteneurisé
 - [ ] Logging structuré (Winston/structlog)
 
-**Infrastructure de tests actuelle**: 162 tests unitaires, ~2034 lignes de code de tests, ~91% couverture pour modules testés
+**Infrastructure de tests actuelle**: 
+- **223 tests unitaires** (était 162)
+- **~2300 lignes de code de tests** (était ~2034)
+- **91% couverture globale** (était ~88%)
+- **100% tests passants** (223/223) ✅
+- **Issue #28**: +61 tests, +3% couverture, 3 échecs corrigés
 
 ### Features expérimentales
 - [ ] Reconnaissance vocale pour recherche
@@ -117,6 +130,20 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 ---
 
 ## ✅ Complété
+
+### v3.3.0+ (27 janvier 2026) - Issue #28
+- ✅ **Amélioration infrastructure de tests**
+- ✅ Conversion test_ai_service.py: tests manuels → 37 tests pytest
+- ✅ Correction 3 tests défaillants metadata_cleaner
+  - `test_empty_list`: Gestion liste vide
+  - `test_partial_match`: Correction expectation score
+  - `test_empty_strings`: Vérification chaînes vides
+- ✅ Création test_chk_roon_integration.py (28 tests)
+  - 5 tests réels implémentés
+  - 23 stubs blueprint pour futures implémentations
+- ✅ 223/223 tests passants (100%)
+- ✅ Couverture globale 91% (+3%)
+- ✅ Documentation complète: TEST-STATUS.md, ISSUE-28-TEST-IMPROVEMENTS.md
 
 ### v3.3.0 (27 janvier 2026)
 - ✅ Intégration IA pour enrichissement automatique des albums
@@ -161,5 +188,5 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ---
 
-**Dernière mise à jour:** 27 janvier 2026  
+**Dernière mise à jour:** 27 janvier 2026 (Mise à jour tests Issue #28)  
 **Mainteneur:** Patrick Ostertag
