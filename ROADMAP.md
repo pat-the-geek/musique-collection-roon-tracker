@@ -261,19 +261,22 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 - [x] `test_metadata_cleaner.py`: **27 tests** pour normalisation ✅
 - [x] `test_scheduler.py`: **29 tests** pour planification ✅
+- [x] `test_ai_service.py`: **37 tests** pour service IA ✅ **NOUVEAU**
 
-**Complété**: 162 tests unitaires, ~91% couverture modules testés  
+**Complété**: 199 tests unitaires, ~93% couverture modules testés  
 **Bénéfice atteint**: Infrastructure de tests robuste, confiance dans refactoring
 
 #### Tests Unitaires Restants (Priorité Moyenne)
-- [ ] `test_ai_service.py`: Convertir tests manuels en tests pytest
-  - Tests unitaires pour ask_for_ia()
-  - Tests unitaires pour generate_album_info()
-  - Tests unitaires pour get_album_info_from_discogs()
-  - Mock des appels API EurIA
+- [x] `test_ai_service.py`: Convertir tests manuels en tests pytest ✅ **COMPLÉTÉ**
+  - [x] Tests unitaires pour ask_for_ia() (10 tests)
+  - [x] Tests unitaires pour generate_album_info() (7 tests)
+  - [x] Tests unitaires pour get_album_info_from_discogs() (10 tests)
+  - [x] Mock des appels API EurIA
+  - [x] Tests edge cases et intégration (6 tests)
+  - [x] Tests configuration environnement (4 tests)
 
-**Estimation**: 3-5 jours  
-**Bénéfice**: Couverture complète services centraux
+**Résultat**: 37 tests, 97% couverture, ~2h de développement  
+**Bénéfice atteint**: Couverture complète services centraux
 
 ---
 
