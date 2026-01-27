@@ -1991,15 +1991,86 @@ def display_configuration():
                 # Afficher le résumé
                 st.caption(f"⏰ Exécution: tous les {frequency_count} {frequency_unit.lower()}")
                 
+                # Paramètres spécifiques pour generate_playlist
+                playlist_type = None
+                max_tracks = None
+                output_formats = None
+                
+                if task_name == "generate_playlist":
+                    st.subheader("🎵 Paramètres de Playlist")
+                    
+                    # Type d'algorithme
+                    playlist_algorithms = {
+                        "top_sessions": "Sessions Fréquentes",
+                        "artist_correlations": "Artistes Corrélés",
+                        "artist_flow": "Flow Naturel",
+                        "time_based_peak": "Heures de Pic",
+                        "time_based_weekend": "Weekend",
+                        "time_based_evening": "Soirée",
+                        "time_based_morning": "Matin",
+                        "complete_albums": "Albums Complets",
+                        "rediscovery": "Redécouverte"
+                    }
+                    
+                    current_playlist_type = status.get('playlist_type', 'top_sessions')
+                    playlist_type = st.selectbox(
+                        "Type de playlist",
+                        options=list(playlist_algorithms.keys()),
+                        format_func=lambda x: playlist_algorithms[x],
+                        index=list(playlist_algorithms.keys()).index(current_playlist_type) if current_playlist_type in playlist_algorithms else 0,
+                        key=f"playlist_type_{task_name}"
+                    )
+                    
+                    # Nombre de pistes
+                    max_tracks = st.slider(
+                        "Nombre de pistes",
+                        min_value=10,
+                        max_value=100,
+                        value=status.get('max_tracks', 25),
+                        step=5,
+                        key=f"max_tracks_{task_name}"
+                    )
+                    
+                    # Formats d'export
+                    all_formats = ["json", "m3u", "csv", "roon-txt"]
+                    format_labels = {
+                        "json": "JSON (métadonnées complètes)",
+                        "m3u": "M3U (VLC, iTunes)",
+                        "csv": "CSV (Excel, Sheets)",
+                        "roon-txt": "TXT (import Roon manuel)"
+                    }
+                    
+                    current_formats = status.get('output_formats', ["json", "m3u", "csv", "roon-txt"])
+                    output_formats = st.multiselect(
+                        "Formats d'export",
+                        options=all_formats,
+                        default=current_formats,
+                        format_func=lambda x: format_labels[x],
+                        key=f"formats_{task_name}"
+                    )
+                    
+                    if not output_formats:
+                        st.warning("⚠️ Sélectionnez au moins un format d'export")
+                
                 # Boutons d'action
                 col_save, col_exec = st.columns(2)
                 with col_save:
                     if st.button("💾 Sauvegarder", key=f"save_{task_name}"):
+                        # Préparer les paramètres supplémentaires pour generate_playlist
+                        extra_params = {}
+                        if task_name == "generate_playlist":
+                            extra_params = {
+                                'playlist_type': playlist_type,
+                                'max_tracks': max_tracks,
+                                'output_formats': output_formats
+                            }
+                        
                         success, message = scheduler.update_task_config(
                             task_name,
                             enabled,
                             frequency_count,
-                            reverse_unit_map[frequency_unit]
+                            reverse_unit_map[frequency_unit],
+                            **extra_params
                         )
                         if success:
                             st.success("✅ Configuration sauvegardée")
@@ -2159,6 +2230,160 @@ def display_haikus():
     except Exception as e:
         st.error(f"❌ Erreur lors de la lecture du fichier: {e}")
         st.code(str(e))
+
+
+# ============================================================================
+# Page: Playlists
+# ============================================================================
+
+def display_playlists():
+    """Affiche la page de visualisation et gestion des playlists générées."""
+    st.title("🎵 Playlists Générées")
+    st.caption("Playlists créées automatiquement à partir des patterns d'écoute")
+    
+    # Avertissement sur la limitation Roon API
+    st.info("⚠️ **Limitation Roon API**: L'API Roon ne permet pas la création automatique de playlists. "
+            "Les playlists sont exportées dans plusieurs formats (JSON, M3U, CSV, TXT) pour import manuel.")
+    
+    # Lister les fichiers de playlist
+    playlists_dir = Path(PROJECT_ROOT) / "output" / "playlists"
+    playlists_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Grouper les playlists par timestamp (une playlist = plusieurs formats)
+    playlist_groups = {}
+    for file in playlists_dir.glob("playlist-*.*"):
+        # Extraire le timestamp et l'algorithme du nom de fichier
+        # Format: playlist-{algorithm}-{timestamp}.{ext}
+        name_parts = file.stem.split('-')
+        if len(name_parts) >= 3:
+            # Trouver où commence le timestamp (YYYYMMDD)
+            timestamp_start = None
+            for i, part in enumerate(name_parts):
+                if part.isdigit() and len(part) == 8:  # YYYYMMDD
+                    timestamp_start = i
+                    break
+            
+            if timestamp_start:
+                algorithm = '-'.join(name_parts[1:timestamp_start])
+                timestamp = '-'.join(name_parts[timestamp_start:])
+                key = f"{algorithm}_{timestamp}"
+                
+                if key not in playlist_groups:
+                    playlist_groups[key] = {
+                        'algorithm': algorithm,
+                        'timestamp': timestamp,
+                        'files': {}
+                    }
+                
+                playlist_groups[key]['files'][file.suffix[1:]] = file
+    
+    if not playlist_groups:
+        st.info("💡 Aucune playlist générée pour le moment.")
+        st.write("Lancez la génération depuis la page **Configuration** → `generate_playlist`")
+        st.write("ou exécutez manuellement: `python3 src/analysis/generate-playlist.py`")
+        return
+    
+    # Trier par timestamp (plus récent en premier)
+    sorted_playlists = sorted(playlist_groups.items(), 
+                              key=lambda x: x[1]['timestamp'], 
+                              reverse=True)
+    
+    # Afficher les statistiques globales
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total playlists", len(sorted_playlists))
+    with col2:
+        unique_algorithms = len(set(p[1]['algorithm'] for p in sorted_playlists))
+        st.metric("Algorithmes utilisés", unique_algorithms)
+    with col3:
+        total_formats = sum(len(p[1]['files']) for p in sorted_playlists)
+        st.metric("Fichiers exportés", total_formats)
+    
+    st.divider()
+    
+    # Afficher chaque playlist
+    for key, playlist_info in sorted_playlists:
+        algorithm = playlist_info['algorithm']
+        timestamp = playlist_info['timestamp']
+        files = playlist_info['files']
+        
+        # Formatage du nom de l'algorithme
+        algorithm_names = {
+            "top_sessions": "🎯 Sessions Fréquentes",
+            "artist_correlations": "🔗 Artistes Corrélés",
+            "artist_flow": "🌊 Flow Naturel",
+            "time_based_peak": "⏰ Heures de Pic",
+            "time_based_weekend": "📅 Weekend",
+            "time_based_evening": "🌙 Soirée",
+            "time_based_morning": "☀️ Matin",
+            "complete_albums": "💿 Albums Complets",
+            "rediscovery": "🔄 Redécouverte",
+            "ai_generated": "🤖 Générée par IA"
+        }
+        
+        display_name = algorithm_names.get(algorithm, algorithm.replace('_', ' ').title())
+        
+        with st.expander(f"{display_name} - {timestamp}", expanded=False):
+            # Charger les métadonnées depuis le fichier JSON si disponible
+            if 'json' in files:
+                try:
+                    with open(files['json'], 'r', encoding='utf-8') as f:
+                        playlist_data = json.load(f)
+                    
+                    col1, col2 = st.columns([2, 1])
+                    
+                    with col1:
+                        st.subheader(playlist_data.get('name', 'Playlist'))
+                        st.caption(playlist_data.get('description', ''))
+                        
+                        st.write(f"**Pistes:** {playlist_data.get('total_tracks', 'N/A')}")
+                        st.write(f"**Durée estimée:** {playlist_data.get('total_duration_minutes', 'N/A')} minutes")
+                        st.write(f"**Créée le:** {playlist_data.get('created_at', 'N/A')}")
+                        
+                        # Afficher un aperçu des premières pistes
+                        if 'tracks' in playlist_data and playlist_data['tracks']:
+                            st.write("**Aperçu (5 premières pistes):**")
+                            for i, track in enumerate(playlist_data['tracks'][:5], 1):
+                                st.caption(f"{i}. {track.get('artist', 'Unknown')} - {track.get('title', 'Unknown')}")
+                    
+                    with col2:
+                        st.subheader("📥 Téléchargements")
+                        
+                        # Boutons de téléchargement pour chaque format
+                        for ext, file in files.items():
+                            with open(file, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            
+                            format_labels = {
+                                'json': 'JSON (Métadonnées)',
+                                'm3u': 'M3U (VLC, iTunes)',
+                                'csv': 'CSV (Excel)',
+                                'txt': 'TXT (Roon)'
+                            }
+                            
+                            st.download_button(
+                                label=f"📄 {format_labels.get(ext, ext.upper())}",
+                                data=content,
+                                file_name=file.name,
+                                mime='application/json' if ext == 'json' else 'text/plain',
+                                key=f"download_{key}_{ext}"
+                            )
+                
+                except Exception as e:
+                    st.error(f"Erreur lors du chargement: {e}")
+            else:
+                # Pas de JSON, afficher juste les fichiers disponibles
+                st.write("**Formats disponibles:**")
+                for ext, file in files.items():
+                    with open(file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    st.download_button(
+                        label=f"📄 {ext.upper()}",
+                        data=content,
+                        file_name=file.name,
+                        mime='text/plain',
+                        key=f"download_{key}_{ext}"
+                    )
 
 
 # ============================================================================
@@ -2374,7 +2599,7 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "📊 Rapports d'analyse", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
@@ -2386,6 +2611,8 @@ def main():
         display_ai_logs()
     elif page == "🎭 Haïkus":
         display_haikus()
+    elif page == "🎵 Playlists":
+        display_playlists()
     elif page == "📊 Rapports d'analyse":
         display_reports()
     elif page == "⚙️ Configuration":
