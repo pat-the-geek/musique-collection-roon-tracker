@@ -14,8 +14,7 @@ Date: 27 janvier 2026
 import sys
 import os
 import json
-import time
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch, mock_open
 import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,20 +41,6 @@ def mock_euria_response():
             {
                 "message": {
                     "content": "Test response from EurIA API"
-                }
-            }
-        ]
-    }
-
-
-@pytest.fixture
-def mock_album_info_response():
-    """Retourne une réponse de génération d'info d'album simulée."""
-    return {
-        "choices": [
-            {
-                "message": {
-                    "content": "Kind of Blue, sorti en 1959, est un album emblématique du jazz modal enregistré par Miles Davis."
                 }
             }
         ]
