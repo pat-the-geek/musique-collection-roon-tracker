@@ -4,6 +4,24 @@
 
 ## ✅ Complété Récemment
 
+### v3.3.1 (27 janvier 2026)
+- ✅ **Issue #38** - Éviter doublons lors de la création de playlists
+  - Détection et suppression automatique des doublons
+  - Normalisation des métadonnées (artiste + titre + album)
+  - Affichage du nombre de doublons supprimés
+- ✅ **Issue #32** - Correction timezone décalage horaire (1h de différence)
+  - Correction dans chk-roon.py (3 endroits)
+  - Correction dans chk-last-fm.py
+  - Ajout test_timestamp_fix.py (5 tests)
+  - Script de vérification verify_timezone_fix.py
+  - Documentation complète FIX-TIMEZONE-ISSUE-32.md
+- ✅ **Issue #19** - Génération de playlists basée sur patterns d'écoute
+  - Nouveau module generate-playlist.py (800+ lignes)
+  - 7 algorithmes de génération (top_sessions, artist_correlations, etc.)
+  - Support génération par IA avec prompt personnalisé
+  - Export multi-formats (JSON, M3U, CSV, TXT)
+  - Intégration avec scheduler pour génération automatique
+
 ### v3.3.0+ (27 janvier 2026)
 - ✅ **Issue #28** - Amélioration infrastructure de tests
 - ✅ Conversion test_ai_service.py de tests manuels → 37 tests pytest
@@ -13,20 +31,53 @@
 - ✅ Couverture globale 91% (était 88%)
 
 ### v3.3.0 (27 janvier 2026)
-- ✅ Intégration IA pour enrichissement automatique des albums (Issue #21)
+- ✅ **Issue #21** - Intégration IA pour enrichissement automatique des albums
 - ✅ Service AI centralisé (`ai_service.py`)
-- ✅ Journal technique IA avec logs quotidiens
+- ✅ Journal technique IA avec logs quotidiens (24h retention)
 - ✅ Affichage info IA dans interface GUI (expandeurs)
-- ✅ Tests unitaires pour service IA
+- ✅ Tests unitaires pour service IA (37 tests)
+- ✅ **Issue #18** - Application Web fonctionne sur Safari iPhone (responsive design)
+- ✅ **Issue #15** - Lancement simultané Roon tracker + Streamlit (start-all.sh)
+- ✅ **Issue #13** - Configuration Streamlit pour accès réseau (0.0.0.0:8501)
+- ✅ **Issue #9** - Affichage haïkus depuis fichier markdown (correctif GUI)
 
 ### v3.2.0 (25 janvier 2026)
+- ✅ **Issue #23** - Amélioration qualité code et tests
 - ✅ Système de scheduler complet avec 4 tâches planifiées
 - ✅ Intégration scheduler dans tracker Roon
 - ✅ Configuration du scheduler via interface GUI
 - ✅ Visualisation des haïkus et rapports dans GUI
-- ✅ Tests unitaires pour scheduler (302 lignes)
+- ✅ Tests unitaires pour scheduler (29 tests, 302 lignes)
 
 ## 🔴 Priorité Haute
+
+### Détection fausse albums lors stations de radio (Issue #31)
+**Statut:** En analyse  
+**Date:** 27 janvier 2026  
+**Impact:** Moyen (génération d'entrées incorrectes dans le journal)
+
+**Description:**
+Le système détecte à tort des albums lors de l'écoute de stations de radio. 
+Exemple: "La 1ère" (station RTS) identifiée comme artiste avec album "Stella Nera".
+
+**Cause identifiée:**
+- Pattern de détection trop permissif pour les radios
+- Stations de radio non référencées dans roon-config.json
+- Génération d'info IA pour des artistes/albums inexistants
+
+**Solutions potentielles à explorer:**
+- [ ] Améliorer la détection des patterns radio dans chk-roon.py
+- [ ] Ajouter validation croisée avec APIs musicales avant génération IA
+- [ ] Créer liste blanche/noire de stations connues
+- [ ] Ajouter filtrage post-détection pour éliminer faux positifs
+
+**Lié à Issue #26**: Hallucinations IA pour descriptions albums radio
+
+**Références:**
+- `src/trackers/chk-roon.py` : Fonction de détection radio (ligne ~600-700)
+- `data/config/roon-config.json` : Liste stations radio existantes
+
+---
 
 ### Problème de cache d'images Streamlit
 **Statut:** Non résolu  
@@ -65,6 +116,53 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ## 🟡 Priorité Moyenne
 
+### Hallucinations IA pour descriptions albums radio (Issue #26)
+**Statut:** En analyse  
+**Date:** 27 janvier 2026  
+**Impact:** Faible (qualité données, pas de blocage)
+
+**Description:**
+L'IA génère des descriptions inventées pour certains albums détectés depuis des stations de radio.
+
+**Cause identifiée:**
+- Prompt IA ne spécifie pas clairement de refuser si données inexistantes
+- Albums/artistes fictifs passent la validation
+- Pas de vérification croisée avec base de données musicales
+
+**Solutions:**
+- [ ] Améliorer le prompt IA pour éviter les hallucinations
+- [ ] Ajouter validation via MusicBrainz ou Spotify avant génération IA
+- [ ] Retourner message explicite "Aucune information disponible" si album introuvable
+- [ ] Filtrer les entrées radio avant envoi à l'IA
+
+**Lié à Issue #31**: Détection fausse albums
+
+**Références:**
+- `src/services/ai_service.py` : Fonction `generate_album_info()` (ligne ~150-200)
+- `resources/prompts/` : Templates de prompts IA
+
+---
+
+### Paramètre nombre maximum fichiers output (Issue #17)
+**Statut:** En attente  
+**Date:** 26 janvier 2026  
+**Impact:** Faible (maintenance manuelle nécessaire)
+
+**Description:**
+Les répertoires `output/haikus`, `output/reports`, `output/playlists` accumulent des fichiers sans limite.
+
+**Solutions proposées:**
+- [ ] Ajouter paramètre `max_output_files` dans `roon-config.json` (défaut: 10)
+- [ ] Créer fonction de nettoyage automatique dans chaque générateur
+- [ ] Ajouter configuration dans l'interface GUI (page Paramètres)
+- [ ] Appliquer rétention lors de la création de nouveaux fichiers
+- [ ] Documenter dans README-ROON-CONFIG.md
+
+**Estimation:** 1-2 jours  
+**Bénéfice:** Gestion automatique de l'espace disque, maintenance réduite
+
+---
+
 ### Intelligence Artificielle
 - [x] Génération automatique de descriptions d'albums via IA (v3.3.0) ✅
 - [x] Fallback intelligent Discogs → IA (v3.3.0) ✅
@@ -84,11 +182,13 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 - [x] Système de scheduler pour tâches automatiques (v3.2.0) ✅
 - [x] Génération automatique de haikus via scheduler (v3.2.0) ✅
 - [x] Analyse des patterns d'écoute automatisée (v3.2.0) ✅
+- [x] Génération de playlists basée sur patterns d'écoute (v3.3.1) ✅ **Issue #19**
+- [x] Export playlists multi-formats (JSON, M3U, CSV, TXT) ✅
+- [x] Génération playlists avec IA via prompt personnalisé ✅
 - [ ] Dashboard avec statistiques avancées
 - [ ] Détection de patterns d'écoute par genre
 - [ ] Recommandations basées sur l'historique
 - [ ] Export PDF des rapports d'analyse
-- [ ] Intégration avec Spotify playlists
 
 ### Tracker Roon (chk-roon.py)
 - [ ] Support multi-utilisateurs avec base de données
@@ -115,11 +215,12 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 - [ ] Logging structuré (Winston/structlog)
 
 **Infrastructure de tests actuelle**: 
-- **223 tests unitaires** (était 162)
-- **~2300 lignes de code de tests** (était ~2034)
-- **91% couverture globale** (était ~88%)
-- **100% tests passants** (223/223) ✅
+- **228 tests unitaires** (était 223)
+- **~2340 lignes de code de tests** (était ~2300)
+- **91% couverture globale** (maintenue)
+- **100% tests passants** (228/228) ✅
 - **Issue #28**: +61 tests, +3% couverture, 3 échecs corrigés
+- **Issue #32**: +5 tests timezone (test_timestamp_fix.py)
 
 ### Features expérimentales
 - [ ] Reconnaissance vocale pour recherche
@@ -130,6 +231,23 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 ---
 
 ## ✅ Complété
+
+### v3.3.1 (27 janvier 2026) - Issues #38, #32, #19
+- ✅ **Issue #38** - Éviter doublons lors création playlists
+  - Normalisation métadonnées (artiste + titre + album)
+  - Détection automatique doublons
+  - Affichage nombre doublons supprimés
+- ✅ **Issue #32** - Correction timezone décalage horaire
+  - 4 corrections dans trackers (chk-roon.py, chk-last-fm.py)
+  - Ajout tests timezone (5 tests)
+  - Script migration verify_timezone_fix.py
+  - Documentation FIX-TIMEZONE-ISSUE-32.md
+- ✅ **Issue #19** - Génération playlists patterns d'écoute
+  - Module generate-playlist.py complet (800+ lignes)
+  - 7 algorithmes génération + IA
+  - Export multi-formats (JSON, M3U, CSV, TXT Roon)
+  - Intégration scheduler
+  - Détection/suppression doublons automatique (v1.2.0)
 
 ### v3.3.0+ (27 janvier 2026) - Issue #28
 - ✅ **Amélioration infrastructure de tests**
@@ -188,5 +306,5 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ---
 
-**Dernière mise à jour:** 27 janvier 2026 (Mise à jour tests Issue #28)  
+**Dernière mise à jour:** 27 janvier 2026 (v3.3.1 - Issues #38, #32, #19 complétées)  
 **Mainteneur:** Patrick Ostertag
