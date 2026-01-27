@@ -37,9 +37,14 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-**Version**: 1.0.0  
+**Version**: 1.0.1  
 **Date**: 27 janvier 2026  
 **Module**: `src/services/ai_optimizer.py`
+
+**Changelog v1.0.1**:
+- Fix #47: Correction du calcul de daily_volume pour utiliser la période d'analyse
+  complète au lieu du nombre de jours actifs uniquement
+- Ajout du champ active_days aux retours anticipés pour la cohérence
 """
 
 import json
