@@ -15,7 +15,7 @@
 
 ## 🎯 État du Projet
 
-**Version actuelle : 3.3.0** (AI Album Info Integration - 27 janvier 2026)
+**Version actuelle : 3.3.1** (Génération Playlists + Timezone Fix + Déduplication - 27 janvier 2026)
 
 **Statut :** ✅ Fonctionnel • 🧪 Expérimental • 📊 En évolution
 
@@ -24,12 +24,17 @@
 - ✅ Import automatique collection Discogs avec résumés IA
 - ✅ Interface Web Streamlit pour gestion collection
 - ✅ Génération de présentations musicales (haïkus) via IA
+- ✅ **NOUVEAU v3.3.1**: Génération de playlists intelligentes basée sur patterns d'écoute
+- ✅ **NOUVEAU v3.3.1**: 7 algorithmes de génération (sessions, correlations, flow, temps, albums, redécouverte, IA)
+- ✅ **NOUVEAU v3.3.1**: Export playlists multi-formats (JSON, M3U, CSV, TXT pour Roon)
+- ✅ **NOUVEAU v3.3.1**: Déduplication automatique des doublons dans playlists
+- ✅ **NOUVEAU v3.3.1**: Correction timezone (affichage heure locale correcte)
 - ✅ Analyse patterns d'écoute (sessions, corrélations, statistiques)
 - ✅ Cross-référence films/soundtracks via projet Cinéma
 - ✅ Détection et traitement intelligent des radios
 - ✅ Système de cache et retry pour robustesse API
 - ✅ **NOUVEAU v3.1**: Services partagés (`spotify_service`, `metadata_cleaner`)
-- ✅ **NOUVEAU v3.1**: Infrastructure de tests complète (162 tests, 91% couverture)
+- ✅ **NOUVEAU v3.1**: Infrastructure de tests complète (228 tests, 91% couverture)
 - ✅ **NOUVEAU v3.1**: Constantes centralisées dans `constants.py`
 - ✅ **NOUVEAU v3.2**: Système de planification automatique (scheduler) intégré au tracker
 - ✅ **NOUVEAU v3.2**: Interface GUI pour configuration et monitoring des tâches
@@ -39,6 +44,42 @@
 - ✅ **NOUVEAU v3.3**: Fallback intelligent Discogs → IA (80%+ optimisation)
 - ✅ **NOUVEAU v3.3**: Journal technique IA quotidien avec rétention 24h
 - ✅ **NOUVEAU v3.3**: Vue "🤖 Journal IA" dans l'interface GUI
+
+### 📦 Nouveautés v3.3.1 (27 janvier 2026)
+
+**🎵 Génération de Playlists Intelligentes** (Issue #19):
+- `generate-playlist.py`: Générateur de playlists basé sur patterns d'écoute (800+ lignes)
+  - **7 algorithmes de génération**:
+    - `top_sessions`: Pistes des sessions d'écoute les plus longues
+    - `artist_correlations`: Artistes souvent écoutés ensemble
+    - `artist_flow`: Transitions naturelles entre artistes
+    - `time_based`: Pistes selon périodes temporelles (peak hours, weekend)
+    - `complete_albums`: Albums écoutés en entier
+    - `rediscovery`: Pistes aimées mais non écoutées récemment
+    - `ai_generated`: 🆕 Génération par IA basée sur un prompt utilisateur
+  - **Export multi-formats**: JSON, M3U, CSV, TXT (instructions Roon)
+  - **Intégration scheduler**: Génération automatique planifiée
+  - **Configuration**: Via `roon-config.json` (type, fréquence, formats, prompt IA)
+
+**🔧 Déduplication Automatique** (Issue #38, v1.2.0):
+- Détection et suppression automatique des doublons dans playlists
+- Normalisation par (artiste + titre + album)
+- Ignore variations casse et espaces
+- Affichage nombre doublons supprimés
+
+**🕐 Correction Timezone** (Issue #32):
+- Fix décalage horaire UTC → heure locale
+- 4 corrections (chk-roon.py, chk-last-fm.py)
+- Impact: Journal Roon, Journal IA, logs quotidiens
+- Ajout tests timezone (test_timestamp_fix.py, 5 tests)
+- Script vérification verify_timezone_fix.py
+
+**🧪 Tests et Documentation**:
+- +5 tests timezone (228 tests au total, +2.2%)
+- Documentation: TIMEZONE-FIX-SUMMARY.md, docs/FIX-TIMEZONE-ISSUE-32.md
+- Intégration dans generate-playlist.py documentée
+
+👉 **Voir les détails**: README-GENERATE-PLAYLIST.md (à créer)
 
 ### 📦 Nouveautés v3.3.0 (27 janvier 2026)
 
@@ -258,7 +299,8 @@ Musique/
 │   │
 │   ├── analysis/                    # Analyse & rapports
 │   │   ├── analyze-listening-patterns.py  # Analyse patterns
-│   │   └── generate-haiku.py       # Génération haïkus IA
+│   │   ├── generate-haiku.py       # Génération haïkus IA
+│   │   └── generate-playlist.py    # 🆕 Génération playlists
 │   │
 │   ├── maintenance/                 # Nettoyage & maintenance
 │   │   ├── remove-consecutive-duplicates.py
@@ -389,6 +431,12 @@ cd src/collection && python3 Read-discogs-ia.py
 # Génération haïkus
 cd src/analysis && python3 generate-haiku.py
 
+# 🆕 Génération playlists intelligentes
+cd src/analysis && python3 generate-playlist.py --algorithm top_sessions --max-tracks 25
+
+# Génération playlist avec IA
+cd src/analysis && python3 generate-playlist.py --algorithm ai_generated --ai-prompt "jazz cool pour le soir"
+
 # Analyse patterns d'écoute
 cd src/analysis && python3 analyze-listening-patterns.py
 ```
@@ -415,6 +463,7 @@ cd src/analysis && python3 analyze-listening-patterns.py
 
 - **`src/analysis/analyze-listening-patterns.py`**: Analyse sessions, corrélations, patterns temporels
 - **`src/analysis/generate-haiku.py`**: Génération présentations IA (iA Presenter)
+- **`src/analysis/generate-playlist.py`**: 🆕 Génération playlists intelligentes (7 algorithmes + IA)
 
 ### Maintenance
 

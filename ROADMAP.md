@@ -1,8 +1,8 @@
 # 🗺️ ROADMAP - Plan d'Évolution du Projet Musique Tracker
 
 **Date de création**: 26 janvier 2026  
-**Dernière mise à jour**: 27 janvier 2026 (Mise à jour tests Issue #28)  
-**Version actuelle**: 3.3.0 (AI Album Info Integration + Scheduler complet + Tests améliorés)  
+**Dernière mise à jour**: 27 janvier 2026 (v3.3.1 - Playlists + Timezone + Doublons)  
+**Version actuelle**: 3.3.1 (Génération Playlists + Correction Timezone + Déduplication)  
 **Auteur**: GitHub Copilot AI Agent  
 **Statut**: ✅ Document de référence officiel
 
@@ -14,7 +14,7 @@ Ce document présente la feuille de route stratégique du projet **Musique Colle
 
 ### Contexte Actuel
 
-Le projet a atteint un **niveau de maturité avancé** avec une architecture modulaire (v3.0.0), des services partagés (v3.1.0), un système de planification automatique (v3.2.0) et maintenant une intégration IA complète pour l'enrichissement automatique des albums (v3.3.0). L'infrastructure de base est fonctionnelle et stable, permettant maintenant de se concentrer sur des améliorations de qualité, performance et expérience utilisateur.
+Le projet a atteint un **niveau de maturité avancé** avec une architecture modulaire (v3.0.0), des services partagés (v3.1.0), un système de planification automatique (v3.2.0), une intégration IA complète pour l'enrichissement automatique des albums (v3.3.0), et maintenant un système complet de génération de playlists intelligentes (v3.3.1). L'infrastructure de base est fonctionnelle et stable, permettant maintenant de se concentrer sur des améliorations de qualité, performance et expérience utilisateur.
 
 ### Vision Stratégique
 
@@ -23,6 +23,53 @@ Transformer le POC (Proof of Concept) actuel en une **plateforme complète de tr
 ---
 
 ## 🔍 Analyse des Modifications Récentes
+
+### Version 3.3.1 (27 janvier 2026)
+**Thème**: Génération de Playlists Intelligentes + Corrections Critiques
+
+#### ✅ Ajouts Majeurs
+- **Génération de Playlists** (`src/analysis/generate-playlist.py`, 800+ lignes) **Issue #19**
+  - 7 algorithmes de génération intelligente:
+    - `top_sessions`: Pistes des sessions d'écoute les plus longues
+    - `artist_correlations`: Artistes souvent écoutés ensemble
+    - `artist_flow`: Transitions naturelles entre artistes
+    - `time_based`: Pistes selon périodes temporelles (peak hours, weekend)
+    - `complete_albums`: Albums écoutés en entier
+    - `rediscovery`: Pistes aimées mais non écoutées récemment
+    - `ai_generated`: 🆕 Génération par IA basée sur un prompt utilisateur
+  - Export multi-formats (JSON, M3U, CSV, TXT pour Roon)
+  - Intégration avec scheduler pour génération automatique
+  - Configuration via `roon-config.json`
+  - Support prompt IA personnalisé pour playlists thématiques
+
+- **Déduplication Automatique** (v1.2.0) **Issue #38**
+  - Détection des doublons par normalisation (artiste + titre + album)
+  - Suppression automatique des entrées dupliquées
+  - Affichage du nombre de doublons éliminés
+  - Ignore variations de casse et espaces
+  - Appliqué à toutes les playlists générées
+
+- **Correction Timezone** **Issue #32**
+  - Correction décalage horaire (UTC → local time)
+  - Modifications dans `chk-roon.py` (3 endroits)
+  - Modifications dans `chk-last-fm.py` (1 endroit)
+  - Impact: Journal Roon, Journal IA, logs quotidiens
+  - Ajout `test_timestamp_fix.py` (5 tests unitaires)
+  - Script de vérification `verify_timezone_fix.py`
+
+#### 📚 Documentation
+- `TIMEZONE-FIX-SUMMARY.md`: Résumé des corrections timezone
+- `docs/FIX-TIMEZONE-ISSUE-32.md`: Documentation complète du fix
+- Documentation intégrée dans `generate-playlist.py` (docstring détaillé)
+
+#### 🎯 Impact
+- **Fonctionnalité**: Playlists intelligentes avec 7 algorithmes + IA
+- **Précision**: Correction timezone élimine confusion dans journaux
+- **Qualité**: Déduplication automatique améliore cohérence des playlists
+- **Utilisabilité**: Export multi-formats pour import dans lecteurs variés
+- **Maintenabilité**: +5 tests timezone, infrastructure test renforcée
+
+---
 
 ### Version 3.3.0 (27 janvier 2026)
 **Thème**: Intégration IA pour Enrichissement Automatique des Albums
@@ -154,7 +201,84 @@ Transformer le POC (Proof of Concept) actuel en une **plateforme complète de tr
 
 ---
 
-## 🔴 Problèmes Identifiés et Issues en Cours
+## 🚨 Problèmes Identifiés et Issues en Cours
+
+### Issues Ouvertes (3 actives)
+
+#### 1. Issue #31 - Détection Fausse Albums lors Stations Radio
+**Impact**: Moyen (génération entrées incorrectes)  
+**Priorité**: 🔴 Haute  
+**Date**: 27 janvier 2026
+
+**Problème identifié**:
+Le système détecte à tort des albums lors de l'écoute de stations de radio.
+Exemple: "La 1ère" (station RTS) identifiée comme artiste avec album "Stella Nera".
+
+**Solutions**:
+- [ ] Améliorer pattern détection radio dans `chk-roon.py`
+- [ ] Validation croisée avec APIs musicales avant génération IA
+- [ ] Créer liste blanche/noire stations connues
+- [ ] Filtrage post-détection pour éliminer faux positifs
+
+**Lié à**: Issue #26 (hallucinations IA)
+
+---
+
+#### 2. Issue #26 - Hallucinations IA pour Descriptions Albums Radio
+**Impact**: Faible (qualité données)  
+**Priorité**: 🟡 Moyenne  
+**Date**: 27 janvier 2026
+
+**Problème identifié**:
+L'IA génère des descriptions inventées pour certains albums détectés depuis des stations de radio.
+
+**Solutions**:
+- [ ] Améliorer prompt IA pour éviter hallucinations
+- [ ] Validation via MusicBrainz ou Spotify avant génération IA
+- [ ] Message explicite "Aucune information disponible" si album introuvable
+- [ ] Filtrer entrées radio avant envoi à l'IA
+
+**Lié à**: Issue #31 (détection fausse albums)
+
+---
+
+#### 3. Issue #17 - Paramètre Nombre Maximum Fichiers Output
+**Impact**: Faible (maintenance manuelle)  
+**Priorité**: 🟢 Basse  
+**Date**: 26 janvier 2026
+
+**Problème identifié**:
+Les répertoires `output/haikus`, `output/reports`, `output/playlists` accumulent des fichiers sans limite.
+
+**Solutions proposées**:
+- [ ] Ajouter paramètre `max_output_files` dans `roon-config.json` (défaut: 10)
+- [ ] Fonction nettoyage automatique dans chaque générateur
+- [ ] Configuration dans interface GUI (page Paramètres)
+- [ ] Appliquer rétention lors création nouveaux fichiers
+
+**Estimation**: 1-2 jours
+
+---
+
+### Issues Fermées Récemment (10 complétées)
+
+#### v3.3.1 (27 janvier 2026)
+- ✅ **Issue #38**: Éviter doublons lors création playlists → Normalisation + déduplication auto
+- ✅ **Issue #32**: Correction timezone décalage horaire → Fix UTC → local time (4 corrections)
+- ✅ **Issue #19**: Génération playlists patterns d'écoute → 7 algorithmes + IA + multi-formats
+
+#### v3.3.0+ (27 janvier 2026)
+- ✅ **Issue #28**: Amélioration tests → +61 tests pytest, 3 échecs corrigés, 91% couverture
+- ✅ **Issue #21**: Information IA pour chaque album → Service centralisé + journal technique
+- ✅ **Issue #23**: Amélioration qualité code → Infrastructure tests complète
+- ✅ **Issue #18**: Application Web Safari iPhone → Responsive design validé
+- ✅ **Issue #15**: Lancement simultané tracker + GUI → `start-all.sh` créé
+- ✅ **Issue #13**: Configuration Streamlit réseau → Accès 0.0.0.0:8501
+- ✅ **Issue #9**: Affichage haïkus markdown → Correctif GUI
+
+---
+
+## 🎯 Problèmes Techniques Identifiés
 
 ### Priorité Haute
 
@@ -190,17 +314,17 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 **Statut**: ⬆️ **LARGEMENT COMPLÉTÉE** ✅  
 **Impact**: Risque de régression significativement réduit
 
-**Modules AVEC tests (223 tests unitaires, ~91% couverture)**:
+**Modules AVEC tests (228 tests unitaires, ~91% couverture)**:
 - ✅ `src/services/spotify_service.py` - **49 tests, 88% couverture** (806 lignes)
 - ✅ `src/services/metadata_cleaner.py` - **27 tests, 98% couverture** ✨ (182 lignes) - **3 échecs corrigés**
 - ✅ `src/services/ai_service.py` - **37 tests, 97% couverture** ✨ **NOUVEAU** (308 lignes) - **Convertis de tests manuels**
 - ✅ `src/utils/scheduler.py` - **29 tests, 47% couverture** (302 lignes)
 - ✅ `src/constants.py` - **57 tests, 100% couverture** (527 lignes)
 - ✅ `src/tests/test_chk_roon_integration.py` - **28 tests** ✨ **NOUVEAU** - **5 tests réels, 23 stubs blueprint**
-- ✅ `src/tests/test_timestamp_fix.py` - **5 tests** (39 lignes)
+- ✅ `src/tests/test_timestamp_fix.py` - **5 tests** ✨ **NOUVEAU** (39 lignes) - **Issue #32**
 
-**Total tests**: **223 tests** (était 162), **~2300 lignes de code de tests**  
-**Résultats**: ✅ **223/223 passants (100%)** - Tous les échecs corrigés  
+**Total tests**: **228 tests** (était 162 en v3.1.0), **~2340 lignes de code de tests**  
+**Résultats**: ✅ **228/228 passants (100%)** - Tous les échecs corrigés  
 **Couverture globale**: **91%** (était ~88%)  
 **Infrastructure**: pytest + pytest-cov + pytest-mock avec fixtures réutilisables
 
@@ -209,6 +333,12 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 - ✅ Correction 3 tests défaillants dans `test_metadata_cleaner.py`
 - ✅ Création `test_chk_roon_integration.py` avec 5 tests réels + 23 stubs blueprint
 - ✅ Amélioration couverture: +3% (+61 tests)
+
+**Issue #32 - Tests Timezone** (27 janvier 2026):
+- ✅ Création `test_timestamp_fix.py` avec 5 tests unitaires
+- ✅ Tests conversion UTC → local time
+- ✅ Tests format timestamp avec secondes
+- ✅ Tests awareness timezone
 
 **Modules RESTANT À TESTER**:
 - `src/trackers/chk-roon.py` (1100+ lignes) - Nécessite refactoring pour testabilité
