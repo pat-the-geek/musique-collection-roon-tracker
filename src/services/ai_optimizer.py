@@ -37,9 +37,15 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-**Version**: 1.0.1  
+**Version**: 1.0.2  
 **Date**: 27 janvier 2026  
 **Module**: `src/services/ai_optimizer.py`
+
+**Changelog v1.0.2**:
+- Fix #47 (2ème partie): Amélioration du formatage du rapport
+  - Ajout de "Jours actifs" dans l'affichage du rapport pour clarifier le calcul
+  - Correction du formatage des heures de pic (affiche "Aucune" au lieu de "h" quand vide)
+  - Amélioration de la lisibilité des heures de pic (ajout "h" après chaque heure)
 
 **Changelog v1.0.1**:
 - Fix #47: Correction du calcul de daily_volume pour utiliser la période d'analyse
@@ -794,6 +800,19 @@ Répondez en français, en 2 phrases maximum, en expliquant l'impact sur la perf
         
         return result
     
+    def _format_peak_hours(self, peak_hours: List[int]) -> str:
+        """Formate les heures de pic pour l'affichage.
+        
+        Args:
+            peak_hours: Liste des heures de pic (0-23)
+            
+        Returns:
+            Chaîne formatée (ex: "14h, 15h, 16h" ou "Aucune")
+        """
+        if not peak_hours:
+            return "Aucune"
+        return ', '.join(f"{hour}h" for hour in peak_hours)
+    
     def generate_optimization_report(self, output_dir: Path = None) -> str:
         """Génère un rapport complet d'optimisation.
         
@@ -831,10 +850,11 @@ Répondez en français, en 2 phrases maximum, en expliquant l'impact sur la perf
             "1. ANALYSE DES PATTERNS D'ÉCOUTE",
             "-" * 80,
             f"Total tracks analysés: {patterns['total_tracks']}",
+            f"Jours actifs: {patterns['active_days']}/{patterns['analysis_period_days']}",
             f"Volume quotidien moyen: {patterns['daily_volume']} tracks/jour",
             f"Score d'activité: {patterns['activity_score']}/1.0",
             f"Plages typiques: {patterns['typical_start']}h - {patterns['typical_end']}h",
-            f"Heures de pic: {', '.join(map(str, patterns['peak_hours']))}h",
+            f"Heures de pic: {self._format_peak_hours(patterns['peak_hours'])}",
             "",
             "Distribution hebdomadaire:",
             *[f"  {day}: {percentage}%" for day, percentage in patterns['weekly_distribution'].items()],
