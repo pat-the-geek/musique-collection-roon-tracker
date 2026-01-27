@@ -103,6 +103,10 @@ TASKS_CONFIG = {
     "generate_soundtrack": {
         "script": "src/collection/generate-soundtrack.py",
         "description": "Cross-reference soundtracks"
+    },
+    "ai_optimize_system": {
+        "script": "src/services/ai_optimizer.py",
+        "description": "AI-powered system optimization with recommendations"
     }
 }
 
@@ -145,6 +149,14 @@ DEFAULT_TASK_CONFIG = {
         "frequency_count": 7,
         "last_execution": None,
         "description": "Cross-reference soundtracks"
+    },
+    "ai_optimize_system": {
+        "enabled": True,
+        "frequency_unit": "day",
+        "frequency_count": 7,
+        "last_execution": None,
+        "description": "AI-powered system optimization with recommendations",
+        "auto_apply": False
     }
 }
 
@@ -373,6 +385,95 @@ class TaskScheduler:
         try:
             # Construire la commande avec les arguments spécifiques à la tâche
             cmd = [sys.executable, str(script_path)]
+            
+            # Traitement spécial pour ai_optimize_system (exécution directe via import)
+            if task_name == "ai_optimize_system":
+                try:
+                    # Import direct pour éviter subprocess
+                    sys.path.insert(0, str(self.project_root / "src"))
+                    from services.ai_optimizer import AIOptimizer
+                    
+                    # Déterminer les chemins
+                    config_path = self.config_path
+                    state_path = self.state_path
+                    history_path = self.project_root / "data" / "history" / "chk-roon.json"
+                    
+                    # Créer l'optimiseur
+                    optimizer = AIOptimizer(
+                        config_path=str(config_path),
+                        state_path=str(state_path),
+                        history_path=str(history_path)
+                    )
+                    
+                    # Générer le rapport
+                    report_path = optimizer.generate_optimization_report()
+                    logger.info(f"AI optimization report generated: {report_path}")
+                    
+                    # Générer et appliquer les recommandations si configuré
+                    task_config = self.config["scheduled_tasks"].get(task_name, {})
+                    auto_apply = task_config.get("auto_apply", False)
+                    
+                    recommendations = optimizer.generate_recommendations()
+                    if recommendations:
+                        logger.info(f"Generated {len(recommendations)} recommendations")
+                        
+                        # Sauvegarder les recommandations en JSON
+                        output_dir = self.project_root / "output" / "reports"
+                        rec_path = output_dir / f"ai-recommendations-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
+                        with open(rec_path, 'w', encoding='utf-8') as f:
+                            json.dump([r.to_dict() for r in recommendations], f, indent=2, ensure_ascii=False)
+                        logger.info(f"Recommendations saved to: {rec_path}")
+                        
+                        if auto_apply:
+                            result_apply = optimizer.apply_recommendations(recommendations, auto_apply=True)
+                            logger.info(f"Applied {result_apply['applied']} recommendations automatically")
+                    
+                    duration = (datetime.now() - start_time).total_seconds()
+                    
+                    # Succès - mettre à jour la configuration et l'état
+                    self.config["scheduled_tasks"][task_name]["last_execution"] = start_time.isoformat()
+                    self._save_config()
+                    
+                    if task_name not in self.state:
+                        self.state[task_name] = {
+                            "last_execution": None,
+                            "last_status": None,
+                            "last_error": None,
+                            "execution_count": 0,
+                            "last_duration_seconds": None
+                        }
+                    
+                    self.state[task_name]["last_execution"] = start_time.isoformat()
+                    self.state[task_name]["last_status"] = "success"
+                    self.state[task_name]["last_error"] = None
+                    self.state[task_name]["execution_count"] += 1
+                    self.state[task_name]["last_duration_seconds"] = duration
+                    self._save_state()
+                    
+                    return True, f"AI optimization completed in {duration:.1f}s - {len(recommendations)} recommendations generated"
+                    
+                except Exception as e:
+                    error_msg = f"AI optimizer failed: {str(e)}"
+                    logger.error(error_msg)
+                    
+                    if task_name not in self.state:
+                        self.state[task_name] = {
+                            "last_execution": None,
+                            "last_status": None,
+                            "last_error": None,
+                            "execution_count": 0,
+                            "last_duration_seconds": None
+                        }
+                    
+                    duration = (datetime.now() - start_time).total_seconds()
+                    self.state[task_name]["last_execution"] = start_time.isoformat()
+                    self.state[task_name]["last_status"] = "error"
+                    self.state[task_name]["last_error"] = error_msg
+                    self.state[task_name]["execution_count"] += 1
+                    self.state[task_name]["last_duration_seconds"] = duration
+                    self._save_state()
+                    
+                    return False, error_msg
             
             # Ajouter des arguments spécifiques pour generate_playlist
             if task_name == "generate_playlist":
