@@ -770,8 +770,9 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 1. **✅ Tests Unitaires pour Services Critiques - COMPLÉTÉ** (~2 semaines) 
    - ✅ `spotify_service.py`: 49 tests, 88% couverture
    - ✅ `constants.py`: 57 tests, 100% couverture
-   - ✅ `metadata_cleaner.py`: 27 tests, ~95% couverture
-   - ✅ `scheduler.py`: 29 tests, ~90% couverture
+   - ✅ `metadata_cleaner.py`: 27 tests, 98% couverture (3 échecs corrigés)
+   - ✅ `scheduler.py`: 29 tests, 47% couverture
+   - ✅ `ai_service.py`: 37 tests, 97% couverture (Issue #28)
    - **Impact atteint**: Infrastructure de tests robuste, réduction risque régression
 
 2. **Fix Cache Images Streamlit** (3-5 jours)
@@ -779,10 +780,10 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
    - Solution relativement simple
    - Impact immédiat visible
 
-3. **Tests Unitaires AI Service** (3-5 jours)
-   - Convertir tests manuels en tests pytest
-   - Compléter la couverture des services centraux
-   - Mock appels API EurIA
+3. **✅ Tests Unitaires AI Service - COMPLÉTÉ** (3-5 jours)
+   - ✅ Convertir tests manuels en tests pytest (Issue #28)
+   - ✅ Compléter la couverture des services centraux
+   - ✅ Mock appels API EurIA
 
 4. **Pagination Interface Streamlit** (1 semaine)
    - Performance dégradée >500 albums
@@ -790,7 +791,7 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
    - Amélioration UX significative
 
 5. **CI/CD GitHub Actions** (3 jours)
-   - Automatise exécution des 162 tests existants
+   - Automatise exécution des 223 tests existants
    - Garantit qualité continue
    - Investment rapide, bénéfice long terme
 
@@ -804,8 +805,8 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 2026
 ├─ Q1 (Jan-Mar)
 │  ├─ ✅ v3.3.0 AI Integration complète (FAIT)
-│  ├─ ✅ Infrastructure tests 162 tests unitaires (FAIT)
-│  ├─ 🔴 Tests unitaires AI service
+│  ├─ ✅ Infrastructure tests 223 tests unitaires (FAIT - Issue #28)
+│  ├─ ✅ Tests unitaires AI service (FAIT - Issue #28)
 │  ├─ 🔴 Fix bugs prioritaires (cache Streamlit)
 │  └─ 🟡 Optimisations performance (pagination)
 │
