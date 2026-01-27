@@ -7,10 +7,11 @@ Ce répertoire contient la suite de tests unitaires et d'intégration pour le pr
 ```
 src/tests/
 ├── conftest.py                  # Configuration pytest et fixtures communes
+├── test_ai_service.py           # Tests du service AI EurIA (31 tests) ✨ Nouveau
 ├── test_metadata_cleaner.py     # Tests du module metadata_cleaner (27 tests)
 ├── test_scheduler.py            # Tests du module scheduler (29 tests)
-├── test_spotify_service.py      # Tests du service Spotify (49 tests) ✨ Nouveau
-└── test_constants.py            # Tests du module constants (57 tests) ✨ Nouveau
+├── test_spotify_service.py      # Tests du service Spotify (49 tests)
+└── test_constants.py            # Tests du module constants (57 tests)
 ```
 
 ## Couverture de code
@@ -19,12 +20,10 @@ src/tests/
 |--------|-------|-----------|--------|
 | `constants.py` | 57 | 100% | ✅ |
 | `spotify_service.py` | 49 | 88% | ✅ |
+| `ai_service.py` | 31 | ~85% | ✅ |
 | `metadata_cleaner.py` | 27 | ~95% | ✅ |
 | `scheduler.py` | 29 | ~90% | ✅ |
-| `ai_service.py` | - | 0% | ⚠️ Tests manuels uniquement |
-| **Total** | **162** | **~91%** | ✅ |
-
-**Note**: `test_ai_service.py` contient actuellement des tests manuels qui doivent être convertis en tests unitaires pytest. Voir la section "Roadmap des tests" ci-dessous.
+| **Total** | **193** | **~91%** | ✅ |
 
 ## Exécution des tests
 
@@ -36,6 +35,9 @@ python3 -m pytest src/tests/ -v
 
 ### Tests spécifiques
 ```bash
+# Tests AI service uniquement
+python3 -m pytest src/tests/test_ai_service.py -v
+
 # Tests Spotify service uniquement
 python3 -m pytest src/tests/test_spotify_service.py -v
 
@@ -72,6 +74,51 @@ python3 -m pytest src/tests/ -v -m "not slow"
 ```
 
 ## Organisation des tests
+
+### test_ai_service.py (31 tests) ✨ Nouveau
+
+Tests complets du service d'intégration AI EurIA avec mock des appels API.
+
+#### `TestGetEuriaConfig` (2 tests)
+- Chargement de la configuration depuis variables d'environnement
+- Valeurs par défaut si variables absentes
+
+#### `TestAskForIA` (11 tests)
+- Appel API réussi avec parsing de réponse
+- Nettoyage des espaces superflus
+- Gestion des credentials manquants
+- Retry automatique sur timeout
+- Retry automatique sur erreurs réseau
+- Gestion des réponses JSON invalides
+- Gestion des réponses sans champ 'choices'
+- Timeout personnalisé
+- Délai entre les tentatives (2 secondes)
+- Activation de la recherche web (enable_web_search)
+
+#### `TestGenerateAlbumInfo` (6 tests)
+- Génération d'information d'album réussie
+- Limite de caractères personnalisée
+- Valeur par défaut de max_characters (2000)
+- Génération avec artiste inconnu
+- Paramètres de timeout corrects (max_attempts=3, timeout=45)
+- Gestion des erreurs
+
+#### `TestGetAlbumInfoFromDiscogs` (9 tests)
+- Récupération d'album avec résumé valide
+- Album non trouvé retourne None
+- Album avec résumé générique ("Aucune information disponible") retourne None
+- Album avec résumé vide retourne None
+- Recherche insensible à la casse
+- Fichier Discogs non trouvé
+- Fichier JSON invalide
+- Gestion des espaces en trop
+- Collection vide
+- Album sans champ 'Titre'
+
+#### `TestEdgeCasesAndIntegration` (3 tests)
+- Gestion des caractères Unicode dans les prompts
+- Titre d'album très long
+- Caractères spéciaux dans artiste/album
 
 ### test_spotify_service.py (49 tests)
 
@@ -275,6 +322,12 @@ Configuration GitHub Actions: `.github/workflows/tests.yml` (à créer)
   - Cache et retry logic
   - Gestion d'erreurs 401/429
   - Timeouts et rate limiting
+- [x] `test_ai_service.py`: 31 tests (~85% couverture) ✨ Complété Issue #28
+  - Appels API EurIA avec mocking complet
+  - Génération de descriptions d'albums
+  - Recherche dans collection Discogs
+  - Retry automatique et gestion d'erreurs
+  - Tests de cas limites et Unicode
 - [x] `test_constants.py`: 57 tests (100% couverture)
   - Validation de toutes les constantes du projet
   - Tests de cohérence et utilisation en contexte
@@ -287,29 +340,23 @@ Configuration GitHub Actions: `.github/workflows/tests.yml` (à créer)
   - Gestion des tâches planifiées
   - Persistance de l'état
 
-### Prochaines étapes (Priorité Haute)
+### Prochaines étapes (Priorité Moyenne)
 
-#### Tests unitaires AI service (Issue #23 - Priorité Haute)
-- [ ] Convertir `test_ai_service.py` en tests pytest
-  - Tests unitaires pour `ask_for_ia()` avec mock API
-  - Tests unitaires pour `generate_album_info()`
-  - Tests unitaires pour `get_album_info_from_discogs()`
-  - Mock des appels HTTP vers EurIA API
-  - Tests de gestion d'erreurs et retry
-
-**Estimation**: 3-5 jours  
-**Bénéfice**: Couverture complète des services centraux
-
-#### Tests d'intégration
+#### Tests d'intégration (Issue #28 - En cours)
 - [ ] `test_chk_roon_integration.py`: Tests end-to-end du tracker Roon
   - Mock des réponses Roon API
   - Vérification écriture `chk-roon.json`
   - Test enrichissement Spotify/Last.fm
   - Validation gestion des radios
+  - Test enrichissement AI automatique
 - [ ] `test_scheduler_integration.py`: Tests d'intégration du scheduler
   - Exécution réelle des tâches (sandbox)
-  - Persistance de l'état
-  - Configuration dynamique
+  - Validation comportement end-to-end
+
+**Estimation**: 1-2 semaines  
+**Bénéfice**: Détection précoce des bugs d'intégration
+
+**Note**: Les tests unitaires du scheduler (29 tests) couvrent déjà la persistance et la configuration. Les tests d'intégration doivent se concentrer sur l'exécution réelle des tâches planifiées.
 
 #### Tests API réels (marqueur @slow)
 - [ ] Tests avec vraies APIs (rate-limited, optionnels)
