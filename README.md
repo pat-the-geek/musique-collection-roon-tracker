@@ -5,7 +5,7 @@
 ## 🗺️ Roadmap et Plan d'Évolution
 
 **📌 Nouveau**: Consultez le **[ROADMAP.md](ROADMAP.md)** pour la vision stratégique complète du projet avec:
-- 📊 Analyse des modifications récentes (v3.0.0 → v3.2.0)
+- 📊 Analyse des modifications récentes (v3.0.0 → v3.3.0)
 - 🎯 Problèmes identifiés et issues en cours
 - 📅 Plan d'action court terme (0-3 mois)
 - 📅 Plan d'action moyen terme (3-12 mois)
@@ -15,7 +15,7 @@
 
 ## 🎯 État du Projet
 
-**Version actuelle : 3.1.0** (Architecture modulaire + Services partagés - 24 janvier 2026)
+**Version actuelle : 3.3.0** (AI Album Info Integration - 27 janvier 2026)
 
 **Statut :** ✅ Fonctionnel • 🧪 Expérimental • 📊 En évolution
 
@@ -34,6 +34,45 @@
 - ✅ **NOUVEAU v3.2**: Système de planification automatique (scheduler) intégré au tracker
 - ✅ **NOUVEAU v3.2**: Interface GUI pour configuration et monitoring des tâches
 - ✅ **NOUVEAU v3.2**: Visualisation des haïkus et rapports d'analyse dans la GUI
+- ✅ **NOUVEAU v3.3**: Service IA centralisé (`ai_service.py`) pour enrichissement albums
+- ✅ **NOUVEAU v3.3**: Génération automatique d'informations pour chaque album détecté
+- ✅ **NOUVEAU v3.3**: Fallback intelligent Discogs → IA (80%+ optimisation)
+- ✅ **NOUVEAU v3.3**: Journal technique IA quotidien avec rétention 24h
+- ✅ **NOUVEAU v3.3**: Vue "🤖 Journal IA" dans l'interface GUI
+
+### 📦 Nouveautés v3.3.0 (27 janvier 2026)
+
+**🤖 Intégration IA pour Enrichissement Automatique**:
+- `ai_service.py`: Service centralisé EurIA API (280 lignes)
+  - Génération descriptions d'albums (500 caractères max)
+  - Fallback intelligent Discogs → IA
+  - Retry automatique avec gestion d'erreurs
+  - Configuration via `.env` (URL, bearer, max_attempts)
+
+**📊 Enrichissement Automatique des Tracks**:
+- Nouveau champ `ai_info` dans `chk-roon.json`
+- Génération pour tous les albums détectés (Roon + Last.fm)
+- Priorité Discogs (80%+ hits) pour réduire appels API
+- Support stations radio si album identifié
+
+**📝 Journal Technique IA**:
+- Logs quotidiens: `output/ai-logs/ai-log-YYYY-MM-DD.txt`
+- Format structuré (timestamp, artiste, album, info)
+- Nettoyage automatique > 24h
+- ~10-50 KB par jour pour 50 albums
+
+**🎨 Interface GUI Enrichie**:
+- Expandeurs "🤖 Info IA" dans Journal Roon
+- Nouvelle vue "🤖 Journal IA" avec sélection de fichiers
+- Affichage formaté des entrées quotidiennes
+- Compteur d'albums traités par jour
+
+**🧪 Tests et Documentation**:
+- `test_ai_service.py`: Suite de tests unitaires
+- `ISSUE-21-IMPLEMENTATION.md`: Rapport d'implémentation complet
+- `docs/AI-INTEGRATION.md`: Guide technique
+
+👉 **Voir les détails**: [ISSUE-21-IMPLEMENTATION.md](ISSUE-21-IMPLEMENTATION.md)
 
 ### 📦 Nouveautés v3.1.0 (24 janvier 2026)
 
