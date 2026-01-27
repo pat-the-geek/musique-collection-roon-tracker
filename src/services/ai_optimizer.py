@@ -800,6 +800,19 @@ Répondez en français, en 2 phrases maximum, en expliquant l'impact sur la perf
         
         return result
     
+    def _format_peak_hours(self, peak_hours: List[int]) -> str:
+        """Formate les heures de pic pour l'affichage.
+        
+        Args:
+            peak_hours: Liste des heures de pic (0-23)
+            
+        Returns:
+            Chaîne formatée (ex: "14h, 15h, 16h" ou "Aucune")
+        """
+        if not peak_hours:
+            return "Aucune"
+        return ', '.join(f"{hour}h" for hour in peak_hours)
+    
     def generate_optimization_report(self, output_dir: Path = None) -> str:
         """Génère un rapport complet d'optimisation.
         
@@ -841,7 +854,7 @@ Répondez en français, en 2 phrases maximum, en expliquant l'impact sur la perf
             f"Volume quotidien moyen: {patterns['daily_volume']} tracks/jour",
             f"Score d'activité: {patterns['activity_score']}/1.0",
             f"Plages typiques: {patterns['typical_start']}h - {patterns['typical_end']}h",
-            f"Heures de pic: {', '.join(map(lambda h: str(h) + 'h', patterns['peak_hours'])) if patterns['peak_hours'] else 'Aucune'}",
+            f"Heures de pic: {self._format_peak_hours(patterns['peak_hours'])}",
             "",
             "Distribution hebdomadaire:",
             *[f"  {day}: {percentage}%" for day, percentage in patterns['weekly_distribution'].items()],

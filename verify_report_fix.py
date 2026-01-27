@@ -8,6 +8,7 @@ du nombre de jours actifs.
 
 import json
 import sys
+import re
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -178,8 +179,6 @@ def test_scenario_2_sparse_data():
     
     # Vérifications
     print("\nVÉRIFICATIONS:")
-    
-    import re
     
     # Vérifier le nombre de tracks
     total_tracks_match = re.search(r"Total tracks analysés: (\d+)", content)

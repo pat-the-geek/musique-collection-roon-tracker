@@ -15,6 +15,7 @@ import pytest
 import json
 import os
 import sys
+import re
 from pathlib import Path
 from datetime import datetime, timedelta
 import tempfile
@@ -817,14 +818,13 @@ class TestGenerateOptimizationReport:
         
         # Vérifier que chaque heure de pic a un "h" après elle
         # Le formatage devrait être comme "14h, 15h, 16h" et non "14, 15, 16h"
-        import re
         peak_hours_match = re.search(r"Heures de pic: (.+)", content)
         if peak_hours_match and peak_hours_match.group(1) != "Aucune":
             peak_hours_text = peak_hours_match.group(1)
-            # Chaque heure devrait avoir un "h" après elle
-            assert "h" in peak_hours_text
-            # Ne devrait pas avoir juste un "h" à la fin sans heures
-            assert peak_hours_text != "h"
+            # Vérifier que le format est correct: chaque heure doit avoir un "h" après elle
+            # Format attendu: "14h, 15h, 16h" ou "14h"
+            assert re.match(r'^\d+h(, \d+h)*$', peak_hours_text), \
+                f"Format incorrect des heures de pic: {peak_hours_text}"
         
         # Vérifier que le rapport inclut le nombre de jours actifs
         assert "Jours actifs:" in content
