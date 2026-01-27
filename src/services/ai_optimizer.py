@@ -37,9 +37,14 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-**Version**: 1.0.0  
+**Version**: 1.0.1  
 **Date**: 27 janvier 2026  
 **Module**: `src/services/ai_optimizer.py`
+
+**Changelog v1.0.1**:
+- Fix #47: Correction du calcul de daily_volume pour utiliser la période d'analyse
+  complète au lieu du nombre de jours actifs uniquement
+- Ajout du champ active_days aux retours anticipés pour la cohérence
 """
 
 import json
@@ -229,7 +234,8 @@ class AIOptimizer:
                 'weekly_distribution': {},
                 'activity_score': 0.0,
                 'analysis_period_days': days,
-                'total_tracks': 0
+                'total_tracks': 0,
+                'active_days': 0
             }
         
         # Filtrer les entrées des X derniers jours
@@ -270,7 +276,8 @@ class AIOptimizer:
                 'weekly_distribution': {},
                 'activity_score': 0.0,
                 'analysis_period_days': days,
-                'total_tracks': 0
+                'total_tracks': 0,
+                'active_days': 0
             }
         
         # Analyser les heures d'activité
@@ -308,7 +315,7 @@ class AIOptimizer:
         # Calculer volume quotidien moyen
         actual_days = len(daily_tracks)
         total_tracks = len(recent_tracks)
-        daily_volume = total_tracks / actual_days if actual_days > 0 else 0
+        daily_volume = total_tracks / days if days > 0 else 0
         
         # Distribution par jour de semaine (normaliser en pourcentages)
         weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
