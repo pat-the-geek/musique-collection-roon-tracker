@@ -37,9 +37,15 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-**Version**: 1.0.2  
+**Version**: 1.0.3  
 **Date**: 27 janvier 2026  
 **Module**: `src/services/ai_optimizer.py`
+
+**Changelog v1.0.3**:
+- Fix: Correction du chargement de l'historique pour extraire le tableau 'tracks'
+  - Le fichier chk-roon.json a une structure dict avec clé 'tracks', pas un tableau direct
+  - Ajout de la gestion des deux formats (dict avec 'tracks' et liste directe) pour compatibilité
+  - Corrige le bug où "Total tracks analysés: 0" était affiché même avec des données
 
 **Changelog v1.0.2**:
 - Fix #47 (2ème partie): Amélioration du formatage du rapport
@@ -157,7 +163,18 @@ class AIOptimizer:
         # Charger les données
         self.config = self._load_json(self.config_path)
         self.state = self._load_json(self.state_path) if self.state_path.exists() else {}
-        self.history = self._load_json(self.history_path) if self.history_path.exists() else []
+        
+        # Charger l'historique et extraire le tableau tracks
+        history_data = self._load_json(self.history_path) if self.history_path.exists() else []
+        if isinstance(history_data, dict) and 'tracks' in history_data:
+            # Nouveau format: dict avec clé 'tracks'
+            self.history = history_data['tracks']
+        elif isinstance(history_data, list):
+            # Ancien format: liste directe
+            self.history = history_data
+        else:
+            # Format invalide ou vide
+            self.history = []
         
         # S'assurer que les variables d'environnement sont chargées
         ensure_env_loaded()

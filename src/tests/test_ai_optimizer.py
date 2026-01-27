@@ -205,6 +205,51 @@ class TestAIOptimizerInit:
             history_path=str(history_path)
         )
         assert opt.history == []
+    
+    def test_init_with_dict_format_history(self, sample_config, sample_state, temp_dir):
+        """Test d'initialisation avec historique au format dict avec clé 'tracks'."""
+        history_dir = temp_dir / "data" / "history"
+        history_dir.mkdir(parents=True, exist_ok=True)
+        history_path = history_dir / "chk-roon-dict.json"
+        
+        # Créer un historique au format dict (nouveau format)
+        history_data = {
+            "username": "test_user",
+            "month": "January 2026",
+            "tracks": [
+                {
+                    "timestamp": int(datetime.now().timestamp()),
+                    "date": datetime.now().strftime('%Y-%m-%d %H:%M'),
+                    "artist": "Artist 1",
+                    "title": "Track 1",
+                    "album": "Album 1"
+                },
+                {
+                    "timestamp": int(datetime.now().timestamp()) - 3600,
+                    "date": (datetime.now() - timedelta(hours=1)).strftime('%Y-%m-%d %H:%M'),
+                    "artist": "Artist 2",
+                    "title": "Track 2",
+                    "album": "Album 2"
+                }
+            ]
+        }
+        
+        with open(history_path, 'w') as f:
+            json.dump(history_data, f)
+        
+        # Initialiser l'optimiseur
+        opt = AIOptimizer(
+            config_path=str(sample_config),
+            state_path=str(sample_state),
+            history_path=str(history_path)
+        )
+        
+        # Vérifier que les tracks ont été extraits correctement
+        assert opt.history is not None
+        assert isinstance(opt.history, list)
+        assert len(opt.history) == 2
+        assert opt.history[0]['artist'] == "Artist 1"
+        assert opt.history[1]['artist'] == "Artist 2"
 
 
 class TestAnalyzeListeningPatterns:
