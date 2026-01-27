@@ -80,6 +80,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 # Ajouter le répertoire racine au path pour les imports
 sys.path.insert(0, PROJECT_ROOT)
 from src.services.ai_service import generate_ai_playlist
+from src.services.metadata_cleaner import normalize_string_for_comparison
 
 # Chemins des fichiers
 ROON_HISTORY_PATH = os.path.join(PROJECT_ROOT, "data", "history", "chk-roon.json")
@@ -105,6 +106,47 @@ def load_discogs_collection() -> List[Dict]:
         with open(DISCOGS_COLLECTION_PATH, 'r', encoding='utf-8') as f:
             return json.load(f)
     return []
+
+
+def remove_duplicate_tracks(tracks: List[Dict]) -> List[Dict]:
+    """
+    Supprime les doublons de la liste de pistes.
+    
+    Utilise une clé normalisée (artist + title + album) pour détecter les doublons,
+    ignorant les variations de casse et les différences mineures comme "(remastered)" vs "(Remastered)".
+    
+    Args:
+        tracks: Liste de pistes pouvant contenir des doublons
+        
+    Returns:
+        Liste de pistes sans doublons, préservant l'ordre d'origine
+        
+    Examples:
+        >>> tracks = [
+        ...     {'artist': 'The Clash', 'title': 'London Calling (remastered)', 'album': 'London Calling'},
+        ...     {'artist': 'The Clash', 'title': 'London Calling (Remastered)', 'album': 'London Calling'},
+        ...     {'artist': 'Roxy Music', 'title': 'Love Is the Drug', 'album': 'Best Of'},
+        ... ]
+        >>> result = remove_duplicate_tracks(tracks)
+        >>> len(result)
+        2
+    """
+    seen_keys = set()
+    unique_tracks = []
+    
+    for track in tracks:
+        # Créer une clé normalisée pour détecter les doublons
+        artist = normalize_string_for_comparison(track.get('artist', ''))
+        title = normalize_string_for_comparison(track.get('title', ''))
+        album = normalize_string_for_comparison(track.get('album', ''))
+        
+        track_key = f"{artist}||{title}||{album}"
+        
+        if track_key not in seen_keys:
+            seen_keys.add(track_key)
+            unique_tracks.append(track)
+    
+    return unique_tracks
 
 
 def detect_listening_sessions(tracks: List[Dict], gap_minutes: int = 30) -> List[List[Dict]]:
@@ -559,7 +601,16 @@ def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str]
     else:
         raise ValueError(f"Algorithme inconnu: {algorithm}")
     
-    print(f"   ✅ {len(playlist_tracks)} pistes sélectionnées\n")
+    print(f"   ✅ {len(playlist_tracks)} pistes sélectionnées")
+    
+    # Supprimer les doublons
+    original_count = len(playlist_tracks)
+    playlist_tracks = remove_duplicate_tracks(playlist_tracks)
+    duplicates_removed = original_count - len(playlist_tracks)
+    
+    if duplicates_removed > 0:
+        print(f"   🔍 {duplicates_removed} doublon(s) supprimé(s)")
+    print()
     
     # Créer le répertoire de sortie si nécessaire
     os.makedirs(OUTPUT_DIR, exist_ok=True)
