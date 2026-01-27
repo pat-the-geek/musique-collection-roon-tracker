@@ -229,7 +229,8 @@ class AIOptimizer:
                 'weekly_distribution': {},
                 'activity_score': 0.0,
                 'analysis_period_days': days,
-                'total_tracks': 0
+                'total_tracks': 0,
+                'active_days': 0
             }
         
         # Filtrer les entrées des X derniers jours
@@ -270,7 +271,8 @@ class AIOptimizer:
                 'weekly_distribution': {},
                 'activity_score': 0.0,
                 'analysis_period_days': days,
-                'total_tracks': 0
+                'total_tracks': 0,
+                'active_days': 0
             }
         
         # Analyser les heures d'activité
