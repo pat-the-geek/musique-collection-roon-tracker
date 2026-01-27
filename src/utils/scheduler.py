@@ -92,6 +92,10 @@ TASKS_CONFIG = {
         "script": "src/analysis/generate-haiku.py",
         "description": "Generate haiku presentations for albums"
     },
+    "generate_playlist": {
+        "script": "src/analysis/generate-playlist.py",
+        "description": "Generate playlists based on listening patterns"
+    },
     "read_discogs": {
         "script": "src/collection/Read-discogs-ia.py",
         "description": "Fetch Discogs collection"
@@ -117,6 +121,16 @@ DEFAULT_TASK_CONFIG = {
         "frequency_count": 1,
         "last_execution": None,
         "description": "Generate haiku presentations for albums"
+    },
+    "generate_playlist": {
+        "enabled": True,
+        "frequency_unit": "day",
+        "frequency_count": 7,
+        "last_execution": None,
+        "description": "Generate playlists based on listening patterns",
+        "playlist_type": "top_sessions",
+        "max_tracks": 25,
+        "output_formats": ["json", "m3u", "csv", "roon-txt"]
     },
     "read_discogs": {
         "enabled": True,
@@ -357,9 +371,31 @@ class TaskScheduler:
         start_time = datetime.now()
         
         try:
+            # Construire la commande avec les arguments spécifiques à la tâche
+            cmd = [sys.executable, str(script_path)]
+            
+            # Ajouter des arguments spécifiques pour generate_playlist
+            if task_name == "generate_playlist":
+                task_config = self.config["scheduled_tasks"].get(task_name, {})
+                playlist_type = task_config.get("playlist_type", "top_sessions")
+                max_tracks = task_config.get("max_tracks", 25)
+                output_formats = task_config.get("output_formats", ["json", "m3u", "csv", "roon-txt"])
+                ai_prompt = task_config.get("ai_prompt", "")
+                
+                cmd.extend([
+                    "--algorithm", playlist_type,
+                    "--max-tracks", str(max_tracks),
+                    "--formats"
+                ])
+                cmd.extend(output_formats)
+                
+                # Ajouter le prompt IA si l'algorithme est ai_generated
+                if playlist_type == "ai_generated" and ai_prompt:
+                    cmd.extend(["--ai-prompt", ai_prompt])
+            
             # Exécuter le script Python
             result = subprocess.run(
-                [sys.executable, str(script_path)],
+                cmd,
                 cwd=str(self.project_root),
                 capture_output=True,
                 text=True,
@@ -505,7 +541,7 @@ class TaskScheduler:
         
         next_execution = self._get_next_execution_time(task_name)
         
-        return {
+        status = {
             "name": task_name,
             "description": config.get("description", ""),
             "enabled": config.get("enabled", False),
@@ -518,6 +554,14 @@ class TaskScheduler:
             "execution_count": state.get("execution_count", 0),
             "last_duration_seconds": state.get("last_duration_seconds")
         }
+        
+        # Ajouter les paramètres spécifiques à generate_playlist
+        if task_name == "generate_playlist":
+            status["playlist_type"] = config.get("playlist_type", "top_sessions")
+            status["max_tracks"] = config.get("max_tracks", 25)
+            status["output_formats"] = config.get("output_formats", ["json", "m3u", "csv", "roon-txt"])
+        
+        return status
     
     def get_all_tasks_status(self) -> Dict[str, Dict[str, Any]]:
         """Retourne le statut de toutes les tâches.
@@ -531,7 +575,7 @@ class TaskScheduler:
         }
     
     def update_task_config(self, task_name: str, enabled: bool, 
-                          frequency_count: int, frequency_unit: str) -> Tuple[bool, str]:
+                          frequency_count: int, frequency_unit: str, **extra_params) -> Tuple[bool, str]:
         """Met à jour la configuration d'une tâche.
         
         Args:
@@ -539,6 +583,8 @@ class TaskScheduler:
             enabled: Activer/désactiver la tâche
             frequency_count: Nombre d'unités
             frequency_unit: Unité de fréquence (hour, day, month, year)
+            **extra_params: Paramètres supplémentaires spécifiques à la tâche
+                           (ex: playlist_type, max_tracks, output_formats pour generate_playlist)
             
         Returns:
             Tuple (success: bool, message: str)
@@ -555,6 +601,10 @@ class TaskScheduler:
         self.config["scheduled_tasks"][task_name]["enabled"] = enabled
         self.config["scheduled_tasks"][task_name]["frequency_count"] = frequency_count
         self.config["scheduled_tasks"][task_name]["frequency_unit"] = frequency_unit
+        
+        # Ajouter les paramètres supplémentaires s'ils existent
+        for key, value in extra_params.items():
+            self.config["scheduled_tasks"][task_name][key] = value
         
         self._save_config()
         

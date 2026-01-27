@@ -213,3 +213,166 @@ def get_album_info_from_discogs(album_title: str, discogs_collection_path: str) 
     except Exception as e:
         print(f"⚠️ Erreur lecture Discogs collection: {e}")
         return None
+
+
+def generate_ai_playlist(user_prompt: str, available_tracks: list, max_tracks: int = 25) -> dict:
+    """Génère une playlist intelligente basée sur un prompt utilisateur via l'IA EurIA.
+    
+    Utilise l'API EurIA pour analyser le prompt de l'utilisateur et sélectionner
+    les pistes les plus appropriées parmi l'historique d'écoute. L'IA prend en compte
+    le contexte, l'ambiance, le genre, et les préférences exprimées dans le prompt.
+    
+    Args:
+        user_prompt: Description en langage naturel du type de playlist souhaité.
+            Exemples:
+            - "une playlist calme pour méditer le soir"
+            - "musique énergique des années 80 pour faire du sport"
+            - "jazz cool et sophistiqué pour un dîner"
+        available_tracks: Liste des pistes disponibles avec leurs métadonnées.
+            Chaque piste doit contenir: artist, title, album, (optionnel) ai_info.
+        max_tracks: Nombre maximum de pistes à inclure (défaut: 25).
+        
+    Returns:
+        Dictionnaire contenant:
+        - 'tracks': Liste des pistes sélectionnées
+        - 'ai_reasoning': Explication de l'IA sur ses choix
+        - 'playlist_name': Nom suggéré par l'IA
+        - 'playlist_description': Description de la playlist
+        
+    Examples:
+        >>> tracks = [
+        ...     {"artist": "Miles Davis", "title": "So What", "album": "Kind of Blue"},
+        ...     {"artist": "The Beatles", "title": "Yesterday", "album": "Help!"}
+        ... ]
+        >>> result = generate_ai_playlist("jazz cool pour le soir", tracks, max_tracks=10)
+        >>> print(result['playlist_name'])
+        'Soirée Jazz Cool'
+        >>> print(len(result['tracks']))
+        10
+        
+    Note:
+        - L'IA analyse le prompt et les métadonnées des pistes
+        - Fonctionne mieux si les pistes ont des ai_info descriptives
+        - Nécessite une connexion à l'API EurIA
+        - Peut prendre jusqu'à 60 secondes selon le nombre de pistes
+    """
+    ensure_env_loaded()
+    
+    # Limiter le nombre de pistes envoyées à l'IA (pour éviter un prompt trop long)
+    max_tracks_to_analyze = min(len(available_tracks), 200)
+    tracks_sample = available_tracks[:max_tracks_to_analyze]
+    
+    # Construire une représentation compacte des pistes pour l'IA
+    tracks_summary = []
+    for i, track in enumerate(tracks_sample, 1):
+        artist = track.get('artist', 'Unknown')
+        title = track.get('title', 'Unknown')
+        album = track.get('album', 'Unknown')
+        ai_info = track.get('ai_info', '')
+        
+        # Format compact: index|artiste|titre|album|info
+        track_line = f"{i}. {artist} - {title} ({album})"
+        if ai_info:
+            track_line += f" | {ai_info[:100]}"  # Limiter l'info à 100 caractères
+        tracks_summary.append(track_line)
+    
+    # Construire le prompt pour l'IA
+    prompt = f"""
+Tu es un expert en curation musicale. Un utilisateur te demande de créer une playlist avec cette description:
+
+"{user_prompt}"
+
+Voici les pistes disponibles dans son historique d'écoute (format: index|artiste|titre|album|description):
+
+{chr(10).join(tracks_summary)}
+
+TÂCHE:
+1. Sélectionne exactement {min(max_tracks, len(tracks_sample))} pistes qui correspondent le mieux à la demande
+2. Propose un nom créatif pour cette playlist (maximum 60 caractères)
+3. Écris une description de 2-3 phrases expliquant ta sélection
+4. Liste UNIQUEMENT les numéros des pistes sélectionnées, séparés par des virgules
+
+FORMAT DE RÉPONSE STRICT (respecte EXACTEMENT ce format):
+NOM: [nom de la playlist]
+DESCRIPTION: [description]
+SELECTION: [liste des numéros séparés par des virgules, ex: 1,5,12,23,45]
+JUSTIFICATION: [1-2 phrases expliquant tes choix]
+
+IMPORTANT: Réponds UNIQUEMENT dans ce format, sans texte supplémentaire avant ou après.
+""".strip()
+    
+    print("🤖 Consultation de l'IA EurIA pour composition de playlist...")
+    print(f"   Prompt utilisateur: {user_prompt}")
+    print(f"   Pistes à analyser: {len(tracks_sample)}")
+    
+    # Appeler l'IA avec un timeout plus long
+    ai_response = ask_for_ia(prompt, max_attempts=3, timeout=90)
+    
+    # Parser la réponse de l'IA
+    try:
+        lines = ai_response.strip().split('\n')
+        playlist_name = None
+        playlist_description = None
+        selection_indices = []
+        ai_reasoning = None
+        
+        for line in lines:
+            line = line.strip()
+            if line.startswith('NOM:'):
+                playlist_name = line.replace('NOM:', '').strip()
+            elif line.startswith('DESCRIPTION:'):
+                playlist_description = line.replace('DESCRIPTION:', '').strip()
+            elif line.startswith('SELECTION:'):
+                selection_str = line.replace('SELECTION:', '').strip()
+                # Extraire les numéros
+                try:
+                    selection_indices = [int(x.strip()) for x in selection_str.split(',') if x.strip().isdigit()]
+                except ValueError:
+                    print(f"⚠️ Erreur parsing sélection IA: {selection_str}")
+            elif line.startswith('JUSTIFICATION:'):
+                ai_reasoning = line.replace('JUSTIFICATION:', '').strip()
+        
+        # Valider la réponse
+        if not playlist_name:
+            playlist_name = f"Playlist {user_prompt[:30]}"
+        if not playlist_description:
+            playlist_description = f"Playlist créée selon vos préférences: {user_prompt}"
+        if not ai_reasoning:
+            ai_reasoning = "Sélection basée sur votre demande."
+        
+        # Sélectionner les pistes correspondant aux indices
+        selected_tracks = []
+        for idx in selection_indices:
+            if 1 <= idx <= len(tracks_sample):
+                selected_tracks.append(tracks_sample[idx - 1])
+        
+        # Si pas assez de pistes sélectionnées, en ajouter
+        if len(selected_tracks) < max_tracks // 2:
+            print(f"⚠️ L'IA a sélectionné seulement {len(selected_tracks)} pistes, ajout de pistes supplémentaires...")
+            # Ajouter les premières pistes non encore sélectionnées
+            for track in tracks_sample:
+                if track not in selected_tracks and len(selected_tracks) < max_tracks:
+                    selected_tracks.append(track)
+        
+        print(f"✅ Playlist générée: {len(selected_tracks)} pistes sélectionnées")
+        
+        return {
+            'tracks': selected_tracks[:max_tracks],
+            'ai_reasoning': ai_reasoning,
+            'playlist_name': playlist_name,
+            'playlist_description': playlist_description,
+            'user_prompt': user_prompt
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur lors du parsing de la réponse IA: {e}")
+        print(f"   Réponse brute: {ai_response[:500]}")
+        
+        # Fallback: retourner les premières pistes
+        return {
+            'tracks': tracks_sample[:max_tracks],
+            'ai_reasoning': "Erreur de parsing, sélection automatique des premières pistes.",
+            'playlist_name': f"Playlist {user_prompt[:30]}",
+            'playlist_description': f"Playlist créée selon: {user_prompt}",
+            'user_prompt': user_prompt
+        }
