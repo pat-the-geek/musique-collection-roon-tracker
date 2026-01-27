@@ -52,12 +52,13 @@ def test_generate_album_info():
     album = "Kind of Blue"
     print(f"Album: {album} de {artist}")
     
-    result = generate_album_info(artist, album, max_words=35)
+    result = generate_album_info(artist, album, max_characters=2000)
     print(f"\nDescription générée:\n{result}")
     
     # Check that result is not error message
     if result and not result.startswith("Désolé"):
-        print(f"\n✅ TEST RÉUSSI - Description générée ({len(result.split())} mots)")
+        print(f"\n✅ TEST RÉUSSI - Description générée ({len(result)} caractères)")
+        return True
         return True
     else:
         print("\n❌ TEST ÉCHOUÉ - Erreur de génération")

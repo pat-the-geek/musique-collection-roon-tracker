@@ -21,7 +21,7 @@ Centralized AI service for the entire project.
 
 **Functions:**
 - `ask_for_ia(prompt, max_attempts, timeout)` - Core API call to EurIA
-- `generate_album_info(artist, album, max_words)` - Generate album descriptions
+- `generate_album_info(artist, album, max_characters)` - Generate album descriptions (default: 500 chars)
 - `get_album_info_from_discogs(album_title, discogs_path)` - Check Discogs collection
 
 #### 2. `src/trackers/chk-roon.py`

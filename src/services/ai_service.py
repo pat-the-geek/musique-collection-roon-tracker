@@ -131,16 +131,16 @@ def ask_for_ia(prompt: str, max_attempts: int = None, timeout: int = 60) -> str:
 
     return default_error
 
-def generate_album_info(artist: str, album: str, max_words: int = 35) -> str:
+def generate_album_info(artist: str, album: str, max_characters: int = 2000) -> str:
     """Génère une description courte d'un album via l'API EurIA.
     
-    Génère une description concise en français limitée au nombre de mots spécifié,
+    Génère une description concise en français limitée au nombre de caractères spécifié,
     focalisée sur le contexte et l'approche artistique de l'album.
     
     Args:
         artist: Nom de l'artiste ou compositeur.
         album: Titre de l'album.
-        max_words: Nombre maximum de mots (défaut: 35).
+        max_characters: Nombre maximum de caractères (défaut: 2000).
         
     Returns:
         Description courte de l'album en français.
@@ -157,7 +157,7 @@ def generate_album_info(artist: str, album: str, max_words: int = 35) -> str:
         - Gère les artistes inconnus et les stations de radio
     """
     prompt = f"""
-    Présente l'album "{album}" de {artist} en maximum {max_words} mots en français.
+    Présente l'album "{album}" de {artist} en maximum {max_characters} caractères en français.
     Concentre-toi sur le contexte de création et l'approche artistique.
     Ne réponds que par la description, sans ajout ni commentaire.
     Si c'est une station de radio ou un artiste inconnu, décris le contenu musical général.

@@ -440,9 +440,9 @@ def load_data() -> List[Dict]:
         st.error(f"❌ Erreur lors du chargement : {e}")
         return []
 
-@st.cache_data
+@st.cache_data(ttl=60)  # Cache de 60 secondes
 def load_roon_data() -> List[Dict]:
-    """Charge l'historique des lectures Roon/Last.fm avec mise en cache.
+    """Charge l'historique des lectures Roon/Last.fm avec mise en cache auto-rafraîchie.
     
     Lecture du fichier chk-roon.json généré par chk-roon.py (v2.2.0).
     Contient l'historique complet des lectures musicales avec enrichissement
@@ -474,8 +474,8 @@ def load_roon_data() -> List[Dict]:
         Aucune - Les erreurs sont affichées via st.error() et retournent [].
     
     Cache:
-        Données statiques - cache valide jusqu'à redémarrage Streamlit.
-        Pour rafraîchir: relancer chk-roon.py puis recharger page.
+        Auto-rafraîchissement toutes les 60 secondes.
+        Bouton manuel "🔄 Actualiser" disponible dans l'interface.
     
     Examples:
         >>> tracks = load_roon_data()
@@ -1128,7 +1128,14 @@ def display_roon_journal():
         analyze-listening-patterns.py: Analytics avancées
     """
     """Affiche le journal des écoutes Roon."""
-    st.title("📻 Journal d'écoute Roon")
+    # Bouton de rafraîchissement en haut à droite
+    col_title, col_refresh = st.columns([5, 1])
+    with col_title:
+        st.title("📻 Journal d'écoute Roon")
+    with col_refresh:
+        if st.button("🔄 Actualiser", key="refresh_roon"):
+            load_roon_data.clear()
+            st.rerun()
     
     # Charger les données Roon
     tracks = load_roon_data()

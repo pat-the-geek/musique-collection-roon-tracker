@@ -1340,7 +1340,7 @@ def get_album_ai_info(artist: str, album: str) -> str:
     
     # Sinon, générer via l'IA
     print(f"[AI] 🤖 Génération info IA pour '{album}' de {artist}...")
-    ai_info = generate_album_info(artist, album, max_words=35)
+    ai_info = generate_album_info(artist, album, max_characters=2000)
     result = f"[IA] {ai_info}"
     # Mettre en cache
     cache_discogs_info[cache_key] = result
