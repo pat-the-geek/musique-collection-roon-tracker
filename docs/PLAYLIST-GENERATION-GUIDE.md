@@ -1,12 +1,15 @@
 # Guide de Génération de Playlists
 
-**Version**: 1.1.0  
+**Version**: 1.2.0  
 **Date**: 27 janvier 2026  
-**Issue**: #19 - Création de playlists basées sur les patterns d'écoute
+**Issue**: #19 - Création de playlists basées sur les patterns d'écoute  
+**Fix**: #38 - Suppression des doublons dans les playlists
 
 ## 📋 Vue d'ensemble
 
 Le générateur de playlists analyse votre historique d'écoute Roon/Last.fm pour créer automatiquement des playlists intelligentes basées sur vos habitudes d'écoute. **10 algorithmes** sont disponibles, dont un algorithme **alimenté par l'IA EurIA** qui permet de créer des playlists sur mesure via des prompts en langage naturel.
+
+**✨ Nouveau dans v1.2.0**: Détection et suppression automatique des doublons avec normalisation intelligente (ignore les variations de casse et espaces).
 
 ###  ⚠️ Limitation Importante: API Roon
 
@@ -89,6 +92,59 @@ Cette limitation est documentée dans la communauté Roon Labs et affecte tous l
 - ✅ Utilise les métadonnées d'albums existantes
 
 **Idéal pour:** Toute situation spécifique, besoin d'ambiance particulière, ou exploration créative.
+
+## 🧹 Détection et Suppression des Doublons
+
+Tous les algorithmes de génération de playlists incluent **automatiquement** une étape de détection et suppression des doublons.
+
+### Comment ça marche
+
+Le système crée une **clé normalisée** pour chaque piste en combinant:
+- Nom de l'artiste (normalisé)
+- Titre de la piste (normalisé)
+- Nom de l'album (normalisé)
+
+La normalisation:
+- ✅ Ignore la casse (majuscules/minuscules)
+- ✅ Supprime les espaces multiples
+- ✅ Détecte les variations mineures
+
+### Exemples de Doublons Détectés
+
+Les pistes suivantes seraient considérées comme des **doublons** et seule la première occurrence serait conservée:
+
+```
+❌ DOUBLON:
+   - "London Calling (remastered)" 
+   - "London Calling (Remastered)"
+   → Normalisé: "london calling (remastered)"
+
+❌ DOUBLON:
+   - "Love Is the Drug"
+   - "Love Is The Drug"
+   → Normalisé: "love is the drug"
+
+❌ DOUBLON:
+   - "Let's Dance (2018 Remaster)"
+   - "Let's Dance (2018 remaster)"
+   → Normalisé: "let's dance (2018 remaster)"
+```
+
+### Comportement
+
+- 🔍 La détection s'exécute **après** la génération de la playlist
+- 📊 Le nombre de doublons supprimés est affiché dans la console
+- 📁 Seule la **première occurrence** est conservée
+- 🎵 L'ordre original des pistes est préservé
+- ✅ Fonctionne avec **tous les algorithmes** (y compris IA)
+
+### Sortie Console
+
+```bash
+🎵 Génération avec l'algorithme 'top_sessions'...
+   ✅ 30 pistes sélectionnées
+   🔍 5 doublon(s) supprimé(s)
+```
 
 ## 📦 Formats d'Export
 
@@ -375,6 +431,20 @@ Vérifier que `data/history/chk-roon.json` contient des pistes enregistrées.
 - Vérifier que votre historique contient des pistes du genre souhaité
 - Essayer un prompt différent avec plus de contexte
 
+### Des doublons apparaissent dans mes playlists
+✅ **Résolu dans v1.2.0** - La détection automatique des doublons est maintenant activée.
+
+Si vous utilisez une version antérieure:
+```bash
+# Mettre à jour vers v1.2.0+
+git pull origin main
+```
+
+Si le problème persiste:
+- Vérifier que la console affiche "🔍 X doublon(s) supprimé(s)"
+- Les doublons détectés sont basés sur la normalisation (artiste + titre + album)
+- Seules les pistes avec les **3 champs identiques** (après normalisation) sont considérées comme doublons
+
 ## 📚 Références
 
 - [ROON-API-PLAYLIST-LIMITATIONS.md](./ROON-API-PLAYLIST-LIMITATIONS.md) - Documentation détaillée des limitations
@@ -387,6 +457,13 @@ Vérifier que `data/history/chk-roon.json` contient des pistes enregistrées.
 _(À venir)_ - Démonstration complète de la génération de playlists par IA.
 
 ## 📝 Changelog
+
+### Version 1.2.0 (27 janvier 2026)
+- 🔍 Détection et suppression automatique des doublons
+- 🧹 Normalisation intelligente (ignore casse et espaces)
+- ✅ Affichage du nombre de doublons supprimés
+- 📝 Correction du problème GitHub Issue #38
+- ✅ 13 tests unitaires ajoutés
 
 ### Version 1.1.0 (27 janvier 2026)
 - ✨ Ajout algorithme `ai_generated` avec EurIA
