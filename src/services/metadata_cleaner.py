@@ -113,7 +113,9 @@ def nettoyer_nom_artiste(nom_artiste) -> str:
         'The Beatles'
     """
     # Gérer le cas où l'artiste est une liste
-    if isinstance(nom_artiste, list) and len(nom_artiste) > 0:
+    if isinstance(nom_artiste, list):
+        if len(nom_artiste) == 0:
+            return ""
         nom_artiste = nom_artiste[0]
     
     # Supprimer le pattern "(number)" à la fin (ex: "Various (5)" -> "Various")
@@ -211,6 +213,10 @@ def calculate_album_match_score(searched_album: str, found_album: str) -> int:
     """
     norm_search = normalize_string_for_comparison(searched_album)
     norm_found = normalize_string_for_comparison(found_album)
+    
+    # Gérer les chaînes vides
+    if not norm_search or not norm_found:
+        return 0
     
     # Correspondance exacte
     if norm_search == norm_found:
