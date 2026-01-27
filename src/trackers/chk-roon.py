@@ -1370,12 +1370,12 @@ def log_ai_info_to_file(artist: str, album: str, ai_info: str, timestamp: int) -
         os.makedirs(AI_LOG_DIR, exist_ok=True)
         
         # Nom du fichier basé sur la date
-        date_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d')
+        date_str = datetime.fromtimestamp(timestamp, timezone.utc).astimezone().strftime('%Y-%m-%d')
         log_file = os.path.join(AI_LOG_DIR, f"ai-log-{date_str}.txt")
         
         # Écrire l'entrée de log
         with open(log_file, 'a', encoding='utf-8') as f:
-            datetime_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            datetime_str = datetime.fromtimestamp(timestamp, timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M:%S')
             f.write(f"=== {datetime_str} ===\n")
             f.write(f"Artiste: {artist}\n")
             f.write(f"Album: {album}\n")
@@ -1807,7 +1807,7 @@ def explore_roon_info(roonapi: RoonApi, config: dict) -> None:
                         
                         # Créer l'entrée de données
                         timestamp = int(time.time())
-                        date_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d %H:%M')
+                        date_str = datetime.fromtimestamp(timestamp, timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M')
                         
                         # Enregistrer dans le log quotidien
                         if album != 'Inconnu':

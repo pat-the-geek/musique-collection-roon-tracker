@@ -233,7 +233,7 @@ for track_item in recent_tracks:
     
     # Conversion du timestamp en date lisible
     timestamp = int(track_item.timestamp)
-    date_str = datetime.fromtimestamp(timestamp, timezone.utc).strftime('%Y-%m-%d %H:%M')
+    date_str = datetime.fromtimestamp(timestamp, timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M')
     
     # Affichage dans la console
     print(
