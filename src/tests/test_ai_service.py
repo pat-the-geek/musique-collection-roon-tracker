@@ -1,32 +1,31 @@
-"""Tests unitaires pour le module ai_service.
+"""Tests unitaires complets pour le module ai_service.
 
-Ces tests vérifient toutes les fonctionnalités du service AI EurIA:
-- Appels API avec retry automatique
-- Génération de descriptions d'albums
+Ces tests vérifient toutes les fonctionnalités du service AI:
+- Appel API EurIA avec recherche web
+- Génération de résumés d'albums
 - Recherche dans la collection Discogs
-- Gestion des erreurs et timeouts
+- Gestion des erreurs et retry logic
+- Configuration et variables d'environnement
 
-Version: 1.0.0
+Version: 2.0.0
 Date: 27 janvier 2026
 """
 
 import sys
 import os
 import json
-import time
-from unittest.mock import Mock, patch, MagicMock, mock_open
-from pathlib import Path
+from unittest.mock import Mock, patch, mock_open
+import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-import requests.exceptions
 from services.ai_service import (
+    ensure_env_loaded,
+    get_euria_config,
     ask_for_ia,
     generate_album_info,
-    get_album_info_from_discogs,
-    get_euria_config,
-    ensure_env_loaded
+    get_album_info_from_discogs
 )
 
 
@@ -35,22 +34,13 @@ from services.ai_service import (
 # ============================================================================
 
 @pytest.fixture
-def mock_euria_env(monkeypatch):
-    """Configure les variables d'environnement EurIA pour les tests."""
-    monkeypatch.setenv("URL", "https://api.example.com/test")
-    monkeypatch.setenv("bearer", "test_bearer_token_12345")
-    monkeypatch.setenv("max_attempts", "3")
-    monkeypatch.setenv("default_error_message", "Test error message")
-
-
-@pytest.fixture
 def mock_euria_response():
     """Retourne une réponse EurIA API simulée."""
     return {
         "choices": [
             {
                 "message": {
-                    "content": "Test AI response content"
+                    "content": "Test response from EurIA API"
                 }
             }
         ]
@@ -58,17 +48,12 @@ def mock_euria_response():
 
 
 @pytest.fixture
-def mock_album_info_response():
-    """Retourne une réponse de description d'album simulée."""
-    return {
-        "choices": [
-            {
-                "message": {
-                    "content": "Kind of Blue, sorti en 1959, est un album majeur du jazz modal."
-                }
-            }
-        ]
-    }
+def mock_env_with_euria(monkeypatch):
+    """Configure les variables d'environnement EurIA pour les tests."""
+    monkeypatch.setenv("URL", "https://api.example.com/v1/chat/completions")
+    monkeypatch.setenv("bearer", "test_bearer_token_12345")
+    monkeypatch.setenv("max_attempts", "5")
+    monkeypatch.setenv("default_error_message", "Aucune information disponible")
 
 
 @pytest.fixture
@@ -79,30 +64,57 @@ def sample_discogs_collection():
             "Titre": "Kind of Blue",
             "Artiste": ["Miles Davis"],
             "Annee": 1959,
-            "Resume": "Album emblématique du jazz modal, considéré comme l'un des meilleurs albums de jazz de tous les temps."
-        },
-        {
-            "Titre": "Dark Side of the Moon",
-            "Artiste": ["Pink Floyd"],
-            "Annee": 1973,
-            "Resume": "Aucune information disponible"
+            "Resume": "Un album emblématique du jazz modal enregistré par Miles Davis."
         },
         {
             "Titre": "Abbey Road",
             "Artiste": ["The Beatles"],
             "Annee": 1969,
-            "Resume": ""
+            "Resume": "Le dernier album enregistré par les Beatles."
+        },
+        {
+            "Titre": "Dark Side of the Moon",
+            "Artiste": ["Pink Floyd"],
+            "Annee": 1973,
+            "Resume": ""  # Empty resume to test filtering
+        },
+        {
+            "Titre": "The Wall",
+            "Artiste": ["Pink Floyd"],
+            "Annee": 1979,
+            "Resume": "Aucune information disponible"  # Generic message to test filtering
         }
     ]
 
 
-@pytest.fixture
-def temp_discogs_file(tmp_path, sample_discogs_collection):
-    """Crée un fichier temporaire de collection Discogs."""
-    file_path = tmp_path / "discogs-collection.json"
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(sample_discogs_collection, f, ensure_ascii=False)
-    return str(file_path)
+# ============================================================================
+# Tests pour ensure_env_loaded()
+# ============================================================================
+
+class TestEnsureEnvLoaded:
+    """Tests de la fonction ensure_env_loaded."""
+    
+    @patch('services.ai_service.load_dotenv')
+    @patch('os.getenv')
+    def test_env_already_loaded(self, mock_getenv, mock_load_dotenv):
+        """Teste quand l'environnement est déjà chargé."""
+        mock_getenv.return_value = "https://api.example.com"
+        
+        ensure_env_loaded()
+        
+        # load_dotenv ne devrait pas être appelé
+        mock_load_dotenv.assert_not_called()
+    
+    @patch('services.ai_service.load_dotenv')
+    @patch('os.getenv')
+    def test_env_not_loaded(self, mock_getenv, mock_load_dotenv):
+        """Teste quand l'environnement n'est pas chargé."""
+        mock_getenv.return_value = None
+        
+        ensure_env_loaded()
+        
+        # load_dotenv devrait être appelé avec le bon chemin
+        mock_load_dotenv.assert_called_once()
 
 
 # ============================================================================
@@ -112,166 +124,186 @@ def temp_discogs_file(tmp_path, sample_discogs_collection):
 class TestGetEuriaConfig:
     """Tests de la fonction get_euria_config."""
     
-    def test_config_loaded_from_env(self, mock_euria_env):
-        """Teste que la configuration est chargée depuis les variables d'environnement."""
+    def test_config_with_all_vars(self, mock_env_with_euria):
+        """Teste la récupération de la configuration complète."""
         url, bearer, max_attempts, default_error = get_euria_config()
         
-        assert url == "https://api.example.com/test"
+        assert url == "https://api.example.com/v1/chat/completions"
         assert bearer == "test_bearer_token_12345"
-        assert max_attempts == 3
-        assert default_error == "Test error message"
+        assert max_attempts == 5
+        assert default_error == "Aucune information disponible"
     
-    def test_config_default_values(self, monkeypatch):
-        """Teste les valeurs par défaut si certaines variables sont absentes."""
-        monkeypatch.setenv("URL", "https://api.example.com/test")
-        monkeypatch.setenv("bearer", "token")
-        # max_attempts et default_error_message absents
+    @patch('os.getenv')
+    def test_config_with_default_values(self, mock_getenv):
+        """Teste les valeurs par défaut."""
+        def getenv_side_effect(key, default=None):
+            if key == "URL":
+                return "https://test.com"
+            elif key == "bearer":
+                return "test_token"
+            elif key == "max_attempts":
+                return default
+            elif key == "default_error_message":
+                return default
+            return default
+        
+        mock_getenv.side_effect = getenv_side_effect
         
         url, bearer, max_attempts, default_error = get_euria_config()
         
-        assert max_attempts == 5  # Valeur par défaut
-        assert default_error == "Aucune information disponible"  # Valeur par défaut
+        assert url == "https://test.com"
+        assert bearer == "test_token"
+        assert max_attempts == 5  # Default value
+        assert default_error == "Aucune information disponible"  # Default value
 
 
 # ============================================================================
 # Tests pour ask_for_ia()
 # ============================================================================
 
-class TestAskForIA:
+class TestAskForIa:
     """Tests de la fonction ask_for_ia."""
     
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_successful(self, mock_post, mock_euria_env, mock_euria_response):
+    @patch('requests.post')
+    def test_successful_api_call(self, mock_post, mock_env_with_euria, mock_euria_response):
         """Teste un appel API réussi."""
-        mock_response = MagicMock()
+        mock_response = Mock()
         mock_response.json.return_value = mock_euria_response
-        mock_response.raise_for_status.return_value = None
+        mock_response.raise_for_status = Mock()
         mock_post.return_value = mock_response
         
         result = ask_for_ia("Test prompt")
         
-        assert result == "Test AI response content"
+        assert result == "Test response from EurIA API"
         mock_post.assert_called_once()
+        
+        # Vérifier les paramètres de l'appel
+        call_args = mock_post.call_args
+        assert call_args[1]['json']['messages'][0]['content'] == "Test prompt"
+        assert call_args[1]['json']['model'] == "qwen3"
+        assert call_args[1]['json']['enable_web_search'] is True
     
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_strips_whitespace(self, mock_post, mock_euria_env):
-        """Teste que les espaces superflus sont supprimés."""
-        mock_response = MagicMock()
+    @patch('requests.post')
+    def test_api_call_with_whitespace_stripping(self, mock_post, mock_env_with_euria):
+        """Teste le nettoyage des espaces superflus dans la réponse."""
+        mock_response = Mock()
         mock_response.json.return_value = {
-            "choices": [{"message": {"content": "  Response with spaces  \n"}}]
+            "choices": [{
+                "message": {
+                    "content": "  Response with spaces  \n"
+                }
+            }]
         }
-        mock_response.raise_for_status.return_value = None
+        mock_response.raise_for_status = Mock()
         mock_post.return_value = mock_response
         
         result = ask_for_ia("Test prompt")
         
         assert result == "Response with spaces"
     
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_missing_credentials(self, mock_post, monkeypatch):
-        """Teste le comportement avec credentials manquants."""
-        # Ne pas définir URL et bearer
-        monkeypatch.delenv("URL", raising=False)
-        monkeypatch.delenv("bearer", raising=False)
-        monkeypatch.setenv("default_error_message", "Error")
+    @patch('requests.post')
+    def test_missing_url_config(self, mock_post, monkeypatch):
+        """Teste avec URL manquante."""
+        monkeypatch.setenv("URL", "")
+        monkeypatch.setenv("bearer", "test_token")
+        monkeypatch.setenv("default_error_message", "Error message")
         
         result = ask_for_ia("Test prompt")
         
-        assert result == "Error"
+        assert result == "Error message"
         mock_post.assert_not_called()
     
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_timeout_retry(self, mock_post, mock_euria_env, mock_euria_response):
-        """Teste le retry automatique sur timeout."""
-        # Premier appel: timeout, deuxième: succès
-        mock_post.side_effect = [
-            requests.exceptions.Timeout("Timeout"),
-            MagicMock(json=lambda: mock_euria_response, raise_for_status=lambda: None)
-        ]
-        
-        result = ask_for_ia("Test prompt", max_attempts=2)
-        
-        assert result == "Test AI response content"
-        assert mock_post.call_count == 2
-    
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_network_error_retry(self, mock_post, mock_euria_env):
-        """Teste le retry sur erreur réseau."""
-        mock_post.side_effect = requests.exceptions.RequestException("Network error")
-        
-        result = ask_for_ia("Test prompt", max_attempts=2)
-        
-        assert result == "Test error message"  # Message d'erreur par défaut
-        assert mock_post.call_count == 2
-    
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_invalid_json_response(self, mock_post, mock_euria_env):
-        """Teste la gestion d'une réponse JSON invalide."""
-        mock_response = MagicMock()
-        mock_response.json.side_effect = ValueError("Invalid JSON")
-        mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
-        
-        result = ask_for_ia("Test prompt", max_attempts=2)
-        
-        assert result == "Test error message"
-        assert mock_post.call_count == 2
-    
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_missing_choices_field(self, mock_post, mock_euria_env):
-        """Teste la gestion d'une réponse sans champ 'choices'."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {"error": "No choices"}
-        mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
-        
-        result = ask_for_ia("Test prompt", max_attempts=2)
-        
-        assert result == "Test error message"
-    
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_custom_timeout(self, mock_post, mock_euria_env, mock_euria_response):
-        """Teste l'utilisation d'un timeout personnalisé."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = mock_euria_response
-        mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
-        
-        result = ask_for_ia("Test prompt", timeout=30)
-        
-        assert result == "Test AI response content"
-        # Vérifier que le timeout est passé à requests.post
-        call_kwargs = mock_post.call_args[1]
-        assert call_kwargs['timeout'] == 30
-    
-    @patch('services.ai_service.requests.post')
-    @patch('services.ai_service.time.sleep')
-    def test_ask_for_ia_retry_delay(self, mock_sleep, mock_post, mock_euria_env, mock_euria_response):
-        """Teste qu'il y a un délai entre les tentatives."""
-        # Premier appel: erreur, deuxième: succès
-        mock_post.side_effect = [
-            requests.exceptions.RequestException("Error"),
-            MagicMock(json=lambda: mock_euria_response, raise_for_status=lambda: None)
-        ]
-        
-        result = ask_for_ia("Test prompt", max_attempts=2)
-        
-        assert result == "Test AI response content"
-        mock_sleep.assert_called_once_with(2)
-    
-    @patch('services.ai_service.requests.post')
-    def test_ask_for_ia_web_search_enabled(self, mock_post, mock_euria_env, mock_euria_response):
-        """Teste que la recherche web est activée dans la requête."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = mock_euria_response
-        mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
+    @patch('requests.post')
+    def test_missing_bearer_config(self, mock_post, monkeypatch):
+        """Teste avec bearer token manquant."""
+        monkeypatch.setenv("URL", "https://test.com")
+        monkeypatch.setenv("bearer", "")
+        monkeypatch.setenv("default_error_message", "Error message")
         
         result = ask_for_ia("Test prompt")
         
-        # Vérifier que enable_web_search est True dans les données
-        call_kwargs = mock_post.call_args[1]
-        assert call_kwargs['json']['enable_web_search'] is True
+        assert result == "Error message"
+        mock_post.assert_not_called()
+    
+    @patch('requests.post')
+    @patch('time.sleep')
+    def test_timeout_retry(self, mock_sleep, mock_post, mock_env_with_euria):
+        """Teste le retry en cas de timeout."""
+        mock_post.side_effect = [
+            requests.exceptions.Timeout("Timeout error"),
+            requests.exceptions.Timeout("Timeout error"),
+            Mock(json=lambda: {"choices": [{"message": {"content": "Success"}}]}, raise_for_status=Mock())
+        ]
+        
+        result = ask_for_ia("Test prompt", max_attempts=3)
+        
+        assert result == "Success"
+        assert mock_post.call_count == 3
+        assert mock_sleep.call_count == 2  # Sleep between retries
+    
+    @patch('requests.post')
+    @patch('time.sleep')
+    def test_network_error_retry(self, mock_sleep, mock_post, mock_env_with_euria):
+        """Teste le retry en cas d'erreur réseau."""
+        mock_post.side_effect = [
+            requests.exceptions.RequestException("Network error"),
+            Mock(json=lambda: {"choices": [{"message": {"content": "Success"}}]}, raise_for_status=Mock())
+        ]
+        
+        result = ask_for_ia("Test prompt", max_attempts=2)
+        
+        assert result == "Success"
+        assert mock_post.call_count == 2
+    
+    @patch('requests.post')
+    @patch('time.sleep')
+    def test_all_retries_exhausted(self, mock_sleep, mock_post, mock_env_with_euria):
+        """Teste quand toutes les tentatives échouent."""
+        mock_post.side_effect = requests.exceptions.Timeout("Persistent timeout")
+        
+        result = ask_for_ia("Test prompt", max_attempts=3)
+        
+        assert result == "Aucune information disponible"
+        assert mock_post.call_count == 3
+    
+    @patch('requests.post')
+    def test_invalid_response_format(self, mock_post, mock_env_with_euria):
+        """Teste avec une réponse JSON invalide."""
+        mock_response = Mock()
+        mock_response.json.return_value = {"invalid": "format"}
+        mock_response.raise_for_status = Mock()
+        mock_post.return_value = mock_response
+        
+        result = ask_for_ia("Test prompt", max_attempts=1)
+        
+        assert result == "Aucune information disponible"
+    
+    @patch('requests.post')
+    def test_empty_choices_array(self, mock_post, mock_env_with_euria):
+        """Teste avec un tableau choices vide."""
+        mock_response = Mock()
+        mock_response.json.return_value = {"choices": []}
+        mock_response.raise_for_status = Mock()
+        mock_post.return_value = mock_response
+        
+        result = ask_for_ia("Test prompt", max_attempts=1)
+        
+        assert result == "Aucune information disponible"
+    
+    @patch('requests.post')
+    def test_custom_timeout(self, mock_post, mock_env_with_euria, mock_euria_response):
+        """Teste avec un timeout personnalisé."""
+        mock_response = Mock()
+        mock_response.json.return_value = mock_euria_response
+        mock_response.raise_for_status = Mock()
+        mock_post.return_value = mock_response
+        
+        result = ask_for_ia("Test prompt", timeout=120)
+        
+        assert result == "Test response from EurIA API"
+        # Vérifier que le timeout est passé à requests.post
+        call_args = mock_post.call_args
+        assert call_args[1]['timeout'] == 120
 
 
 # ============================================================================
@@ -282,66 +314,86 @@ class TestGenerateAlbumInfo:
     """Tests de la fonction generate_album_info."""
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_successful(self, mock_ask_for_ia):
-        """Teste la génération d'info d'album réussie."""
-        mock_ask_for_ia.return_value = "Kind of Blue est un album majeur du jazz modal."
+    def test_successful_generation(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste une génération réussie d'information d'album."""
+        mock_ask_for_ia.return_value = "Album description in French"
         
         result = generate_album_info("Miles Davis", "Kind of Blue")
         
-        assert result == "Kind of Blue est un album majeur du jazz modal."
+        assert result == "Album description in French"
         mock_ask_for_ia.assert_called_once()
+        
+        # Vérifier que le prompt contient l'artiste et l'album
+        call_args = mock_ask_for_ia.call_args[0][0]
+        assert "Miles Davis" in call_args
+        assert "Kind of Blue" in call_args
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_custom_max_characters(self, mock_ask_for_ia):
-        """Teste l'utilisation d'une limite de caractères personnalisée."""
-        mock_ask_for_ia.return_value = "Description courte"
+    def test_custom_max_characters(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec une limite de caractères personnalisée."""
+        mock_ask_for_ia.return_value = "Short description"
         
         result = generate_album_info("Artist", "Album", max_characters=500)
         
-        # Vérifier que le prompt contient la limite de caractères
+        assert result == "Short description"
+        
+        # Vérifier que la limite est dans le prompt
         call_args = mock_ask_for_ia.call_args[0][0]
         assert "500" in call_args
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_default_max_characters(self, mock_ask_for_ia):
-        """Teste la valeur par défaut de max_characters."""
+    def test_default_max_characters(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste la limite de caractères par défaut."""
         mock_ask_for_ia.return_value = "Description"
         
-        result = generate_album_info("Artist", "Album")
+        generate_album_info("Artist", "Album")
         
-        # Vérifier que le prompt contient la valeur par défaut
         call_args = mock_ask_for_ia.call_args[0][0]
-        assert "2000" in call_args
+        assert "2000" in call_args  # Default value
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_unknown_artist(self, mock_ask_for_ia):
-        """Teste la génération avec un artiste inconnu."""
-        mock_ask_for_ia.return_value = "Station de radio généraliste"
+    def test_radio_station_handling(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec une station de radio."""
+        mock_ask_for_ia.return_value = "Description of radio content"
         
-        result = generate_album_info("Inconnu", "Radio Station")
+        result = generate_album_info("Radio Station", "Live Broadcast")
         
-        assert "Radio" in result or "Station" in result
+        assert result == "Description of radio content"
+        # Le prompt devrait mentionner les stations de radio
+        call_args = mock_ask_for_ia.call_args[0][0]
+        assert "radio" in call_args.lower()
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_timeout_parameters(self, mock_ask_for_ia):
-        """Teste que les paramètres de timeout sont corrects."""
-        mock_ask_for_ia.return_value = "Description"
+    def test_unknown_artist_handling(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec un artiste inconnu."""
+        mock_ask_for_ia.return_value = "Description of unknown artist"
+        
+        result = generate_album_info("Inconnu", "Album Title")
+        
+        assert result == "Description of unknown artist"
+        call_args = mock_ask_for_ia.call_args[0][0]
+        assert "inconnu" in call_args.lower()
+    
+    @patch('services.ai_service.ask_for_ia')
+    def test_api_failure(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste quand l'API échoue."""
+        mock_ask_for_ia.return_value = "Aucune information disponible"
         
         result = generate_album_info("Artist", "Album")
         
-        # Vérifier les paramètres d'appel
+        assert result == "Aucune information disponible"
+    
+    @patch('services.ai_service.ask_for_ia')
+    def test_calls_with_correct_parameters(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste que les paramètres corrects sont passés à ask_for_ia."""
+        mock_ask_for_ia.return_value = "Response"
+        
+        generate_album_info("Artist", "Album")
+        
+        # Vérifier max_attempts et timeout
         call_kwargs = mock_ask_for_ia.call_args[1]
         assert call_kwargs['max_attempts'] == 3
         assert call_kwargs['timeout'] == 45
-    
-    @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_error_handling(self, mock_ask_for_ia):
-        """Teste la gestion des erreurs."""
-        mock_ask_for_ia.return_value = "Désolé, impossible de générer"
-        
-        result = generate_album_info("Artist", "Album")
-        
-        assert result == "Désolé, impossible de générer"
 
 
 # ============================================================================
@@ -351,124 +403,199 @@ class TestGenerateAlbumInfo:
 class TestGetAlbumInfoFromDiscogs:
     """Tests de la fonction get_album_info_from_discogs."""
     
-    def test_album_found_with_resume(self, temp_discogs_file):
-        """Teste la récupération d'un album avec résumé."""
-        result = get_album_info_from_discogs("Kind of Blue", temp_discogs_file)
-        
-        assert result is not None
-        assert "jazz modal" in result
-        assert "emblématique" in result
-    
-    def test_album_not_found(self, temp_discogs_file):
-        """Teste la recherche d'un album inexistant."""
-        result = get_album_info_from_discogs("Nonexistent Album", temp_discogs_file)
-        
-        assert result is None
-    
-    def test_album_found_but_no_resume(self, temp_discogs_file):
-        """Teste un album sans résumé valide."""
-        result = get_album_info_from_discogs("Dark Side of the Moon", temp_discogs_file)
-        
-        assert result is None  # "Aucune information disponible" ne devrait pas être retourné
-    
-    def test_album_found_but_empty_resume(self, temp_discogs_file):
-        """Teste un album avec résumé vide."""
-        result = get_album_info_from_discogs("Abbey Road", temp_discogs_file)
-        
-        assert result is None
-    
-    def test_case_insensitive_search(self, temp_discogs_file):
-        """Teste que la recherche est insensible à la casse."""
-        result = get_album_info_from_discogs("kind of blue", temp_discogs_file)
-        
-        assert result is not None
-        assert "jazz modal" in result
-    
     def test_file_not_found(self):
-        """Teste le comportement quand le fichier n'existe pas."""
-        result = get_album_info_from_discogs("Album", "/nonexistent/path.json")
+        """Teste quand le fichier Discogs n'existe pas."""
+        result = get_album_info_from_discogs("Album Title", "/nonexistent/path.json")
         
         assert result is None
     
-    def test_invalid_json_file(self, tmp_path):
-        """Teste le comportement avec un fichier JSON invalide."""
-        invalid_file = tmp_path / "invalid.json"
-        with open(invalid_file, 'w') as f:
-            f.write("Invalid JSON content")
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_album_found_with_resume(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste quand l'album est trouvé avec un résumé."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
         
-        result = get_album_info_from_discogs("Album", str(invalid_file))
+        result = get_album_info_from_discogs("Kind of Blue", "fake_path.json")
+        
+        assert result == "Un album emblématique du jazz modal enregistré par Miles Davis."
+    
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_album_not_found(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste quand l'album n'est pas dans la collection."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
+        
+        result = get_album_info_from_discogs("Nonexistent Album", "fake_path.json")
         
         assert result is None
     
-    def test_whitespace_handling(self, temp_discogs_file):
-        """Teste que les espaces en trop sont gérés."""
-        result = get_album_info_from_discogs("  Kind of Blue  ", temp_discogs_file)
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_case_insensitive_search(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste la recherche insensible à la casse."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
+        
+        result = get_album_info_from_discogs("kind of blue", "fake_path.json")
         
         assert result is not None
-        assert "jazz modal" in result
+        assert "Miles Davis" in result
     
-    def test_empty_collection(self, tmp_path):
-        """Teste avec une collection vide."""
-        empty_file = tmp_path / "empty.json"
-        with open(empty_file, 'w', encoding='utf-8') as f:
-            json.dump([], f)
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_whitespace_handling(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste la gestion des espaces."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
         
-        result = get_album_info_from_discogs("Album", str(empty_file))
+        result = get_album_info_from_discogs("  Kind of Blue  ", "fake_path.json")
+        
+        assert result is not None
+    
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_empty_resume_filtered(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste que les résumés vides sont filtrés."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
+        
+        result = get_album_info_from_discogs("Dark Side of the Moon", "fake_path.json")
         
         assert result is None
     
-    def test_album_without_titre_field(self, tmp_path):
-        """Teste avec un album sans champ Titre."""
-        malformed_collection = [
-            {
-                "Artiste": ["Artist"],
-                "Annee": 2000
-                # Pas de champ Titre
-            }
-        ]
-        malformed_file = tmp_path / "malformed.json"
-        with open(malformed_file, 'w', encoding='utf-8') as f:
-            json.dump(malformed_collection, f)
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_generic_message_filtered(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste que les messages génériques sont filtrés."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
         
-        result = get_album_info_from_discogs("Album", str(malformed_file))
+        result = get_album_info_from_discogs("The Wall", "fake_path.json")
+        
+        assert result is None
+    
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    def test_json_decode_error(self, mock_exists, mock_file):
+        """Teste la gestion d'une erreur JSON."""
+        mock_exists.return_value = True
+        mock_file.return_value.__enter__.return_value.read.return_value = "Invalid JSON"
+        
+        result = get_album_info_from_discogs("Album", "fake_path.json")
+        
+        assert result is None
+    
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    def test_file_read_error(self, mock_exists, mock_file):
+        """Teste la gestion d'une erreur de lecture."""
+        mock_exists.return_value = True
+        mock_file.side_effect = IOError("Cannot read file")
+        
+        result = get_album_info_from_discogs("Album", "fake_path.json")
+        
+        assert result is None
+    
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_album_without_resume_field(self, mock_exists, mock_file):
+        """Teste un album sans champ Resume."""
+        mock_exists.return_value = True
+        collection = [{"Titre": "Test Album", "Artiste": ["Test"]}]
+        mock_file.return_value.read.return_value = json.dumps(collection)
+        
+        result = get_album_info_from_discogs("Test Album", "fake_path.json")
         
         assert result is None
 
 
 # ============================================================================
-# Tests d'intégration et cas limites
+# Tests d'intégration
 # ============================================================================
 
-class TestEdgeCasesAndIntegration:
-    """Tests de cas limites et d'intégration."""
-    
-    @patch('services.ai_service.requests.post')
-    def test_unicode_handling_in_prompts(self, mock_post, mock_euria_env, mock_euria_response):
-        """Teste la gestion des caractères Unicode dans les prompts."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = mock_euria_response
-        mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
-        
-        result = ask_for_ia("Album avec émojis 🎵🎸")
-        
-        assert result == "Test AI response content"
-    
-    def test_very_long_album_title(self, temp_discogs_file):
-        """Teste avec un titre d'album très long."""
-        long_title = "A" * 500
-        result = get_album_info_from_discogs(long_title, temp_discogs_file)
-        
-        assert result is None
+class TestIntegrationScenarios:
+    """Tests de scénarios d'intégration."""
     
     @patch('services.ai_service.ask_for_ia')
-    def test_generate_album_info_with_special_characters(self, mock_ask_for_ia):
-        """Teste la génération avec caractères spéciaux."""
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_discogs_fallback_to_api(self, mock_exists, mock_file, mock_ask_for_ia, 
+                                     sample_discogs_collection, mock_env_with_euria):
+        """Teste le fallback de Discogs vers l'API."""
+        # Discogs n'a pas l'album
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
+        mock_ask_for_ia.return_value = "Generated description"
+        
+        # D'abord, chercher dans Discogs (non trouvé)
+        discogs_result = get_album_info_from_discogs("Unknown Album", "fake_path.json")
+        assert discogs_result is None
+        
+        # Ensuite, générer via API
+        api_result = generate_album_info("Artist", "Unknown Album")
+        assert api_result == "Generated description"
+    
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_discogs_hit_no_api_call(self, mock_exists, mock_file, sample_discogs_collection):
+        """Teste qu'aucun appel API n'est fait si Discogs a le résumé."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps(sample_discogs_collection)
+        
+        # Chercher dans Discogs (trouvé)
+        result = get_album_info_from_discogs("Kind of Blue", "fake_path.json")
+        
+        assert result is not None
+        assert "Miles Davis" in result
+        # Pas d'appel API nécessaire
+
+
+# ============================================================================
+# Tests des edge cases
+# ============================================================================
+
+class TestEdgeCases:
+    """Tests des cas limites."""
+    
+    @patch('services.ai_service.ask_for_ia')
+    def test_unicode_characters(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec des caractères Unicode."""
+        mock_ask_for_ia.return_value = "Description en français avec accents"
+        
+        result = generate_album_info("Serge Gainsbourg", "L'Homme à tête de chou")
+        
+        assert "français" in result
+    
+    @patch('services.ai_service.ask_for_ia')
+    def test_very_long_album_name(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec un titre d'album très long."""
+        long_name = "A" * 500
         mock_ask_for_ia.return_value = "Description"
         
-        result = generate_album_info("L'artiste", "L'album (Édition spéciale)")
+        result = generate_album_info("Artist", long_name)
         
         assert result == "Description"
-        # Vérifier que les caractères spéciaux sont dans le prompt
         call_args = mock_ask_for_ia.call_args[0][0]
-        assert "L'album" in call_args or "album" in call_args
+        assert long_name in call_args
+    
+    @patch('services.ai_service.ask_for_ia')
+    def test_special_characters_in_prompt(self, mock_ask_for_ia, mock_env_with_euria):
+        """Teste avec des caractères spéciaux."""
+        mock_ask_for_ia.return_value = "Description"
+        
+        result = generate_album_info("AC/DC", "Back in Black (Remastered)")
+        
+        assert result == "Description"
+    
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.path.exists')
+    def test_empty_discogs_collection(self, mock_exists, mock_file):
+        """Teste avec une collection Discogs vide."""
+        mock_exists.return_value = True
+        mock_file.return_value.read.return_value = json.dumps([])
+        
+        result = get_album_info_from_discogs("Any Album", "fake_path.json")
+        
+        assert result is None

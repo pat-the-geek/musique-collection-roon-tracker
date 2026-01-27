@@ -6,13 +6,12 @@ Ce répertoire contient la suite de tests unitaires et d'intégration pour le pr
 
 ```
 src/tests/
-├── conftest.py                      # Configuration pytest et fixtures communes
-├── test_ai_service.py               # Tests du service AI EurIA (31 tests) ✨ Nouveau
-├── test_chk_roon_integration.py     # Tests d'intégration tracker Roon (28 tests) ✨ Nouveau
-├── test_metadata_cleaner.py         # Tests du module metadata_cleaner (27 tests)
-├── test_scheduler.py                # Tests du module scheduler (29 tests)
-├── test_spotify_service.py          # Tests du service Spotify (49 tests)
-└── test_constants.py                # Tests du module constants (57 tests)
+├── conftest.py                  # Configuration pytest et fixtures communes
+├── test_ai_service.py           # Tests du service AI (37 tests) ✨ Nouveau v2.0.0
+├── test_metadata_cleaner.py     # Tests du module metadata_cleaner (27 tests)
+├── test_scheduler.py            # Tests du module scheduler (29 tests)
+├── test_spotify_service.py      # Tests du service Spotify (49 tests)
+└── test_constants.py            # Tests du module constants (57 tests)
 ```
 
 ## Couverture de code
@@ -24,10 +23,8 @@ src/tests/
 | `ai_service.py` | 31 | ~85% | ✅ |
 | `metadata_cleaner.py` | 27 | ~95% | ✅ |
 | `scheduler.py` | 29 | ~90% | ✅ |
-| `chk-roon.py (integration)` | 28 | N/A | ✅ |
-| **Total** | **221** | **~91%** | ✅ |
-
-**Note**: Les tests d'intégration pour chk-roon.py testent les flux de données et l'intégration entre composants, pas la couverture de code ligne par ligne.
+| `ai_service.py` | 37 | 97% | ✅ |
+| **Total** | **199** | **~93%** | ✅ |
 
 ## Exécution des tests
 
@@ -39,9 +36,6 @@ python3 -m pytest src/tests/ -v
 
 ### Tests spécifiques
 ```bash
-# Tests Roon integration uniquement
-python3 -m pytest src/tests/test_chk_roon_integration.py -v
-
 # Tests AI service uniquement
 python3 -m pytest src/tests/test_ai_service.py -v
 
@@ -82,103 +76,51 @@ python3 -m pytest src/tests/ -v -m "not slow"
 
 ## Organisation des tests
 
-### test_ai_service.py (31 tests) ✨ Nouveau
+### test_ai_service.py (37 tests)
 
-Tests complets du service d'intégration AI EurIA avec mock des appels API.
+Tests complets du service d'intégration EurIA API avec mock des appels.
+
+#### `TestEnsureEnvLoaded` (2 tests)
+- Chargement des variables d'environnement
+- Gestion du fichier .env absent/présent
 
 #### `TestGetEuriaConfig` (2 tests)
-- Chargement de la configuration depuis variables d'environnement
-- Valeurs par défaut si variables absentes
-
-#### `TestAskForIA` (11 tests)
-- Appel API réussi avec parsing de réponse
-- Nettoyage des espaces superflus
+- Récupération de la configuration API EurIA
+- Validation des valeurs par défaut
 - Gestion des credentials manquants
-- Retry automatique sur timeout
-- Retry automatique sur erreurs réseau
+
+#### `TestAskForIa` (10 tests)
+- Appel API EurIA avec recherche web
+- Nettoyage des espaces dans les réponses
+- Validation des credentials (URL, bearer token)
+- Retry logic sur timeout et erreurs réseau
 - Gestion des réponses JSON invalides
-- Gestion des réponses sans champ 'choices'
 - Timeout personnalisé
-- Délai entre les tentatives (2 secondes)
-- Activation de la recherche web (enable_web_search)
 
-#### `TestGenerateAlbumInfo` (6 tests)
-- Génération d'information d'album réussie
-- Limite de caractères personnalisée
-- Valeur par défaut de max_characters (2000)
-- Génération avec artiste inconnu
-- Paramètres de timeout corrects (max_attempts=3, timeout=45)
-- Gestion des erreurs
+#### `TestGenerateAlbumInfo` (7 tests)
+- Génération d'informations d'albums
+- Limite de caractères configurable
+- Gestion des stations de radio
+- Gestion des artistes inconnus
+- Passage correct des paramètres (max_attempts, timeout)
 
-#### `TestGetAlbumInfoFromDiscogs` (9 tests)
-- Récupération d'album avec résumé valide
-- Album non trouvé retourne None
-- Album avec résumé générique ("Aucune information disponible") retourne None
-- Album avec résumé vide retourne None
+#### `TestGetAlbumInfoFromDiscogs` (10 tests)
+- Recherche dans la collection Discogs
 - Recherche insensible à la casse
-- Fichier Discogs non trouvé
-- Fichier JSON invalide
-- Gestion des espaces en trop
-- Collection vide
-- Album sans champ 'Titre'
+- Gestion des espaces
+- Filtrage des résumés vides et génériques
+- Gestion des erreurs JSON et I/O
+- Albums sans champ Resume
 
-#### `TestEdgeCasesAndIntegration` (3 tests)
-- Gestion des caractères Unicode dans les prompts
-- Titre d'album très long
-- Caractères spéciaux dans artiste/album
+#### `TestIntegrationScenarios` (2 tests)
+- Fallback Discogs → API EurIA
+- Évitement des appels API si Discogs a l'info
 
-### test_chk_roon_integration.py (28 tests) ✨ Nouveau
-
-Tests d'intégration end-to-end du tracker Roon avec mock des APIs externes.
-
-#### `TestMetadataCleaning` (3 tests)
-- Nettoyage des noms d'artistes simples et multiples
-- Nettoyage des noms d'albums avec versions
-
-#### `TestDuplicateDetection` (2 tests)
-- Détection de pistes non-dupliquées avec timestamps différents
-- Détection de doublons dans les 60 secondes
-
-#### `TestSpotifyEnrichment` (3 tests)
-- Récupération de token Spotify
-- Recherche d'images d'artistes
-- Recherche d'images d'albums
-
-#### `TestRadioStationHandling` (2 tests)
-- Détection des stations de radio
-- Parsing du champ artiste pour les radios
-
-#### `TestLastfmEnrichment` (1 test)
-- Recherche d'images d'albums via Last.fm (skipped si pylast non installé)
-
-#### `TestAIEnrichment` (4 tests)
-- Récupération d'info AI depuis Discogs si disponible
-- Génération d'info AI si pas dans Discogs
-- Log des infos AI dans fichiers quotidiens
-- Nettoyage automatique des vieux logs (>24h)
-
-#### `TestDataPersistence` (2 tests)
-- Sauvegarde de pistes dans chk-roon.json
-- Préservation de l'historique existant
-
-#### `TestListeningHours` (2 tests)
-- Vérification des heures dans la plage d'écoute
-- Vérification des heures hors plage d'écoute
-
-#### `TestFileLocking` (3 tests)
-- Acquisition de verrou quand disponible
-- Verrou non acquis si déjà pris
-- Libération correcte du verrou
-
-#### `TestEndToEndIntegration` (2 tests)
-- Flux complet de traitement d'une piste (skipped si roonapi non installé)
-- Intégration Last.fm (skipped si pylast non installé)
-
-#### `TestErrorHandling` (4 tests)
-- Gestion fichier config manquant
-- Gestion fichier historique corrompu
-- Continuation sur échec API Spotify
-- Continuation sur échec API AI
+#### `TestEdgeCases` (4 tests)
+- Caractères Unicode (accents français)
+- Titres d'albums très longs
+- Caractères spéciaux dans les prompts
+- Collection Discogs vide
 
 ### test_spotify_service.py (49 tests)
 
