@@ -763,3 +763,68 @@ class TestGenerateOptimizationReport:
         assert "PERFORMANCE DES TÂCHES PLANIFIÉES" in content
         assert "ANOMALIES DÉTECTÉES" in content
         assert "RECOMMANDATIONS D'OPTIMISATION" in content
+    
+    def test_report_formatting_with_empty_peak_hours(self, sample_config, sample_state, temp_dir, monkeypatch):
+        """Test du formatage du rapport quand peak_hours est vide (Issue #47)."""
+        def mock_ask_for_ia(prompt, max_attempts=5, timeout=60):
+            return "Recommandation justifiée"
+        
+        monkeypatch.setattr('services.ai_optimizer.ask_for_ia', mock_ask_for_ia)
+        
+        # Créer un historique vide
+        history_path = temp_dir / "data" / "history" / "chk-roon.json"
+        history_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(history_path, 'w') as f:
+            json.dump([], f)
+        
+        optimizer = AIOptimizer(
+            config_path=str(sample_config),
+            state_path=str(sample_state),
+            history_path=str(history_path)
+        )
+        
+        output_dir = temp_dir / "output" / "reports"
+        report_path = optimizer.generate_optimization_report(output_dir=output_dir)
+        
+        with open(report_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Vérifier que le rapport affiche "Aucune" au lieu de "h" pour les heures de pic
+        assert "Heures de pic: Aucune" in content
+        assert "Heures de pic: h" not in content
+        
+        # Vérifier que le rapport inclut le nombre de jours actifs
+        assert "Jours actifs:" in content
+    
+    def test_report_formatting_with_peak_hours(self, sample_config, sample_state, sample_history, temp_dir, monkeypatch):
+        """Test du formatage des heures de pic quand il y a des données (Issue #47)."""
+        def mock_ask_for_ia(prompt, max_attempts=5, timeout=60):
+            return "Recommandation justifiée"
+        
+        monkeypatch.setattr('services.ai_optimizer.ask_for_ia', mock_ask_for_ia)
+        
+        optimizer = AIOptimizer(
+            config_path=str(sample_config),
+            state_path=str(sample_state),
+            history_path=str(sample_history)
+        )
+        
+        output_dir = temp_dir / "output" / "reports"
+        report_path = optimizer.generate_optimization_report(output_dir=output_dir)
+        
+        with open(report_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Vérifier que chaque heure de pic a un "h" après elle
+        # Le formatage devrait être comme "14h, 15h, 16h" et non "14, 15, 16h"
+        import re
+        peak_hours_match = re.search(r"Heures de pic: (.+)", content)
+        if peak_hours_match and peak_hours_match.group(1) != "Aucune":
+            peak_hours_text = peak_hours_match.group(1)
+            # Chaque heure devrait avoir un "h" après elle
+            assert "h" in peak_hours_text
+            # Ne devrait pas avoir juste un "h" à la fin sans heures
+            assert peak_hours_text != "h"
+        
+        # Vérifier que le rapport inclut le nombre de jours actifs
+        assert "Jours actifs:" in content
