@@ -7,10 +7,11 @@ Ce répertoire contient la suite de tests unitaires et d'intégration pour le pr
 ```
 src/tests/
 ├── conftest.py                  # Configuration pytest et fixtures communes
+├── test_ai_service.py           # Tests du service AI (37 tests) ✨ Nouveau v2.0.0
 ├── test_metadata_cleaner.py     # Tests du module metadata_cleaner (27 tests)
 ├── test_scheduler.py            # Tests du module scheduler (29 tests)
-├── test_spotify_service.py      # Tests du service Spotify (49 tests) ✨ Nouveau
-└── test_constants.py            # Tests du module constants (57 tests) ✨ Nouveau
+├── test_spotify_service.py      # Tests du service Spotify (49 tests)
+└── test_constants.py            # Tests du module constants (57 tests)
 ```
 
 ## Couverture de code
@@ -21,10 +22,8 @@ src/tests/
 | `spotify_service.py` | 49 | 88% | ✅ |
 | `metadata_cleaner.py` | 27 | ~95% | ✅ |
 | `scheduler.py` | 29 | ~90% | ✅ |
-| `ai_service.py` | - | 0% | ⚠️ Tests manuels uniquement |
-| **Total** | **162** | **~91%** | ✅ |
-
-**Note**: `test_ai_service.py` contient actuellement des tests manuels qui doivent être convertis en tests unitaires pytest. Voir la section "Roadmap des tests" ci-dessous.
+| `ai_service.py` | 37 | 97% | ✅ |
+| **Total** | **199** | **~93%** | ✅ |
 
 ## Exécution des tests
 
@@ -36,6 +35,9 @@ python3 -m pytest src/tests/ -v
 
 ### Tests spécifiques
 ```bash
+# Tests AI service uniquement
+python3 -m pytest src/tests/test_ai_service.py -v
+
 # Tests Spotify service uniquement
 python3 -m pytest src/tests/test_spotify_service.py -v
 
@@ -72,6 +74,52 @@ python3 -m pytest src/tests/ -v -m "not slow"
 ```
 
 ## Organisation des tests
+
+### test_ai_service.py (37 tests)
+
+Tests complets du service d'intégration EurIA API avec mock des appels.
+
+#### `TestEnsureEnvLoaded` (2 tests)
+- Chargement des variables d'environnement
+- Gestion du fichier .env absent/présent
+
+#### `TestGetEuriaConfig` (2 tests)
+- Récupération de la configuration API EurIA
+- Validation des valeurs par défaut
+- Gestion des credentials manquants
+
+#### `TestAskForIa` (10 tests)
+- Appel API EurIA avec recherche web
+- Nettoyage des espaces dans les réponses
+- Validation des credentials (URL, bearer token)
+- Retry logic sur timeout et erreurs réseau
+- Gestion des réponses JSON invalides
+- Timeout personnalisé
+
+#### `TestGenerateAlbumInfo` (7 tests)
+- Génération d'informations d'albums
+- Limite de caractères configurable
+- Gestion des stations de radio
+- Gestion des artistes inconnus
+- Passage correct des paramètres (max_attempts, timeout)
+
+#### `TestGetAlbumInfoFromDiscogs` (10 tests)
+- Recherche dans la collection Discogs
+- Recherche insensible à la casse
+- Gestion des espaces
+- Filtrage des résumés vides et génériques
+- Gestion des erreurs JSON et I/O
+- Albums sans champ Resume
+
+#### `TestIntegrationScenarios` (2 tests)
+- Fallback Discogs → API EurIA
+- Évitement des appels API si Discogs a l'info
+
+#### `TestEdgeCases` (4 tests)
+- Caractères Unicode (accents français)
+- Titres d'albums très longs
+- Caractères spéciaux dans les prompts
+- Collection Discogs vide
 
 ### test_spotify_service.py (49 tests)
 
