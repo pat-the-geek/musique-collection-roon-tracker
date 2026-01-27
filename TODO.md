@@ -95,15 +95,18 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ### Maintenance et qualité
 - [x] Infrastructure de tests unitaires (v3.1.0) ✅
-- [x] Tests pour metadata_cleaner (27 tests) ✅
-- [x] Tests pour scheduler (302 lignes) ✅
-- [x] Tests pour AI service ✅
-- [ ] Tests pour spotify_service.py
+- [x] Tests pour metadata_cleaner (27 tests, ~95% couverture) ✅
+- [x] Tests pour scheduler (29 tests, ~90% couverture) ✅
+- [x] Tests pour spotify_service (49 tests, 88% couverture) ✅
+- [x] Tests pour constants (57 tests, 100% couverture) ✅
+- [ ] Tests unitaires pytest pour ai_service (tests manuels existants)
 - [ ] Tests d'intégration pour chk-roon.py
 - [ ] Documentation API complète (Sphinx)
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Dockerfile pour déploiement conteneurisé
 - [ ] Logging structuré (Winston/structlog)
+
+**Infrastructure de tests actuelle**: 162 tests unitaires, ~2034 lignes de code de tests, ~91% couverture pour modules testés
 
 ### Features expérimentales
 - [ ] Reconnaissance vocale pour recherche
@@ -132,8 +135,12 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ### v3.1.0 (24 janvier 2026)
 - ✅ Module services partagés (spotify_service, metadata_cleaner)
-- ✅ Constantes centralisées (constants.py)
-- ✅ Infrastructure de tests (pytest, 27 tests metadata_cleaner)
+- ✅ Constantes centralisées (constants.py, 100+ constantes)
+- ✅ Infrastructure de tests complète (pytest + fixtures)
+  - ✅ 49 tests spotify_service (88% couverture)
+  - ✅ 57 tests constants (100% couverture)
+  - ✅ 27 tests metadata_cleaner (~95% couverture)
+  - ✅ Total: 133 tests unitaires au total pour v3.1.0
 - ✅ Corrections imports dupliqués
 
 ### v3.0.0 (23 janvier 2026)

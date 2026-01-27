@@ -21,7 +21,10 @@ src/tests/
 | `spotify_service.py` | 49 | 88% | ✅ |
 | `metadata_cleaner.py` | 27 | ~95% | ✅ |
 | `scheduler.py` | 29 | ~90% | ✅ |
+| `ai_service.py` | - | 0% | ⚠️ Tests manuels uniquement |
 | **Total** | **162** | **~91%** | ✅ |
+
+**Note**: `test_ai_service.py` contient actuellement des tests manuels qui doivent être convertis en tests unitaires pytest. Voir la section "Roadmap des tests" ci-dessous.
 
 ## Exécution des tests
 
@@ -263,7 +266,39 @@ Configuration GitHub Actions: `.github/workflows/tests.yml` (à créer)
 
 ## Roadmap des tests
 
-### Prochaines étapes (Issue #23):
+### ✅ Complété (v3.1.0 - v3.3.0)
+
+#### Tests unitaires pour services
+- [x] `test_spotify_service.py`: 49 tests (88% couverture)
+  - Authentification OAuth
+  - Recherche artistes/albums
+  - Cache et retry logic
+  - Gestion d'erreurs 401/429
+  - Timeouts et rate limiting
+- [x] `test_constants.py`: 57 tests (100% couverture)
+  - Validation de toutes les constantes du projet
+  - Tests de cohérence et utilisation en contexte
+- [x] `test_metadata_cleaner.py`: 27 tests (~95% couverture)
+  - Nettoyage noms artistes/albums
+  - Normalisation pour comparaison
+  - Scoring de correspondance
+- [x] `test_scheduler.py`: 29 tests (~90% couverture)
+  - Initialisation et configuration
+  - Gestion des tâches planifiées
+  - Persistance de l'état
+
+### Prochaines étapes (Priorité Haute)
+
+#### Tests unitaires AI service (Issue #23 - Priorité Haute)
+- [ ] Convertir `test_ai_service.py` en tests pytest
+  - Tests unitaires pour `ask_for_ia()` avec mock API
+  - Tests unitaires pour `generate_album_info()`
+  - Tests unitaires pour `get_album_info_from_discogs()`
+  - Mock des appels HTTP vers EurIA API
+  - Tests de gestion d'erreurs et retry
+
+**Estimation**: 3-5 jours  
+**Bénéfice**: Couverture complète des services centraux
 
 #### Tests d'intégration
 - [ ] `test_chk_roon_integration.py`: Tests end-to-end du tracker Roon
