@@ -7,8 +7,12 @@ Ce fichier teste les fonctionnalités de l'optimiseur IA incluant:
 - Génération de recommandations
 - Application des recommandations
 
-Version: 1.0.0
+Version: 1.0.1
 Date: 27 janvier 2026
+
+Changelog v1.0.1:
+- Ajout du test test_init_with_dict_format_history pour vérifier le chargement
+  correct du format dict avec clé 'tracks' (fix pour le bug de tracks à zéro)
 """
 
 import pytest
