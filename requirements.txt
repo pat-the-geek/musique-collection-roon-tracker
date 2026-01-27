@@ -24,9 +24,13 @@ streamlit>=1.53.0             # Interface Web (musique-gui.py)
 pillow>=12.1.0                # Traitement images (musique-gui.py)
 markdown>=3.4.0               # Conversion Markdown vers HTML (musique-gui.py)
 
+# ---- Database (src/models/) ----
+sqlalchemy>=2.0.0             # ORM pour gestion base de données SQLite
+
 # ---- Testing (src/tests/) ----
 pytest>=7.0.0                 # Framework de tests unitaires
 pytest-cov>=4.0.0             # Couverture de code pour pytest
+pytest-mock>=3.12.0           # Mocking pour tests
 
 # ---- Python Standard Library (déjà incluses avec Python) ----
 # Les modules suivants n'ont pas besoin d'installation:
