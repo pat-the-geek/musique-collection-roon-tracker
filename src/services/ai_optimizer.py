@@ -37,8 +37,9 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-Version: 1.0.0
-Date: 27 janvier 2026
+**Version**: 1.0.0  
+**Date**: 27 janvier 2026  
+**Module**: `src/services/ai_optimizer.py`
 """
 
 import json
@@ -53,6 +54,14 @@ import statistics
 
 # Import du service IA existant
 from services.ai_service import ask_for_ia, ensure_env_loaded
+
+# Confidence score calculation constants
+CONFIDENCE_BASE = 0.5
+CONFIDENCE_ACTIVITY_FACTOR = 0.3
+CONFIDENCE_CHANGE_FACTOR = 0.15
+CONFIDENCE_MAX = 0.95
+CONFIDENCE_HOUR_REFERENCE = 6
+
 
 # Configuration du logger
 logging.basicConfig(
@@ -590,7 +599,12 @@ Répondez en français, en 2 phrases maximum, en expliquant l'impact sur la perf
             justification = ask_for_ia(ai_prompt, max_attempts=3, timeout=30)
             
             # Calculer confiance basée sur l'écart et le score d'activité
-            confidence = min(0.95, 0.5 + 0.3 * patterns['activity_score'] + 0.15 * min(hour_diff_start, hour_diff_end) / 6)
+            confidence = min(
+                CONFIDENCE_MAX,
+                CONFIDENCE_BASE + 
+                CONFIDENCE_ACTIVITY_FACTOR * patterns['activity_score'] + 
+                CONFIDENCE_CHANGE_FACTOR * min(hour_diff_start, hour_diff_end) / CONFIDENCE_HOUR_REFERENCE
+            )
             
             recommendations.append(Recommendation(
                 type='listening_hours',

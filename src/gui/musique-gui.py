@@ -2669,7 +2669,13 @@ def display_ai_optimization():
                             st.success("✅ Recommandation appliquée avec succès!")
                             st.rerun()
                         else:
-                            st.error(f"❌ Échec de l'application: {result.get('details', [])}")
+                            # Format details as readable string
+                            details = result.get('details', [])
+                            error_msg = "Échec de l'application"
+                            if details:
+                                if isinstance(details, list) and len(details) > 0:
+                                    error_msg += f": {details[0].get('reason', 'Raison inconnue')}"
+                            st.error(f"❌ {error_msg}")
                 with col2:
                     if st.button("❌ Ignorer", key=f"ignore_{i}"):
                         st.info("Recommandation ignorée")
