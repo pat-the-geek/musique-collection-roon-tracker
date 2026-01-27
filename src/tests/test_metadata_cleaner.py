@@ -161,9 +161,13 @@ class TestCalculateAlbumMatchScore:
         assert score == 80
     
     def test_partial_match(self):
-        """Test correspondance partielle = 50 points max."""
+        """Test correspondance partielle = score basé sur ratio de mots communs."""
+        # "Dark Moon" vs "Dark Side of the Moon"
+        # Mots communs: {"dark", "moon"} = 2 mots
+        # Total mots uniques: max(2, 5) = 5
+        # Ratio: 2/5 = 0.4 => score = 50 * 0.4 = 20
         score = calculate_album_match_score("Dark Moon", "Dark Side of the Moon")
-        assert 50 <= score <= 80  # Au moins 2 mots sur 5 en commun
+        assert score == 20
     
     def test_no_match(self):
         """Test absence de correspondance = 0 points."""
