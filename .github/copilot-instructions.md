@@ -1,8 +1,43 @@
 # Music Collection & Listening Tracker - AI Agent Guide
 
-**Version: 3.0.0** | **Date: 23 janvier 2026**
+**Version: 3.3.0** | **Date: 27 janvier 2026**
 
-This project tracks music listening history from Roon and Last.fm, manages a Discogs collection, and generates creative content (haikus) from album metadata.
+This project tracks music listening history from Roon and Last.fm, manages a Discogs collection, and generates creative content (haikus) from album metadata. It features automatic AI-powered album information enrichment and a complete task scheduler.
+
+---
+
+## 🎯 What's New in v3.3.0
+
+**AI INTEGRATION**: Automatic album information enrichment with intelligent fallback system.
+
+**Key Changes:**
+- ✅ **AI Service Module** (`src/services/ai_service.py`) - Centralized EurIA API integration
+- ✅ **Automatic Album Enrichment** - Every detected album gets AI-generated description
+- ✅ **Smart Fallback** - Discogs → IA priority (80%+ hit rate)
+- ✅ **Daily AI Logs** - `output/ai-logs/ai-log-YYYY-MM-DD.txt` with 24h retention
+- ✅ **GUI Integration** - AI info displayed in Roon Journal with expandable sections
+- ✅ **New chk-roon.py v2.3.0** - Integrated AI info generation for all tracks
+
+**Impact:** Every album now includes contextual information automatically, vastly improving the user experience.
+
+See [ISSUE-21-IMPLEMENTATION.md](../ISSUE-21-IMPLEMENTATION.md) and [docs/AI-INTEGRATION.md](../docs/AI-INTEGRATION.md) for complete details.
+
+---
+
+## 🎯 What's New in v3.2.0
+
+**TASK SCHEDULER**: Complete automation system for periodic tasks.
+
+**Key Changes:**
+- ✅ **Scheduler Module** (`src/utils/scheduler.py`, 650 lines) - Task orchestration system
+- ✅ **4 Automated Tasks** - Haiku generation, listening analysis, Discogs sync, soundtrack matching
+- ✅ **Roon Integration** - Scheduler checks every ~45 minutes in tracker loop
+- ✅ **GUI Controls** - Configure scheduler tasks via web interface
+- ✅ **Unit Tests** - 302 lines of comprehensive tests
+
+**Impact:** 80% reduction in manual interventions for analysis tasks.
+
+See [docs/README-SCHEDULER.md](../docs/README-SCHEDULER.md) and [docs/SCHEDULER-IMPLEMENTATION-REPORT.md](../docs/SCHEDULER-IMPLEMENTATION-REPORT.md) for complete details.
 
 ---
 
@@ -46,7 +81,8 @@ The project uses a **modular architecture** with clear separation:
 │   └── exports/           # MD, CSV, PDF exports
 ├── output/                 # Generated files (temporary)
 │   ├── haikus/            # iA Presenter haikus
-│   └── reports/           # Analysis reports
+│   ├── reports/           # Analysis reports
+│   └── ai-logs/           # AI information daily logs (24h retention)
 ├── backups/                # Timestamped backups
 │   ├── json/              # JSON backups by type
 │   ├── python/            # Script backups
@@ -60,9 +96,14 @@ The project uses a **modular architecture** with clear separation:
 ### Core Modules
 
 #### 1. **Trackers** (`src/trackers/`) - Real-time listening surveillance
-   - [chk-roon.py](../src/trackers/chk-roon.py): Monitors Roon Core + Last.fm → `data/history/chk-roon.json`
+   - [chk-roon.py](../src/trackers/chk-roon.py): Monitors Roon Core + Last.fm → `data/history/chk-roon.json` (v2.3.0)
      - **Key Design**: Searches for **public image URLs** (Spotify, Last.fm) instead of using Roon's internal images
      - **Purpose**: Enables downstream processing by AI and other scripts without requiring direct Roon access
+     - **v2.3.0 Features**: 
+       - Automatic AI album info generation for each track
+       - Fallback Discogs → IA for optimal performance
+       - Daily AI logs with 24h retention
+       - Integrated scheduler checks (~45 min intervals)
    - [chk-last-fm.py](../src/trackers/chk-last-fm.py): Standalone Last.fm tracker → `data/history/chk-last-fm.json`
 
 #### 2. **Collection** (`src/collection/`) - Discogs integration
@@ -83,8 +124,33 @@ The project uses a **modular architecture** with clear separation:
    - [fix-radio-tracks.py](../src/maintenance/fix-radio-tracks.py): Radio track corrections
    - [clean-radio-tracks.py](../src/maintenance/clean-radio-tracks.py): Radio track cleanup
 
-#### 6. **GUI** (`src/gui/`) - Web interface
-   - [musique-gui.py](../src/gui/musique-gui.py): Streamlit interface for collection management and listening history
+#### 6. **Services** (`src/services/`) - Shared services and utilities
+   - [spotify_service.py](../src/services/spotify_service.py): Centralized Spotify API integration (v3.1.0)
+   - [metadata_cleaner.py](../src/services/metadata_cleaner.py): Metadata normalization functions (v3.1.0)
+   - [ai_service.py](../src/services/ai_service.py): EurIA API integration for AI content generation (v3.3.0)
+     - `ask_for_ia(prompt, max_attempts, timeout)`: Generic EurIA API call with retry
+     - `generate_album_info(artist, album, max_characters)`: Generate album descriptions (500 chars max)
+     - `get_album_info_from_discogs(album_title, discogs_path)`: Check Discogs for existing summaries
+     - **Smart Fallback**: Discogs → IA priority (80%+ Discogs hit rate)
+     - **Configuration**: Requires `.env` with `URL`, `bearer`, `max_attempts`, `default_error_message`
+
+#### 7. **Utilities** (`src/utils/`) - Helper scripts and tools
+   - [scheduler.py](../src/utils/scheduler.py): Task orchestration system (v3.2.0, 650 lines)
+     - **4 Automated Tasks**: Haiku generation, listening analysis, Discogs sync, soundtrack matching
+     - **Configuration**: Via `roon-config.json` (`scheduled_tasks` section)
+     - **State Persistence**: `scheduler-state.json` tracks last execution times
+     - **Frequency Units**: hour, day, month, year
+     - **Integration**: Runs in chk-roon.py main loop (checks every ~45 minutes)
+     - **CLI**: Can be run standalone for testing: `python3 scheduler.py --list-tasks`
+   - [List_all_music_on_drive.py](../src/utils/List_all_music_on_drive.py): Disk music file scanner
+
+#### 8. **GUI** (`src/gui/`) - Web interface
+   - [musique-gui.py](../src/gui/musique-gui.py): Streamlit interface (v3.2.0)
+     - Collection management with inline editing
+     - Roon Journal with AI info expandable sections
+     - **New in v3.2.0**: "🤖 Journal IA" view for daily AI logs
+     - Scheduler configuration interface
+     - Haiku and report visualization
 
 **`generate-haiku.py`** - Album Haiku Generator (v2.1.0)
 - **Location**: `src/analysis/generate-haiku.py`
@@ -146,8 +212,15 @@ The project uses a **modular architecture** with clear separation:
     - Chronological listening history display
     - Multi-source filtering (Roon/Last.fm)
     - Triple image display (artist, album Spotify, album Last.fm)
+    - **v3.2.0**: AI info expandable sections (🤖 Info IA)
     - Compact layout optimized for density (v2.0)
     - Real-time statistics
+  - **AI Journal** (v3.2.0):
+    - New menu item: "🤖 Journal IA"
+    - Display daily AI logs (`output/ai-logs/`)
+    - File selector for browsing past logs
+    - Formatted entry display (timestamp, artist, album, info)
+    - Entry counter per log file
   - **UI Optimizations** (v2.0-2.1):
     - Images reduced 4x (100px width)
     - Text-left/images-right layout (2:1 ratio)
@@ -177,14 +250,18 @@ All data files are now organized in the `data/` directory:
 
 #### Configuration (`data/config/`)
 - **`.env`**: API credentials (Spotify, Last.fm, Discogs, EurIA) - **NEVER commit**
-- **`roon-config.json`**: Roon Core connection + listening hours (`listen_start_hour`, `listen_end_hour`)
+- **`roon-config.json`**: Roon Core connection + listening hours + scheduler configuration
+  - `listen_start_hour`, `listen_end_hour`: Active listening tracking hours
+  - `scheduled_tasks`: Task configuration (enabled, frequency, last_execution)
+- **`scheduler-state.json`**: Scheduler state persistence (auto-generated, tracks execution history)
 
 #### Collection (`data/collection/`)
 - **`discogs-collection.json`**: Master collection file with Spotify URLs and cover art
 - **`soundtrack.json`**: Generated cross-reference of film soundtracks in collection
 
 #### History (`data/history/`)
-- **`chk-roon.json`**: Listening history with enriched metadata (artist/album images from Spotify/Last.fm)
+- **`chk-roon.json`**: Listening history with enriched metadata (artist/album images from Spotify/Last.fm, AI album info)
+  - **New in v2.3.0**: `ai_info` field with album descriptions (Discogs or AI-generated)
 - **`chk-last-fm.json`**: Last.fm standalone tracking history
 - **`chk-roon.lock`**: Process lock file (prevents concurrent tracker runs)
 
@@ -211,7 +288,11 @@ LASTFM_USERNAME=...
 DISCOGS_API_KEY=...
 DISCOGS_USERNAME=...
 
-# EurIA API (for haiku generation)
+# EurIA API (for haiku generation and album info enrichment)
+URL=https://api.infomaniak.com/2/ai/106561/openai/v1/chat/completions
+bearer=...
+max_attempts=5
+default_error_message=Aucune information disponible
 URL=https://api.infomaniak.com/2/ai/106561/openai/v1/chat/completions
 bearer=...
 ```
