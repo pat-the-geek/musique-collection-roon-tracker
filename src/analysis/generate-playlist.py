@@ -19,6 +19,7 @@ Algorithmes Disponibles:
     - time_based: Pistes selon périodes temporelles (peak hours, weekend, etc.)
     - complete_albums: Albums écoutés en entier
     - rediscovery: Pistes aimées mais non écoutées récemment
+    - ai_generated: 🆕 Playlist générée par IA basée sur un prompt utilisateur
 
 Formats d'Export:
     - JSON: Métadonnées complètes avec images
@@ -42,7 +43,8 @@ Configuration via scheduler (roon-config.json):
                 "frequency_count": 7,
                 "playlist_type": "top_sessions",
                 "max_tracks": 25,
-                "output_formats": ["json", "m3u", "csv", "roon-txt"]
+                "output_formats": ["json", "m3u", "csv", "roon-txt"],
+                "ai_prompt": "playlist calme pour méditer"  # Pour ai_generated
             }
         }
     }
@@ -51,16 +53,20 @@ Utilisation:
     # Génération manuelle
     $ python3 generate-playlist.py --algorithm top_sessions --max-tracks 25
     
+    # Génération avec IA
+    $ python3 generate-playlist.py --algorithm ai_generated --ai-prompt "jazz cool pour le soir"
+    
     # Génération planifiée via scheduler
     # (automatique via chk-roon.py)
 
 Auteur: Patrick Ostertag
-Version: 1.0.0
+Version: 1.1.0
 Date: 27 janvier 2026
 """
 
 import json
 import os
+import sys
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -70,6 +76,10 @@ from collections import Counter, defaultdict
 # Déterminer le répertoire racine du projet (2 niveaux au-dessus de ce script)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
+# Ajouter le répertoire racine au path pour les imports
+sys.path.insert(0, PROJECT_ROOT)
+from src.services.ai_service import generate_ai_playlist
 
 # Chemins des fichiers
 ROON_HISTORY_PATH = os.path.join(PROJECT_ROOT, "data", "history", "chk-roon.json")
@@ -358,11 +368,16 @@ def get_current_datetime_for_filename() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
-def export_to_json(playlist_tracks: List[Dict], algorithm: str, output_path: Path) -> None:
+def export_to_json(playlist_tracks: List[Dict], algorithm: str, output_path: Path, 
+                   playlist_name_override: str = None, playlist_description_override: str = None,
+                   ai_reasoning: str = None) -> None:
     """Exporte la playlist au format JSON avec métadonnées complètes."""
+    default_name = f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}"
+    default_description = f"Playlist générée automatiquement avec l'algorithme '{algorithm}'"
+    
     playlist_data = {
-        "name": f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}",
-        "description": f"Playlist générée automatiquement avec l'algorithme '{algorithm}'",
+        "name": playlist_name_override or default_name,
+        "description": playlist_description_override or default_description,
         "created_at": datetime.now().isoformat(),
         "algorithm": algorithm,
         "total_tracks": len(playlist_tracks),
@@ -370,15 +385,21 @@ def export_to_json(playlist_tracks: List[Dict], algorithm: str, output_path: Pat
         "tracks": playlist_tracks
     }
     
+    # Ajouter le raisonnement IA si disponible
+    if ai_reasoning:
+        playlist_data["ai_reasoning"] = ai_reasoning
+    
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(playlist_data, f, indent=2, ensure_ascii=False)
     
     print(f"✅ JSON exporté: {output_path}")
 
 
-def export_to_m3u(playlist_tracks: List[Dict], algorithm: str, output_path: Path) -> None:
+def export_to_m3u(playlist_tracks: List[Dict], algorithm: str, output_path: Path,
+                  playlist_name_override: str = None, **kwargs) -> None:
     """Exporte la playlist au format M3U (compatible VLC, iTunes, etc.)."""
-    playlist_name = f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}"
+    default_name = f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}"
+    playlist_name = playlist_name_override or default_name
     
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("#EXTM3U\n")
@@ -399,7 +420,7 @@ def export_to_m3u(playlist_tracks: List[Dict], algorithm: str, output_path: Path
     print(f"✅ M3U exporté: {output_path}")
 
 
-def export_to_csv(playlist_tracks: List[Dict], algorithm: str, output_path: Path) -> None:
+def export_to_csv(playlist_tracks: List[Dict], algorithm: str, output_path: Path, **kwargs) -> None:
     """Exporte la playlist au format CSV (import Excel/Sheets)."""
     import csv
     
@@ -422,9 +443,15 @@ def export_to_csv(playlist_tracks: List[Dict], algorithm: str, output_path: Path
     print(f"✅ CSV exporté: {output_path}")
 
 
-def export_to_roon_txt(playlist_tracks: List[Dict], algorithm: str, output_path: Path) -> None:
+def export_to_roon_txt(playlist_tracks: List[Dict], algorithm: str, output_path: Path,
+                        playlist_name_override: str = None, playlist_description_override: str = None,
+                        ai_reasoning: str = None) -> None:
     """Exporte la playlist au format texte avec instructions d'import Roon."""
-    playlist_name = f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}"
+    default_name = f"Playlist {algorithm.replace('_', ' ').title()} - {datetime.now().strftime('%B %Y')}"
+    default_description = f"Générée avec l'algorithme '{algorithm}'"
+    
+    playlist_name = playlist_name_override or default_name
+    playlist_description = playlist_description_override or default_description
     
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("=" * 80 + "\n")
@@ -432,10 +459,15 @@ def export_to_roon_txt(playlist_tracks: List[Dict], algorithm: str, output_path:
         f.write("=" * 80 + "\n\n")
         
         f.write(f"Nom: {playlist_name}\n")
-        f.write(f"Description: Générée avec l'algorithme '{algorithm}'\n")
+        f.write(f"Description: {playlist_description}\n")
         f.write(f"Créée le: {datetime.now().strftime('%Y-%m-%d à %H:%M')}\n")
         f.write(f"Nombre de pistes: {len(playlist_tracks)}\n")
         f.write(f"Durée estimée: {calculate_playlist_duration(playlist_tracks)} minutes\n\n")
+        
+        # Afficher le raisonnement IA si disponible
+        if ai_reasoning:
+            f.write("🤖 RAISONNEMENT IA:\n")
+            f.write(f"{ai_reasoning}\n\n")
         
         f.write("⚠️ LIMITATION ROON API:\n")
         f.write("L'API Roon ne permet PAS la création automatique de playlists.\n")
@@ -467,9 +499,15 @@ def export_to_roon_txt(playlist_tracks: List[Dict], algorithm: str, output_path:
     print(f"✅ TXT (Roon) exporté: {output_path}")
 
 
-def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str]) -> Dict:
+def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str], ai_prompt: str = None) -> Dict:
     """
     Génère une playlist avec l'algorithme spécifié et l'exporte dans les formats demandés.
+    
+    Args:
+        algorithm: Type d'algorithme à utiliser
+        max_tracks: Nombre maximum de pistes
+        output_formats: Liste des formats d'export
+        ai_prompt: Prompt pour l'algorithme ai_generated (requis si algorithm="ai_generated")
     
     Returns:
         Dict avec les informations de la playlist générée
@@ -485,6 +523,10 @@ def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str]
     
     # Générer la playlist selon l'algorithme
     print(f"🎵 Génération avec l'algorithme '{algorithm}'...")
+    
+    ai_reasoning = None
+    playlist_name_override = None
+    playlist_description_override = None
     
     if algorithm == "top_sessions":
         playlist_tracks = generate_top_sessions_playlist(tracks, max_tracks)
@@ -504,6 +546,16 @@ def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str]
         playlist_tracks = generate_complete_albums_playlist(tracks, max_tracks)
     elif algorithm == "rediscovery":
         playlist_tracks = generate_rediscovery_playlist(tracks, max_tracks)
+    elif algorithm == "ai_generated":
+        if not ai_prompt:
+            raise ValueError("Le paramètre --ai-prompt est requis pour l'algorithme ai_generated")
+        
+        print(f"🤖 Prompt utilisateur: '{ai_prompt}'")
+        ai_result = generate_ai_playlist(ai_prompt, tracks, max_tracks)
+        playlist_tracks = ai_result['tracks']
+        ai_reasoning = ai_result['ai_reasoning']
+        playlist_name_override = ai_result['playlist_name']
+        playlist_description_override = ai_result['playlist_description']
     else:
         raise ValueError(f"Algorithme inconnu: {algorithm}")
     
@@ -520,24 +572,31 @@ def generate_playlist(algorithm: str, max_tracks: int, output_formats: List[str]
     print("💾 Export des playlists...\n")
     exported_files = {}
     
+    # Préparer les paramètres pour export
+    export_params = {
+        'playlist_name_override': playlist_name_override,
+        'playlist_description_override': playlist_description_override,
+        'ai_reasoning': ai_reasoning
+    }
+    
     if "json" in output_formats:
         output_path = Path(OUTPUT_DIR) / f"{base_filename}.json"
-        export_to_json(playlist_tracks, algorithm, output_path)
+        export_to_json(playlist_tracks, algorithm, output_path, **export_params)
         exported_files['json'] = str(output_path)
     
     if "m3u" in output_formats:
         output_path = Path(OUTPUT_DIR) / f"{base_filename}.m3u"
-        export_to_m3u(playlist_tracks, algorithm, output_path)
+        export_to_m3u(playlist_tracks, algorithm, output_path, **export_params)
         exported_files['m3u'] = str(output_path)
     
     if "csv" in output_formats:
         output_path = Path(OUTPUT_DIR) / f"{base_filename}.csv"
-        export_to_csv(playlist_tracks, algorithm, output_path)
+        export_to_csv(playlist_tracks, algorithm, output_path, **export_params)
         exported_files['csv'] = str(output_path)
     
     if "roon-txt" in output_formats:
         output_path = Path(OUTPUT_DIR) / f"{base_filename}-roon.txt"
-        export_to_roon_txt(playlist_tracks, algorithm, output_path)
+        export_to_roon_txt(playlist_tracks, algorithm, output_path, **export_params)
         exported_files['roon-txt'] = str(output_path)
     
     # Résumé
@@ -576,6 +635,7 @@ Algorithmes disponibles:
   time_based_morning    - Pistes du matin (6h-12h)
   complete_albums       - Albums écoutés en entier
   rediscovery           - Pistes non écoutées récemment
+  ai_generated          - 🆕 Playlist générée par IA (requiert --ai-prompt)
 
 Formats d'export:
   json        - Métadonnées complètes avec images
@@ -587,6 +647,7 @@ Exemples:
   python3 generate-playlist.py --algorithm top_sessions
   python3 generate-playlist.py --algorithm artist_flow --max-tracks 30
   python3 generate-playlist.py --algorithm rediscovery --formats json m3u
+  python3 generate-playlist.py --algorithm ai_generated --ai-prompt "jazz cool pour le soir"
         """
     )
     
@@ -597,7 +658,7 @@ Exemples:
         choices=[
             'top_sessions', 'artist_correlations', 'artist_flow',
             'time_based_peak', 'time_based_weekend', 'time_based_evening', 'time_based_morning',
-            'complete_albums', 'rediscovery'
+            'complete_albums', 'rediscovery', 'ai_generated'
         ],
         help=f"Algorithme de génération (défaut: {DEFAULT_ALGORITHM})"
     )
@@ -617,10 +678,17 @@ Exemples:
         help=f"Formats d'export (défaut: {' '.join(DEFAULT_OUTPUT_FORMATS)})"
     )
     
+    parser.add_argument(
+        '--ai-prompt',
+        type=str,
+        default=None,
+        help="Prompt pour l'algorithme ai_generated (ex: 'playlist calme pour méditer')"
+    )
+    
     args = parser.parse_args()
     
     try:
-        result = generate_playlist(args.algorithm, args.max_tracks, args.formats)
+        result = generate_playlist(args.algorithm, args.max_tracks, args.formats, args.ai_prompt)
         return 0
     except Exception as e:
         print(f"❌ ERREUR: {e}")

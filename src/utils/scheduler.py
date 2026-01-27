@@ -380,6 +380,7 @@ class TaskScheduler:
                 playlist_type = task_config.get("playlist_type", "top_sessions")
                 max_tracks = task_config.get("max_tracks", 25)
                 output_formats = task_config.get("output_formats", ["json", "m3u", "csv", "roon-txt"])
+                ai_prompt = task_config.get("ai_prompt", "")
                 
                 cmd.extend([
                     "--algorithm", playlist_type,
@@ -387,6 +388,10 @@ class TaskScheduler:
                     "--formats"
                 ])
                 cmd.extend(output_formats)
+                
+                # Ajouter le prompt IA si l'algorithme est ai_generated
+                if playlist_type == "ai_generated" and ai_prompt:
+                    cmd.extend(["--ai-prompt", ai_prompt])
             
             # Exécuter le script Python
             result = subprocess.run(

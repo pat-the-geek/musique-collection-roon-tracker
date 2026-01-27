@@ -2009,7 +2009,8 @@ def display_configuration():
                         "time_based_evening": "Soirée",
                         "time_based_morning": "Matin",
                         "complete_albums": "Albums Complets",
-                        "rediscovery": "Redécouverte"
+                        "rediscovery": "Redécouverte",
+                        "ai_generated": "🤖 Générée par IA"
                     }
                     
                     current_playlist_type = status.get('playlist_type', 'top_sessions')
@@ -2020,6 +2021,19 @@ def display_configuration():
                         index=list(playlist_algorithms.keys()).index(current_playlist_type) if current_playlist_type in playlist_algorithms else 0,
                         key=f"playlist_type_{task_name}"
                     )
+                    
+                    # Champ prompt IA si ai_generated est sélectionné
+                    ai_prompt = None
+                    if playlist_type == "ai_generated":
+                        ai_prompt = st.text_input(
+                            "Prompt pour l'IA",
+                            value=status.get('ai_prompt', ''),
+                            placeholder="Ex: 'playlist calme pour méditer le soir'",
+                            help="Décrivez le type de playlist que vous souhaitez. L'IA analysera votre historique pour composer la playlist.",
+                            key=f"ai_prompt_{task_name}"
+                        )
+                        if not ai_prompt:
+                            st.warning("⚠️ Le prompt est requis pour les playlists générées par IA")
                     
                     # Nombre de pistes
                     max_tracks = st.slider(
@@ -2064,6 +2078,9 @@ def display_configuration():
                                 'max_tracks': max_tracks,
                                 'output_formats': output_formats
                             }
+                            # Ajouter le prompt IA si disponible
+                            if ai_prompt:
+                                extra_params['ai_prompt'] = ai_prompt
                         
                         success, message = scheduler.update_task_config(
                             task_name,
