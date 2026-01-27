@@ -244,6 +244,39 @@ The project uses a **modular architecture** with clear separation:
   - `save_data()`: JSON persistence with cache invalidation
 - **Output**: Real-time updates to JSON files with automatic UI refresh
 
+#### 9. **Tests** (`src/tests/`) - Test infrastructure
+   - [conftest.py](../src/tests/conftest.py): Pytest configuration with shared fixtures
+   - [test_spotify_service.py](../src/tests/test_spotify_service.py): 49 tests for Spotify integration (88% coverage)
+   - [test_constants.py](../src/tests/test_constants.py): 57 tests for constants validation (100% coverage)
+   - [test_metadata_cleaner.py](../src/tests/test_metadata_cleaner.py): 27 tests for metadata normalization (~95% coverage)
+   - [test_scheduler.py](../src/tests/test_scheduler.py): 29 tests for task scheduler (~90% coverage)
+   - [test_ai_service.py](../src/tests/test_ai_service.py): Manual test script for AI service (needs pytest conversion)
+
+**Test Infrastructure Details**:
+- **Total**: 162 tests unitaires, ~2034 lignes de code de tests
+- **Coverage**: ~91% pour les modules testés (spotify_service, constants, metadata_cleaner, scheduler)
+- **Framework**: pytest + pytest-cov + pytest-mock
+- **Fixtures**: Shared fixtures in conftest.py (mock tokens, sample data, env vars)
+- **Markers**: @pytest.mark.unit, @pytest.mark.integration, @pytest.mark.slow
+- **Documentation**: Complete guide in [src/tests/README.md](../src/tests/README.md)
+
+**Test Execution**:
+```bash
+# All tests
+python3 -m pytest src/tests/ -v
+
+# With coverage
+python3 -m pytest src/tests/ -v --cov=src/services --cov=src/constants --cov-report=term-missing
+
+# Specific module
+python3 -m pytest src/tests/test_spotify_service.py -v
+```
+
+**Next Steps** (see ROADMAP.md):
+- Convert test_ai_service.py to proper pytest unit tests
+- Add integration tests for chk-roon.py
+- Implement CI/CD with GitHub Actions to run tests automatically
+
 ### Data Files (JSON)
 
 All data files are now organized in the `data/` directory:
