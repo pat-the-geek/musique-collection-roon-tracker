@@ -30,6 +30,10 @@ data/history/chk-last-fm.json
 # Outputs temporaires
 output/haikus/*.txt
 output/reports/*.txt
+output/playlists/*.txt
+output/playlists/*.json
+output/playlists/*.m3u
+output/playlists/*.csv
 *.tmp
 
 # Exports (contenu personnel)

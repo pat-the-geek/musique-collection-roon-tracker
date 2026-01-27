@@ -60,8 +60,14 @@ Utilisation:
     # (automatique via chk-roon.py)
 
 Auteur: Patrick Ostertag
-Version: 1.1.0
+Version: 1.2.0
 Date: 27 janvier 2026
+
+Changelog v1.2.0:
+    - Ajout de la détection et suppression automatique des doublons
+    - Les doublons sont identifiés par normalisation (artiste + titre + album)
+    - Ignore les variations de casse et espaces
+    - Affiche le nombre de doublons supprimés
 """
 
 import json
