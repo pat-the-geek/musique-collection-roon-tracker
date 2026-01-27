@@ -29,7 +29,7 @@
 - ✅ Détection et traitement intelligent des radios
 - ✅ Système de cache et retry pour robustesse API
 - ✅ **NOUVEAU v3.1**: Services partagés (`spotify_service`, `metadata_cleaner`)
-- ✅ **NOUVEAU v3.1**: Infrastructure de tests unitaires (pytest)
+- ✅ **NOUVEAU v3.1**: Infrastructure de tests complète (162 tests, 91% couverture)
 - ✅ **NOUVEAU v3.1**: Constantes centralisées dans `constants.py`
 - ✅ **NOUVEAU v3.2**: Système de planification automatique (scheduler) intégré au tracker
 - ✅ **NOUVEAU v3.2**: Interface GUI pour configuration et monitoring des tâches
@@ -68,7 +68,7 @@
 - Compteur d'albums traités par jour
 
 **🧪 Tests et Documentation**:
-- `test_ai_service.py`: Suite de tests unitaires
+- `test_ai_service.py`: Script de tests manuels (à convertir en tests pytest)
 - `ISSUE-21-IMPLEMENTATION.md`: Rapport d'implémentation complet
 - `docs/AI-INTEGRATION.md`: Guide technique
 
@@ -81,10 +81,15 @@
 - `metadata_cleaner.py`: Fonctions de nettoyage métadonnées (240 lignes)
 - `constants.py`: 100+ constantes centralisées (URLs, timeouts, seuils)
 
-**🧪 Infrastructure de Tests**:
-- 27 tests unitaires avec pytest
-- 100% couverture du module `metadata_cleaner`
+**🧪 Infrastructure de Tests Complète**:
+- **162 tests unitaires** avec pytest (~2034 lignes de code)
+- **91% de couverture** pour modules testés
+- **test_spotify_service.py**: 49 tests, 88% couverture
+- **test_constants.py**: 57 tests, 100% couverture
+- **test_metadata_cleaner.py**: 27 tests, ~95% couverture
+- **test_scheduler.py**: 29 tests, ~90% couverture (ajouté v3.2.0)
 - Fixtures réutilisables dans `conftest.py`
+- Documentation complète dans `src/tests/README.md`
 
 **🐛 Corrections**:
 - Suppression imports dupliqués (`generate-haiku.py`, `chk-last-fm.py`)
