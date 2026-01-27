@@ -2478,6 +2478,333 @@ def display_reports():
         st.code(str(e))
 
 
+def display_ai_optimization():
+    """Affiche la page d'optimisation IA avec recommandations et métriques."""
+    st.title("🤖 Optimisation IA")
+    st.caption("Système d'optimisation intelligent basé sur l'analyse des patterns d'utilisation")
+    
+    # Import des modules nécessaires
+    import sys
+    sys.path.insert(0, str(Path(PROJECT_ROOT) / "src"))
+    
+    try:
+        from services.ai_optimizer import AIOptimizer
+        from datetime import datetime
+        import json
+    except ImportError as e:
+        st.error(f"❌ Erreur lors de l'import du module ai_optimizer: {e}")
+        return
+    
+    # Déterminer les chemins des fichiers
+    config_path = Path(PROJECT_ROOT) / "data" / "config" / "roon-config.json"
+    state_path = Path(PROJECT_ROOT) / "data" / "config" / "scheduler-state.json"
+    history_path = Path(PROJECT_ROOT) / "data" / "history" / "chk-roon.json"
+    
+    # Vérifier que les fichiers existent
+    if not config_path.exists():
+        st.error(f"❌ Fichier de configuration introuvable: {config_path}")
+        return
+    
+    if not history_path.exists():
+        st.warning("⚠️ Fichier d'historique introuvable. Certaines analyses seront limitées.")
+    
+    # Créer l'optimiseur
+    try:
+        optimizer = AIOptimizer(
+            config_path=str(config_path),
+            state_path=str(state_path),
+            history_path=str(history_path)
+        )
+    except Exception as e:
+        st.error(f"❌ Erreur lors de l'initialisation de l'optimiseur: {e}")
+        st.code(str(e))
+        return
+    
+    # ===== SECTION: TABLEAU DE BORD DE SANTÉ =====
+    st.header("📊 Santé Système")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Analyser les patterns
+    patterns = optimizer.analyze_listening_patterns(days=30)
+    
+    # Métrique 1: Score d'activité
+    with col1:
+        activity_score = patterns.get('activity_score', 0)
+        score_100 = int(activity_score * 100)
+        st.metric(
+            "Activité",
+            f"{score_100}/100",
+            delta=None,
+            help="Score d'activité d'écoute basé sur volume et régularité"
+        )
+    
+    # Métrique 2: Volume quotidien
+    with col2:
+        daily_volume = patterns.get('daily_volume', 0)
+        st.metric(
+            "Tracks/jour",
+            f"{daily_volume:.0f}",
+            delta=None,
+            help="Nombre moyen de tracks écoutées par jour"
+        )
+    
+    # Métrique 3: Tâches planifiées
+    with col3:
+        task_perf = optimizer.analyze_task_performance()
+        total_tasks = len(task_perf)
+        active_tasks = sum(1 for t in task_perf.values() if t.get('enabled', False))
+        st.metric(
+            "Tâches actives",
+            f"{active_tasks}/{total_tasks}",
+            delta=None,
+            help="Nombre de tâches planifiées activées"
+        )
+    
+    # Métrique 4: Anomalies
+    with col4:
+        anomalies = optimizer.detect_anomalies(days=7)
+        critical_count = sum(1 for a in anomalies if a.severity in ['critical', 'error'])
+        st.metric(
+            "Anomalies",
+            f"{critical_count}",
+            delta=None,
+            help="Nombre d'anomalies critiques détectées"
+        )
+    
+    st.divider()
+    
+    # ===== SECTION: VISUALISATION DES PATTERNS =====
+    st.header("📈 Patterns d'Écoute")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("⏰ Heures d'activité")
+        
+        # Plages horaires actuelles vs recommandées
+        current_start = optimizer.config.get('listen_start_hour', 6)
+        current_end = optimizer.config.get('listen_end_hour', 23)
+        typical_start = patterns.get('typical_start', 6)
+        typical_end = patterns.get('typical_end', 23)
+        peak_hours = patterns.get('peak_hours', [])
+        
+        st.write(f"**Plage actuelle**: {current_start}h - {current_end}h")
+        st.write(f"**Plage typique**: {typical_start}h - {typical_end}h")
+        st.write(f"**Heures de pic**: {', '.join([str(h) for h in peak_hours])}h")
+        
+        # Graphique de distribution horaire (simple)
+        st.progress(
+            value=patterns.get('activity_score', 0),
+            text=f"Score d'activité: {int(patterns.get('activity_score', 0) * 100)}/100"
+        )
+    
+    with col2:
+        st.subheader("📅 Distribution hebdomadaire")
+        
+        weekly_dist = patterns.get('weekly_distribution', {})
+        
+        # Afficher sous forme de barres de progression
+        for day, percentage in weekly_dist.items():
+            # Emoji pour chaque jour
+            day_emoji = {
+                'Monday': '📘', 'Tuesday': '📗', 'Wednesday': '📙',
+                'Thursday': '📕', 'Friday': '📔', 'Saturday': '📓', 'Sunday': '📒'
+            }
+            st.progress(
+                value=percentage / 100.0,
+                text=f"{day_emoji.get(day, '📖')} {day}: {percentage}%"
+            )
+    
+    st.divider()
+    
+    # ===== SECTION: RECOMMANDATIONS =====
+    st.header("💡 Recommandations d'Optimisation")
+    
+    # Générer les recommandations
+    with st.spinner("Génération des recommandations..."):
+        recommendations = optimizer.generate_recommendations()
+    
+    if not recommendations:
+        st.success("✅ Système déjà optimisé ! Aucune recommandation à apporter.")
+    else:
+        st.write(f"**{len(recommendations)} recommandations générées:**")
+        
+        for i, rec in enumerate(recommendations, 1):
+            # Card pour chaque recommandation
+            with st.expander(f"{i}. {rec.type} (Confiance: {int(rec.confidence*100)}%)", expanded=(i==1)):
+                # Badge de catégorie
+                category_emoji = {
+                    'performance': '⚡',
+                    'cost': '💰',
+                    'quality': '🎯',
+                    'general': '📊'
+                }
+                st.caption(f"{category_emoji.get(rec.category, '📊')} {rec.category.upper()}")
+                
+                # Justification IA
+                st.write("**Justification:**")
+                st.info(rec.justification)
+                
+                # Changements proposés
+                st.write("**Modifications proposées:**")
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.write("🔴 **Valeur actuelle:**")
+                    st.code(json.dumps(rec.current_value, indent=2, ensure_ascii=False))
+                with col_b:
+                    st.write("🟢 **Valeur recommandée:**")
+                    st.code(json.dumps(rec.recommended_value, indent=2, ensure_ascii=False))
+                
+                # Impact estimé
+                st.write("**Impact estimé:**")
+                st.success(rec.estimated_impact)
+                
+                # Boutons d'action
+                col1, col2, col3 = st.columns([1, 1, 3])
+                with col1:
+                    if st.button("✅ Appliquer", key=f"apply_{i}"):
+                        result = optimizer.apply_recommendations([rec], auto_apply=False)
+                        if result['applied'] > 0:
+                            st.success("✅ Recommandation appliquée avec succès!")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Échec de l'application: {result.get('details', [])}")
+                with col2:
+                    if st.button("❌ Ignorer", key=f"ignore_{i}"):
+                        st.info("Recommandation ignorée")
+    
+    st.divider()
+    
+    # ===== SECTION: ANOMALIES =====
+    st.header("🔔 Anomalies Détectées")
+    
+    if not anomalies:
+        st.success("✅ Aucune anomalie détectée - Système en bonne santé!")
+    else:
+        # Grouper par sévérité
+        severity_groups = {
+            'critical': [],
+            'error': [],
+            'warning': [],
+            'info': []
+        }
+        
+        for anomaly in anomalies:
+            severity_groups[anomaly.severity].append(anomaly)
+        
+        # Afficher par sévérité
+        for severity, items in severity_groups.items():
+            if not items:
+                continue
+            
+            severity_emoji = {
+                'critical': '🔴',
+                'error': '🟠',
+                'warning': '🟡',
+                'info': '🔵'
+            }
+            
+            st.subheader(f"{severity_emoji.get(severity, '⚪')} {severity.upper()} ({len(items)})")
+            
+            for anomaly in items:
+                with st.expander(f"{anomaly.type} - {anomaly.affected_component}"):
+                    st.write("**Description:**")
+                    st.write(anomaly.description)
+                    
+                    st.write("**Action suggérée:**")
+                    st.info(anomaly.suggested_action)
+                    
+                    st.caption(f"Détecté le: {anomaly.detected_at.strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    st.divider()
+    
+    # ===== SECTION: RAPPORTS D'OPTIMISATION =====
+    st.header("📄 Rapports d'Optimisation")
+    
+    reports_dir = Path(PROJECT_ROOT) / "output" / "reports"
+    
+    # Lister les rapports d'optimisation
+    opt_reports = sorted(reports_dir.glob("ai-optimization-*.txt"), reverse=True)
+    rec_reports = sorted(reports_dir.glob("ai-recommendations-*.json"), reverse=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("📊 Rapports texte")
+        if opt_reports:
+            st.write(f"{len(opt_reports)} rapport(s) disponible(s)")
+            latest_report = opt_reports[0]
+            st.write(f"**Dernier**: {latest_report.name}")
+            
+            with open(latest_report, 'r', encoding='utf-8') as f:
+                report_content = f.read()
+            
+            st.download_button(
+                label="📥 Télécharger dernier rapport",
+                data=report_content,
+                file_name=latest_report.name,
+                mime="text/plain"
+            )
+        else:
+            st.info("Aucun rapport généré")
+    
+    with col2:
+        st.subheader("📋 Recommandations JSON")
+        if rec_reports:
+            st.write(f"{len(rec_reports)} fichier(s) disponible(s)")
+            latest_rec = rec_reports[0]
+            st.write(f"**Dernier**: {latest_rec.name}")
+            
+            with open(latest_rec, 'r', encoding='utf-8') as f:
+                rec_content = f.read()
+            
+            st.download_button(
+                label="📥 Télécharger dernières reco.",
+                data=rec_content,
+                file_name=latest_rec.name,
+                mime="application/json"
+            )
+        else:
+            st.info("Aucune recommandation générée")
+    
+    # ===== SECTION: ACTIONS =====
+    st.divider()
+    st.header("⚙️ Actions")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("🔄 Générer nouveau rapport", use_container_width=True):
+            with st.spinner("Génération du rapport en cours..."):
+                try:
+                    report_path = optimizer.generate_optimization_report()
+                    st.success(f"✅ Rapport généré: `{Path(report_path).name}`")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erreur: {e}")
+    
+    with col2:
+        if st.button("✨ Appliquer toutes (haute confiance)", use_container_width=True):
+            if recommendations:
+                with st.spinner("Application des recommandations..."):
+                    try:
+                        result = optimizer.apply_recommendations(recommendations, auto_apply=True)
+                        if result['applied'] > 0:
+                            st.success(f"✅ {result['applied']} recommandation(s) appliquée(s)!")
+                            st.rerun()
+                        else:
+                            st.info(f"ℹ️ Aucune recommandation avec confiance > 80%")
+                    except Exception as e:
+                        st.error(f"❌ Erreur: {e}")
+            else:
+                st.info("Aucune recommandation à appliquer")
+    
+    with col3:
+        if st.button("🔍 Rafraîchir analyses", use_container_width=True):
+            st.rerun()
+
+
 # ============================================================================
 # POINT D'ENTRÉE PRINCIPAL
 # ============================================================================
@@ -2616,7 +2943,7 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
@@ -2632,6 +2959,8 @@ def main():
         display_playlists()
     elif page == "📊 Rapports d'analyse":
         display_reports()
+    elif page == "🤖 Optimisation IA":
+        display_ai_optimization()
     elif page == "⚙️ Configuration":
         display_configuration()
     else:
