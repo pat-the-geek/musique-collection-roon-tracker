@@ -60,3 +60,10 @@ backups/
 # Cache
 .cache/
 *.cache
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
