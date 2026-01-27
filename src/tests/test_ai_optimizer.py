@@ -289,6 +289,55 @@ class TestAnalyzeListeningPatterns:
         for day in weekdays:
             assert day in weekly_dist
             assert 0 <= weekly_dist[day] <= 100
+    
+    def test_analyze_patterns_sparse_activity(self, sample_config, sample_state, temp_dir):
+        """Test avec activité éparse (fix bug #47).
+        
+        Vérifie que daily_volume est calculé sur la période d'analyse complète
+        et non sur les seuls jours actifs.
+        """
+        history_path = temp_dir / "data" / "history" / "sparse.json"
+        history_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        history = []
+        now = datetime.now()
+        
+        # Créer 100 tracks répartis sur 5 jours dans une période de 30 jours
+        # Cela devrait donner 100/30 = 3.3 tracks/jour (et non 100/5 = 20)
+        for day in [0, 5, 10, 15, 20]:
+            date = now - timedelta(days=day)
+            for i in range(20):  # 20 tracks par jour actif
+                track_time = date.replace(hour=19 + (i % 5), minute=i % 60, second=0)
+                history.append({
+                    "timestamp": int(track_time.timestamp()),
+                    "date": track_time.strftime('%Y-%m-%d %H:%M'),
+                    "artist": f"Artist {i}",
+                    "title": f"Track {i}",
+                    "album": f"Album {i}",
+                    "source": "roon"
+                })
+        
+        history.reverse()
+        with open(history_path, 'w') as f:
+            json.dump(history, f)
+        
+        opt = AIOptimizer(
+            config_path=str(sample_config),
+            state_path=str(sample_state),
+            history_path=str(history_path)
+        )
+        
+        patterns = opt.analyze_listening_patterns(days=30)
+        
+        # Vérifications
+        assert patterns['total_tracks'] == 100
+        assert patterns['active_days'] == 5
+        assert patterns['analysis_period_days'] == 30
+        
+        # Le bug #47: daily_volume doit être calculé sur 30 jours, pas 5
+        # 100 tracks / 30 jours = 3.33 tracks/jour
+        assert patterns['daily_volume'] == 3.3
+        assert patterns['daily_volume'] != 20.0  # Valeur incorrecte avec l'ancien calcul
 
 
 class TestAnalyzeTaskPerformance:

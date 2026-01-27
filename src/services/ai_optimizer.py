@@ -308,7 +308,7 @@ class AIOptimizer:
         # Calculer volume quotidien moyen
         actual_days = len(daily_tracks)
         total_tracks = len(recent_tracks)
-        daily_volume = total_tracks / actual_days if actual_days > 0 else 0
+        daily_volume = total_tracks / days if days > 0 else 0
         
         # Distribution par jour de semaine (normaliser en pourcentages)
         weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
