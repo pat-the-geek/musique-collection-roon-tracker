@@ -1,8 +1,8 @@
 # 🗺️ ROADMAP - Plan d'Évolution du Projet Musique Tracker
 
 **Date de création**: 26 janvier 2026  
-**Dernière mise à jour**: 27 janvier 2026 (v3.3.1 - Playlists + Timezone + Doublons)  
-**Version actuelle**: 3.3.1 (Génération Playlists + Correction Timezone + Déduplication)  
+**Dernière mise à jour**: 28 janvier 2026 (v3.4.0 - Timeline View)  
+**Version actuelle**: 3.4.0 (Timeline View + Génération Playlists + Timezone Fix)  
 **Auteur**: GitHub Copilot AI Agent  
 **Statut**: ✅ Document de référence officiel
 
@@ -14,7 +14,7 @@ Ce document présente la feuille de route stratégique du projet **Musique Colle
 
 ### Contexte Actuel
 
-Le projet a atteint un **niveau de maturité avancé** avec une architecture modulaire (v3.0.0), des services partagés (v3.1.0), un système de planification automatique (v3.2.0), une intégration IA complète pour l'enrichissement automatique des albums (v3.3.0), et maintenant un système complet de génération de playlists intelligentes (v3.3.1). L'infrastructure de base est fonctionnelle et stable, permettant maintenant de se concentrer sur des améliorations de qualité, performance et expérience utilisateur.
+Le projet a atteint un **niveau de maturité avancé** avec une architecture modulaire (v3.0.0), des services partagés (v3.1.0), un système de planification automatique (v3.2.0), une intégration IA complète pour l'enrichissement automatique des albums (v3.3.0), un système complet de génération de playlists intelligentes (v3.3.1), et maintenant une visualisation horaire avancée avec la Timeline View (v3.4.0). L'infrastructure de base est fonctionnelle et stable, permettant maintenant de se concentrer sur des améliorations de qualité, performance et expérience utilisateur.
 
 ### Vision Stratégique
 
@@ -23,6 +23,49 @@ Transformer le POC (Proof of Concept) actuel en une **plateforme complète de tr
 ---
 
 ## 🔍 Analyse des Modifications Récentes
+
+### Version 3.4.0 (28 janvier 2026)
+**Thème**: Visualisation Timeline Horaire pour Exploration des Patterns d'Écoute
+
+#### ✅ Ajouts Majeurs
+- **Timeline View** (`display_roon_timeline()` dans `src/gui/musique-gui.py`, 254 lignes) **Issue #46**
+  - Visualisation horaire des écoutes sur ligne temporelle horizontale
+  - Timeline graduée par heures (6h-23h, configurable via `roon-config.json`)
+  - Alternance de couleurs par heure (gris/blanc) pour meilleure lisibilité
+  - Double mode d'affichage:
+    - **Compact**: Pochettes d'albums seules (vue d'ensemble rapide)
+    - **Détaillé**: Pochettes + heure + artiste + titre (exploration approfondie)
+  - Navigation par jour avec sélecteur de date au format lisible ("Mardi 28 Janvier 2026")
+  - Scroll horizontal pour parcourir la journée
+  - Statistiques journalières:
+    - Total de tracks écoutés
+    - Nombre d'artistes uniques
+    - Nombre d'albums uniques
+    - Heure la plus active (peak hour)
+  - Performance optimisée: Max 20 tracks affichés par heure
+  - Menu GUI: Nouvelle entrée "📈 Timeline Roon" entre Journal et Journal IA
+
+#### 🐛 Corrections **Issue #57**
+- Fix affichage Timeline dans cas limites (heures vides, jours sans écoutes)
+- Amélioration robustesse parsing dates
+- Optimisation performances pour grandes collections
+
+#### 📚 Documentation
+- `issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md`: Rapport d'implémentation complet (307 lignes)
+- `issues/ISSUE-46-TIMELINE-VIEW-MOCKUP.md`: Mockup visuel détaillé (252 lignes)
+- `issues/ISSUE-46-SUMMARY.md`: Résumé de l'issue
+- `issues/ISSUE-46-QUICK-REFERENCE.md`: Guide de référence rapide
+- `docs/CHANGELOG-v3.4.0.md`: Changelog version complète (320 lignes)
+
+#### 🎯 Impact
+- **Visualisation**: Nouvelle perspective d'analyse complémentaire au journal chronologique
+- **Patterns**: Identification rapide des habitudes d'écoute par heure de la journée
+- **Expérience utilisateur**: Vue d'ensemble intuitive et navigation fluide
+- **Performance**: HTML natif, pas de dépendance graphique externe (Plotly, etc.)
+- **Extensibilité**: Base solide pour futures améliorations (filtres, zoom, etc.)
+- **Zéro risque**: Fonction indépendante, aucune modification du code existant
+
+---
 
 ### Version 3.3.1 (27 janvier 2026)
 **Thème**: Génération de Playlists Intelligentes + Corrections Critiques
@@ -260,7 +303,11 @@ Les répertoires `output/haikus`, `output/reports`, `output/playlists` accumulen
 
 ---
 
-### Issues Fermées Récemment (10 complétées)
+### Issues Fermées Récemment (12 complétées)
+
+#### v3.4.0 (28 janvier 2026)
+- ✅ **Issue #46**: Timeline View visualisation horaire → Timeline horizontale avec modes compact/détaillé
+- ✅ **Issue #57**: Fix Timeline Roon → Amélioration robustesse parsing dates et cas limites
 
 #### v3.3.1 (27 janvier 2026)
 - ✅ **Issue #38**: Éviter doublons lors création playlists → Normalisation + déduplication auto
