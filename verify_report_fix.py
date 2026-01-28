@@ -82,10 +82,10 @@ def test_scenario_1_no_data():
     
     temp_dir, config_path, state_path, history_dir = create_test_data()
     
-    # Créer un historique vide
+    # Créer un historique vide avec le format correct
     history_path = history_dir / "chk-roon.json"
     with open(history_path, 'w') as f:
-        json.dump([], f)
+        json.dump({"tracks": []}, f)
     
     # Générer le rapport
     optimizer = AIOptimizer(
@@ -151,8 +151,9 @@ def test_scenario_2_sparse_data():
                 })
     
     history_path = history_dir / "chk-roon.json"
+    # Utiliser le format correct avec la clé "tracks"
     with open(history_path, 'w') as f:
-        json.dump(history, f)
+        json.dump({"tracks": history}, f)
     
     # Générer le rapport
     optimizer = AIOptimizer(
