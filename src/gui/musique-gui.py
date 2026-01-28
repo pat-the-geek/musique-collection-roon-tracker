@@ -151,6 +151,7 @@ import json
 import os
 import sys
 import markdown
+import html
 from pathlib import Path
 from PIL import Image
 import requests
@@ -1488,7 +1489,9 @@ def display_roon_timeline():
             transition: all 0.2s;
         }
         .album-cover-timeline {
-            width: 100%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
             border-radius: 4px;
             margin-bottom: 5px;
         }
@@ -1528,20 +1531,32 @@ def display_roon_timeline():
                 if compact_mode:
                     # Mode compact: seulement pochette avec tooltip
                     if img_url:
+                        # Escape HTML in attributes to prevent HTML injection
+                        safe_artist = html.escape(artist, quote=True)
+                        safe_title = html.escape(title, quote=True)
+                        safe_album = html.escape(album, quote=True)
+                        safe_time = html.escape(time, quote=True)
+                        
                         timeline_html += f'''
-                        <div class="track-in-hour" title="{artist} - {title}&#10;{album}&#10;{time}">
-                            <img src="{img_url}" class="album-cover-timeline" alt="{album}">
+                        <div class="track-in-hour" title="{safe_artist} - {safe_title}&#10;{safe_album}&#10;{safe_time}">
+                            <img src="{img_url}" class="album-cover-timeline" alt="{safe_album}">
                         </div>
                         '''
                 else:
                     # Mode détaillé: pochette + infos
                     if img_url:
+                        # Escape HTML in attributes and content to prevent HTML injection
+                        safe_artist = html.escape(artist, quote=True)
+                        safe_title = html.escape(title, quote=True)
+                        safe_album = html.escape(album, quote=True)
+                        safe_time = html.escape(time, quote=True)
+                        
                         timeline_html += f'''
                         <div class="track-in-hour">
-                            <img src="{img_url}" class="album-cover-timeline" alt="{album}">
-                            <div class="track-info-timeline"><b>{time}</b></div>
-                            <div class="track-info-timeline">{artist[:20]}</div>
-                            <div class="track-info-timeline">{title[:20]}</div>
+                            <img src="{img_url}" class="album-cover-timeline" alt="{safe_album}">
+                            <div class="track-info-timeline"><b>{safe_time}</b></div>
+                            <div class="track-info-timeline">{safe_artist[:20]}</div>
+                            <div class="track-info-timeline">{safe_title[:20]}</div>
                         </div>
                         '''
         else:
