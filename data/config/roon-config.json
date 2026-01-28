@@ -1,0 +1,8 @@
+{
+  "core_id": "test-core-id",
+  "core_name": "Test Roon Core",
+  "token": "test-token",
+  "listen_start_hour": 6,
+  "listen_end_hour": 23,
+  "scheduled_tasks": {}
+}
