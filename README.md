@@ -23,6 +23,9 @@
 - ✅ Surveillance temps réel Roon + Last.fm avec enrichissement images publiques
 - ✅ Import automatique collection Discogs avec résumés IA
 - ✅ Interface Web Streamlit pour gestion collection
+- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Interface CLI moderne pour terminal (Issue #59)
+- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Système de couleurs sémantiques adaptatif
+- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Détection automatique capacités terminal
 - ✅ Génération de présentations musicales (haïkus) via IA
 - ✅ **NOUVEAU v3.4.0**: Vue Timeline pour visualisation horaire des écoutes (Issue #46)
 - ✅ **NOUVEAU v3.4.0**: Navigation temporelle horizontale avec alternance couleurs
@@ -69,6 +72,50 @@
 - Optimisation performances pour grandes collections
 
 👉 **Voir les détails**: [issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md](issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md)
+
+### 📦 Nouveautés v3.5.0-cli (28 janvier 2026) - Phase 1
+
+**🖥️ Interface CLI Moderne** (Issue #59):
+- `src/cli/`: Nouveau module CLI avec architecture modulaire (44+ KB de code)
+  - **Framework Click**: CLI moderne avec commandes imbriquées
+  - **Rich pour rendu**: Tables, panels, couleurs élégantes
+  - **Système de couleurs sémantiques**: 17 rôles adaptatifs (PRIMARY, ARTIST, ALBUM, etc.)
+  - **4 modes de couleur**: auto, truecolor (24-bit), color (4-bit), never (accessible)
+  - **Détection automatique terminal**: couleurs, dimensions, SSH, unicode
+- **Commandes CLI** (stubs Phase 1):
+  - `collection`: Liste, recherche, détails, édition albums
+  - `journal`: Visualisation historique d'écoute
+  - `timeline`: Vue timeline horaire
+  - `ai`: Logs d'enrichissement IA
+  - `version`: Info système et capacités terminal
+- **Script lancement**: `start-cli.sh` avec gestion auto dépendances
+- **48 tests unitaires**: 100% pass (couleurs: 29, terminal: 19)
+- **Documentation complète**: `src/cli/README.md` + docstrings
+- **Performance**: < 0.5s démarrage, < 15 MB RAM
+- **Compatibilité**: SSH, terminaux basiques, truecolor modernes
+
+**🎯 Phase 1 Terminée** (Fondations):
+- ✅ Architecture modulaire complète
+- ✅ Système couleurs + détection terminal
+- ✅ Framework CLI avec Click + Rich
+- ✅ Tests + documentation
+- 🚧 Phase 2 à venir: Collection commands (liste, recherche, édition)
+
+**Usage**:
+```bash
+# Lancement rapide
+./start-cli.sh
+
+# Commandes
+python3 -m src.cli.main version
+python3 -m src.cli.main collection list
+python3 -m src.cli.main --color truecolor journal show
+```
+
+👉 **Voir les détails**: 
+- [issues/ISSUE-59-IMPLEMENTATION-PROPOSAL.md](issues/ISSUE-59-IMPLEMENTATION-PROPOSAL.md) - Proposition complète
+- [issues/ISSUE-59-PHASE1-REPORT.md](issues/ISSUE-59-PHASE1-REPORT.md) - Rapport Phase 1
+- [src/cli/README.md](src/cli/README.md) - Documentation CLI
 
 ### 📦 Nouveautés v3.3.1 (27 janvier 2026)
 
