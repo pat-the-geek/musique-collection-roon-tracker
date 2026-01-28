@@ -4,6 +4,19 @@
 
 ## ✅ Complété Récemment
 
+### v3.4.0 (28 janvier 2026)
+- ✅ **Issue #46** - Timeline View pour visualisation horaire des écoutes
+  - Vue Timeline avec navigation horizontale par heures (6h-23h)
+  - Alternance de couleurs par heure pour meilleure lisibilité
+  - Modes compact (pochettes seules) et détaillé (pochettes + métadonnées)
+  - Sélecteur de date avec format lisible
+  - Statistiques journalières (total, uniques, peak hour)
+  - Limitation à 20 tracks max par heure pour performance
+- ✅ **Issue #57** - Fix Timeline Roon pour cas limites
+  - Amélioration robustesse parsing dates
+  - Fix affichage heures vides
+  - Optimisation performances pour grandes collections
+
 ### v3.3.1 (27 janvier 2026)
 - ✅ **Issue #38** - Éviter doublons lors de la création de playlists
   - Détection et suppression automatique des doublons
