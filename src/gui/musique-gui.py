@@ -1336,6 +1336,248 @@ def display_roon_journal():
         st.markdown('</div><hr class="track-divider">', unsafe_allow_html=True)
 
 
+def display_roon_timeline():
+    """Affiche une visualisation en timeline des écoutes Roon.
+    
+    Vue chronologique avec albums disposés sur une ligne temporelle graduée par heures.
+    Basée sur les habitudes d'écoute (6h-23h par défaut).
+    
+    Features:
+        - Timeline horizontale graduée par heures
+        - Albums affichés avec pochettes
+        - Alternance de couleurs par heure pour meilleure lisibilité
+        - Navigation par jour avec sélecteur
+        - Position automatique sur l'heure actuelle
+        - Maximum ~20 morceaux par heure affichés
+        - Scroll horizontal pour navigation temporelle
+    
+    Layout:
+        - Header: Titre + date selector + refresh button
+        - Timeline: Grille horaire avec albums positionnés
+        - Chaque jour sur une ligne séparée
+    """
+    # Charger la configuration Roon pour les heures d'écoute
+    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'roon-config.json'
+    listen_start_hour = 6
+    listen_end_hour = 23
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            roon_config = json.load(f)
+            listen_start_hour = roon_config.get('listen_start_hour', 6)
+            listen_end_hour = roon_config.get('listen_end_hour', 23)
+    except:
+        pass  # Use defaults
+    
+    # Header
+    col_title, col_refresh = st.columns([5, 1])
+    with col_title:
+        st.title("📈 Timeline d'écoute Roon")
+    with col_refresh:
+        if st.button("🔄 Actualiser", key="refresh_timeline"):
+            load_roon_data.clear()
+            st.rerun()
+    
+    # Charger les données
+    tracks = load_roon_data()
+    
+    if not tracks:
+        st.info("📁 Aucune lecture trouvée dans chk-roon.json")
+        return
+    
+    # Grouper les tracks par date
+    from collections import defaultdict
+    from datetime import datetime as dt
+    
+    tracks_by_date = defaultdict(list)
+    for track in tracks:
+        try:
+            # Parse date format "YYYY-MM-DD HH:MM"
+            date_str = track.get('date', '')
+            if date_str:
+                date_part = date_str.split()[0]  # Get YYYY-MM-DD
+                tracks_by_date[date_part].append(track)
+        except:
+            pass
+    
+    # Trier les dates (plus récentes en premier)
+    sorted_dates = sorted(tracks_by_date.keys(), reverse=True)
+    
+    if not sorted_dates:
+        st.info("📁 Aucune lecture avec date valide trouvée")
+        return
+    
+    # Sélecteur de date
+    col1, col2, col3 = st.columns([2, 2, 1])
+    with col1:
+        selected_date = st.selectbox(
+            "📅 Sélectionner un jour",
+            sorted_dates,
+            format_func=lambda d: dt.strptime(d, '%Y-%m-%d').strftime('%A %d %B %Y')
+        )
+    with col2:
+        st.metric("Lectures ce jour", len(tracks_by_date[selected_date]))
+    with col3:
+        # Toggle pour affichage compact
+        compact_mode = st.checkbox("Compact", value=True, key="timeline_compact")
+    
+    st.divider()
+    
+    # Afficher la timeline pour le jour sélectionné
+    day_tracks = tracks_by_date[selected_date]
+    
+    # Grouper par heure
+    tracks_by_hour = defaultdict(list)
+    for track in day_tracks:
+        try:
+            date_str = track.get('date', '')
+            if date_str:
+                # Extract hour from "YYYY-MM-DD HH:MM"
+                time_part = date_str.split()[1]  # Get HH:MM
+                hour = int(time_part.split(':')[0])
+                tracks_by_hour[hour].append(track)
+        except:
+            pass
+    
+    # CSS pour la timeline
+    st.markdown("""
+    <style>
+        .timeline-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .timeline-hour {
+            min-width: 200px;
+            padding: 10px;
+            border-right: 2px solid #dee2e6;
+            position: relative;
+        }
+        .timeline-hour:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .timeline-hour:nth-child(odd) {
+            background-color: rgba(240, 240, 240, 0.5);
+        }
+        .hour-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #495057;
+            text-align: center;
+            margin-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: inherit;
+            padding: 5px;
+            z-index: 10;
+        }
+        .track-in-hour {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+        }
+        .track-in-hour:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+            transition: all 0.2s;
+        }
+        .album-cover-timeline {
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .track-info-timeline {
+            font-size: 0.75rem;
+            color: #6c757d;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Créer la timeline
+    timeline_html = '<div class="timeline-container">'
+    
+    # Générer les colonnes horaires
+    for hour in range(listen_start_hour, listen_end_hour + 1):
+        hour_tracks = tracks_by_hour.get(hour, [])
+        track_count = len(hour_tracks)
+        
+        # Limiter à 20 tracks max par heure pour lisibilité
+        display_tracks = hour_tracks[:20]
+        
+        timeline_html += f'<div class="timeline-hour">'
+        timeline_html += f'<div class="hour-label">{hour:02d}:00 ({track_count})</div>'
+        
+        if display_tracks:
+            for track in display_tracks:
+                # Utiliser l'image Spotify de l'album si disponible
+                img_url = track.get('album_spotify_image') or track.get('album_lastfm_image', '')
+                artist = track.get('artist', 'Inconnu')
+                title = track.get('title', 'Inconnu')
+                album = track.get('album', 'Inconnu')
+                time = track.get('date', '').split()[1] if track.get('date') else ''
+                
+                if compact_mode:
+                    # Mode compact: seulement pochette avec tooltip
+                    if img_url:
+                        timeline_html += f'''
+                        <div class="track-in-hour" title="{artist} - {title}&#10;{album}&#10;{time}">
+                            <img src="{img_url}" class="album-cover-timeline" alt="{album}">
+                        </div>
+                        '''
+                else:
+                    # Mode détaillé: pochette + infos
+                    if img_url:
+                        timeline_html += f'''
+                        <div class="track-in-hour">
+                            <img src="{img_url}" class="album-cover-timeline" alt="{album}">
+                            <div class="track-info-timeline"><b>{time}</b></div>
+                            <div class="track-info-timeline">{artist[:20]}</div>
+                            <div class="track-info-timeline">{title[:20]}</div>
+                        </div>
+                        '''
+        else:
+            timeline_html += '<div style="text-align: center; color: #adb5bd; padding: 20px;">Aucune écoute</div>'
+        
+        timeline_html += '</div>'
+    
+    timeline_html += '</div>'
+    
+    # Afficher la timeline
+    st.markdown(timeline_html, unsafe_allow_html=True)
+    
+    # Informations supplémentaires
+    st.divider()
+    
+    # Statistiques du jour
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total tracks", len(day_tracks))
+    with col2:
+        unique_artists = len(set(t.get('artist', '') for t in day_tracks))
+        st.metric("Artistes uniques", unique_artists)
+    with col3:
+        unique_albums = len(set(t.get('album', '') for t in day_tracks))
+        st.metric("Albums uniques", unique_albums)
+    with col4:
+        # Heure la plus active
+        if tracks_by_hour:
+            max_hour = max(tracks_by_hour.items(), key=lambda x: len(x[1]))
+            st.metric("Heure la plus active", f"{max_hour[0]:02d}:00 ({len(max_hour[1])})")
+    
+    # Légende
+    st.caption("💡 Chaque colonne représente une heure. Les images sont les pochettes d'albums écoutés.")
+    st.caption("📊 Survolez les pochettes en mode compact pour voir les détails.")
+
+
 def display_ai_logs():
     """Affiche le journal technique des informations IA générées.
     
@@ -2949,7 +3191,7 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "📈 Timeline Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
@@ -2957,6 +3199,8 @@ def main():
     # Afficher la page sélectionnée
     if page == "📻 Journal Roon":
         display_roon_journal()
+    elif page == "📈 Timeline Roon":
+        display_roon_timeline()
     elif page == "🤖 Journal IA":
         display_ai_logs()
     elif page == "🎭 Haïkus":
