@@ -4,51 +4,28 @@ __pycache__/
 *$py.class
 *.so
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
 .venv/
 venv/
 ENV/
 env/
-
-# Environnement et configuration
-data/config/.env
-*.log
-
-# Données sensibles - Configuration
-data/config/roon-config.json
-data/config/scheduler-state.json
-data/config/Liste_sites_musique-favoris.json
-data/history/chk-roon.lock
-
-# Données sensibles - Collection personnelle
-data/collection/discogs-collection.json
-data/collection/soundtrack.json
-
-# Données sensibles - Historique personnel
-data/history/chk-roon.json
-data/history/chk-last-fm.json
-
-# Outputs temporaires
-output/haikus/*.txt
-output/reports/*.txt
-output/playlists/*.txt
-output/playlists/*.json
-output/playlists/*.m3u
-output/playlists/*.csv
-*.tmp
-
-# Exports (contenu personnel)
-data/exports/*.md
-data/exports/*.csv
-data/exports/*.pdf
-
-# Backups (garder la structure, ignorer le contenu)
-backups/
-!backups/.gitkeep
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
 
 # IDE
 .vscode/
@@ -57,17 +34,21 @@ backups/
 *.swo
 *~
 
-# Streamlit (ignorer secrets et cache, mais garder config.toml)
-.streamlit/*
-!.streamlit/config.toml
+# OS
+.DS_Store
+Thumbs.db
 
-# Cache
-.cache/
-*.cache
+# Project specific
+*.lock
+data/config/.env
+data/history/*.json
+!data/history/.gitkeep
+backups/
+output/
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
+# Temporary test files (keep only in temp directory)
+test_*.py
+verify_*.py
+demo_*.py
+create_sample_data.py
+!src/tests/test_*.py
