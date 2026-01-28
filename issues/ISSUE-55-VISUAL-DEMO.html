@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue #55 - Visual Demonstration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .before {
+            border-left: 5px solid #dc3545;
+        }
+        .after {
+            border-left: 5px solid #28a745;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+        }
+        .timeline-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .timeline-hour {
+            min-width: 200px;
+            padding: 10px;
+            border-right: 2px solid #dee2e6;
+            position: relative;
+        }
+        .timeline-hour:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .timeline-hour:nth-child(odd) {
+            background-color: rgba(240, 240, 240, 0.5);
+        }
+        .hour-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #495057;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .track-in-hour {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+        }
+        .album-cover-timeline-before {
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .album-cover-timeline-after {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .problem {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .solution {
+            background-color: #d4edda;
+            border: 2px solid #28a745;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Issue #55 - Timeline Display Fix</h1>
+    
+    <div class="section">
+        <h2>Problème Reporté</h2>
+        <p>Les images d'albums dans la vue Timeline Roon étaient affichées en code HTML brut au lieu d'être rendues visuellement.</p>
+        <div class="problem">
+            <strong>⚠️ Symptômes:</strong>
+            <ul>
+                <li>La première image s'affichait correctement</li>
+                <li>Les images suivantes montraient le code HTML: <code>&lt;img src="..."&gt;</code></li>
+                <li>Les vignettes n'étaient pas dimensionnées uniformément</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section before">
+        <h2>❌ Avant la correction</h2>
+        <p><strong>Problème:</strong> Caractères spéciaux non échappés dans les attributs HTML</p>
+        
+        <div class="code-block">
+# Sans échappement HTML
+artist = 'Nina Simone & The Band'
+title = 'Song "Live" &lt;2024&gt;'
+
+# Génération HTML (CASSÉ)
+html = f'&lt;div title="{artist} - {title}"&gt;'
+# Résultat: &lt;div title="Nina Simone & The Band - Song "Live" &lt;2024&gt;"&gt;
+#                                                      ^ guillemet casse l'HTML
+        </div>
+        
+        <p><strong>CSS:</strong></p>
+        <div class="code-block">
+.album-cover-timeline {
+    width: 100%;  /* ❌ Pas de taille fixe */
+    border-radius: 4px;
+}
+        </div>
+
+        <div class="problem">
+            <strong>Conséquence:</strong> Les guillemets et autres caractères spéciaux dans les métadonnées brisent la structure HTML, causant l'affichage du code source au lieu du rendu.
+        </div>
+    </div>
+
+    <div class="section after">
+        <h2>✅ Après la correction</h2>
+        <p><strong>Solution:</strong> Échappement HTML avec <code>html.escape()</code></p>
+        
+        <div class="code-block">
+import html
+
+# Avec échappement HTML
+artist = 'Nina Simone & The Band'
+title = 'Song "Live" &lt;2024&gt;'
+
+# Échappement sécurisé
+safe_artist = html.escape(artist, quote=True)
+safe_title = html.escape(title, quote=True)
+
+# Génération HTML (CORRIGÉ)
+html = f'&lt;div title="{safe_artist} - {safe_title}"&gt;'
+# Résultat: &lt;div title="Nina Simone &amp;amp; The Band - Song &amp;quot;Live&amp;quot; &amp;lt;2024&amp;gt;"&gt;
+#                                                    ✓ caractères échappés
+        </div>
+        
+        <p><strong>CSS:</strong></p>
+        <div class="code-block">
+.album-cover-timeline {
+    width: 150px;   /* ✅ Taille fixe comme demandé */
+    height: 150px;  /* ✅ Taille fixe comme demandé */
+    object-fit: cover;  /* ✅ Maintient les proportions */
+    border-radius: 4px;
+}
+        </div>
+
+        <div class="solution">
+            <strong>Résultat:</strong> Les caractères spéciaux sont convertis en entités HTML:
+            <ul>
+                <li><code>&</code> → <code>&amp;amp;</code></li>
+                <li><code>"</code> → <code>&amp;quot;</code></li>
+                <li><code>&lt;</code> → <code>&amp;lt;</code></li>
+                <li><code>&gt;</code> → <code>&amp;gt;</code></li>
+            </ul>
+            L'HTML est maintenant valide et s'affiche correctement!
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📝 Changements Apportés</h2>
+        <ol>
+            <li><strong>Import du module html</strong> (ligne 154)
+                <div class="code-block">import html</div>
+            </li>
+            <li><strong>Modification CSS</strong> (lignes 1491-1495)
+                <ul>
+                    <li>Images fixées à 150x150px</li>
+                    <li>Ajout de <code>object-fit: cover</code></li>
+                </ul>
+            </li>
+            <li><strong>Échappement HTML - Mode compact</strong> (lignes 1534-1540)
+                <div class="code-block">safe_artist = html.escape(artist, quote=True)
+safe_title = html.escape(title, quote=True)
+safe_album = html.escape(album, quote=True)
+safe_time = html.escape(time, quote=True)</div>
+            </li>
+            <li><strong>Échappement HTML - Mode détaillé</strong> (lignes 1547-1555)
+                <ul>
+                    <li>Même protection appliquée</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>🧪 Tests</h2>
+        <p>Deux scripts de test créés:</p>
+        <ul>
+            <li><strong>test_timeline_fix.py</strong> - Tests automatisés ✅
+                <ul>
+                    <li>Test 1: Échappement HTML pour caractères spéciaux</li>
+                    <li>Test 2: Dimensionnement CSS des images</li>
+                    <li>Test 3: Génération HTML sécurisée</li>
+                </ul>
+            </li>
+            <li><strong>demo_timeline_fix.py</strong> - Démonstration visuelle avant/après</li>
+        </ul>
+        <div class="solution">
+            <strong>Tous les tests passent! ✅</strong>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔒 Sécurité</h2>
+        <p>Cette correction améliore aussi la sécurité en prévenant l'injection HTML/XSS.</p>
+        <div class="solution">
+            <strong>Bonus:</strong> Protection contre les vulnérabilités d'injection de code malveillant via les métadonnées.
+        </div>
+    </div>
+</body>
+</html>
