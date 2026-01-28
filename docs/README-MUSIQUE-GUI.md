@@ -57,6 +57,24 @@ Application Streamlit complète intégrant trois sources de données musicales :
 - ❤️ Marquage favoris
 - 📱 Interface compacte et optimisée
 
+### Timeline Roon (v3.4.0)
+- 📈 Visualisation horaire des écoutes sur ligne temporelle
+- ⏰ Timeline horizontale graduée par heures (6h-23h configurable)
+- 🎨 Alternance de couleurs par heure (gris/blanc) pour lisibilité
+- 🖼️ Affichage pochettes d'albums avec métadonnées optionnelles
+- 🔀 Modes d'affichage :
+  - **Compact** : Pochettes seules (vue d'ensemble rapide)
+  - **Détaillé** : Pochettes + heure + artiste + titre
+- 📅 Navigation par jour avec sélecteur de date
+- ↔️ Scroll horizontal pour parcourir la journée
+- 📊 Statistiques journalières :
+  - Total tracks écoutés
+  - Artistes uniques
+  - Albums uniques
+  - Heure la plus active (peak hour)
+- ⚡ Limitation intelligente : Max 20 tracks par heure affichés
+- ⚙️ Configuration basée sur `roon-config.json` (habitudes d'écoute)
+
 ## 🔧 Installation
 
 ### Prérequis
@@ -239,7 +257,13 @@ Des captures d'écran de l'interface sont disponibles dans [samples/](../samples
 
 ### Navigation
 - **📀 Collection Discogs** : Gestion collection
-- **📻 Journal Roon** : Historique écoutes
+- **📻 Journal Roon** : Historique écoutes chronologique
+- **📈 Timeline Roon** : Visualisation horaire des écoutes (v3.4.0)
+- **🤖 Journal IA** : Logs quotidiens enrichissement IA
+- **🎭 Haïkus** : Présentations musicales générées
+- **🎵 Playlists** : Génération playlists intelligentes
+- **📊 Rapports d'analyse** : Statistiques et patterns d'écoute
+- **⚙️ Configuration** : Paramètres du scheduler
 
 ### Layout Journal Roon (optimisé v2.0)
 
@@ -252,6 +276,55 @@ Des captures d'écran de l'interface sont disponibles dans [samples/](../samples
 │ I Put a Spell on You                │ 100px 100px 100px          │
 └─────────────────────────────────────┴─────────────────────────────┘
 ```
+
+### Layout Timeline Roon (v3.4.0)
+
+**Vue d'ensemble:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 📈 Timeline d'écoute Roon                      [🔄 Actualiser]  │
+├─────────────────────────────────────────────────────────────────┤
+│ 📅 Sélectionner un jour:  [▼ Mardi 28 Janvier 2026]            │
+│                                                                  │
+│ │ Lectures: 25      │ ☑ Compact │                              │
+├─────────────────────────────────────────────────────────────────┤
+│                  TIMELINE HORIZONTALE (SCROLL ↔)                │
+│                                                                  │
+│ ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┐     │
+│ │ 06:00 │ 07:00 │ 08:00 │ 09:00 │ 10:00 │ 11:00 │ 12:00 │  →  │
+│ │  (0)  │  (0)  │  (3)  │  (1)  │  (1)  │  (1)  │  (0)  │     │
+│ ├───────┼───────┼───────┼───────┼───────┼───────┼───────┤     │
+│ │       │       │ [🎵]  │ [🎵]  │ [🎵]  │ [🎵]  │       │     │
+│ │       │       │ [🎵]  │       │       │       │       │     │
+│ │       │       │ [🎵]  │       │       │       │       │     │
+│ └───────┴───────┴───────┴───────┴───────┴───────┴───────┘     │
+│  GRIS    BLANC    GRIS    BLANC    GRIS    BLANC    GRIS       │
+├─────────────────────────────────────────────────────────────────┤
+│ Total: 25 │ Artistes: 20 │ Albums: 18 │ Peak: 18:00 (5)        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Caractéristiques:**
+- **Timeline horizontale** : Graduation par heures (configurable 6h-23h)
+- **Alternance de couleurs** : Colonnes grises/blanches alternées
+- **Modes d'affichage** :
+  - *Compact* : Pochettes seules (vue d'ensemble)
+  - *Détaillé* : Pochettes + heure + artiste + titre
+- **Navigation** :
+  - Sélecteur de date avec format lisible
+  - Scroll horizontal pour parcourir les heures
+  - Bouton refresh pour recharger les données
+- **Statistiques** :
+  - Total tracks du jour
+  - Nombre d'artistes uniques
+  - Nombre d'albums uniques
+  - Heure la plus active (peak hour)
+- **Performance** : Max 20 tracks affichés par heure
+
+**Cas d'usage:**
+- Identifier patterns d'écoute par heure de la journée
+- Vue d'ensemble rapide de l'activité musicale quotidienne
+- Complémentaire au Journal Roon (chronologique vs horaire)
 
 ### Génération de résumé EurIA (v2.1)
 
@@ -283,6 +356,24 @@ Interface de génération dans l'onglet "Informations" :
 - Images optimisées (100px width)
 
 ## 📝 Modifications récentes
+
+### Version 3.4.0 - 28 janvier 2026
+
+#### Timeline View pour visualisation horaire (Issue #46)
+✅ **Nouvelle vue Timeline Roon** : Visualisation horaire des écoutes  
+✅ **Timeline horizontale** : Graduation par heures (6h-23h configurable)  
+✅ **Alternance de couleurs** : Colonnes grises/blanches pour lisibilité  
+✅ **Double mode** : Compact (pochettes) et Détaillé (pochettes+métadonnées)  
+✅ **Navigation par jour** : Sélecteur avec format lisible ("Mardi 28 Janvier 2026")  
+✅ **Scroll horizontal** : Navigation fluide dans la journée  
+✅ **Statistiques journalières** : Total, uniques, peak hour  
+✅ **Performance optimisée** : Max 20 tracks par heure  
+✅ **Configuration** : Basée sur `roon-config.json` (listen_start_hour, listen_end_hour)
+
+#### Corrections (Issue #57)
+✅ **Fix affichage Timeline** : Gestion robuste heures vides et jours sans écoutes  
+✅ **Amélioration parsing dates** : Meilleure robustesse format "YYYY-MM-DD HH:MM"  
+✅ **Optimisation performances** : Chargement efficace grandes collections
 
 ### Version 2.1 - 21 janvier 2026
 

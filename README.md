@@ -15,7 +15,7 @@
 
 ## 🎯 État du Projet
 
-**Version actuelle : 3.3.1** (Génération Playlists + Timezone Fix + Déduplication - 27 janvier 2026)
+**Version actuelle : 3.4.0** (Timeline View + Génération Playlists + Timezone Fix - 28 janvier 2026)
 
 **Statut :** ✅ Fonctionnel • 🧪 Expérimental • 📊 En évolution
 
@@ -24,6 +24,9 @@
 - ✅ Import automatique collection Discogs avec résumés IA
 - ✅ Interface Web Streamlit pour gestion collection
 - ✅ Génération de présentations musicales (haïkus) via IA
+- ✅ **NOUVEAU v3.4.0**: Vue Timeline pour visualisation horaire des écoutes (Issue #46)
+- ✅ **NOUVEAU v3.4.0**: Navigation temporelle horizontale avec alternance couleurs
+- ✅ **NOUVEAU v3.4.0**: Modes compact/détaillé pour affichage Timeline
 - ✅ **NOUVEAU v3.3.1**: Génération de playlists intelligentes basée sur patterns d'écoute
 - ✅ **NOUVEAU v3.3.1**: 7 algorithmes de génération (sessions, correlations, flow, temps, albums, redécouverte, IA)
 - ✅ **NOUVEAU v3.3.1**: Export playlists multi-formats (JSON, M3U, CSV, TXT pour Roon)
@@ -44,6 +47,28 @@
 - ✅ **NOUVEAU v3.3**: Fallback intelligent Discogs → IA (80%+ optimisation)
 - ✅ **NOUVEAU v3.3**: Journal technique IA quotidien avec rétention 24h
 - ✅ **NOUVEAU v3.3**: Vue "🤖 Journal IA" dans l'interface GUI
+
+### 📦 Nouveautés v3.4.0 (28 janvier 2026)
+
+**📈 Vue Timeline pour Visualisation Horaire** (Issue #46):
+- `display_roon_timeline()`: Nouvelle vue dans l'interface GUI (254 lignes)
+  - **Timeline horizontale**: Albums disposés sur ligne temporelle graduée par heures (6h-23h)
+  - **Alternance de couleurs**: Colonnes horaires alternées (gris/blanc) pour lisibilité
+  - **Modes d'affichage**: Toggle Compact (pochettes seules) / Détaillé (pochettes + métadonnées)
+  - **Navigation par jour**: Sélecteur de date avec format lisible ("Mardi 28 Janvier 2026")
+  - **Scroll horizontal**: Navigation fluide dans la journée
+  - **Statistiques**: Total tracks, artistes uniques, albums uniques, heure la plus active
+  - **Limitation intelligente**: Max 20 tracks par heure pour performance
+- **Menu GUI**: Nouvelle entrée "📈 Timeline Roon" entre Journal et Journal IA
+- **Configuration**: Utilise `listen_start_hour` et `listen_end_hour` de `roon-config.json`
+- **Impact**: Visualisation complémentaire au journal chronologique classique
+
+**🐛 Corrections** (Issue #57):
+- Fix affichage Timeline dans cas limites (heures vides, jours sans écoutes)
+- Amélioration robustesse parsing dates
+- Optimisation performances pour grandes collections
+
+👉 **Voir les détails**: [issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md](issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md)
 
 ### 📦 Nouveautés v3.3.1 (27 janvier 2026)
 
@@ -586,6 +611,33 @@ Fichier: `data/config/roon-config.json`
 - ✅ Fichier `.gitignore` protège automatiquement
 
 ## 🆕 Changelog
+
+### Version 3.4.0 (28 janvier 2026)
+
+**Nouvelle fonctionnalité Timeline:**
+- ✅ Vue Timeline horaire pour Journal Roon (Issue #46)
+- ✅ Navigation temporelle avec scroll horizontal
+- ✅ Alternance de couleurs par heure (gris/blanc)
+- ✅ Modes compact et détaillé
+- ✅ Statistiques journalières (tracks, artistes, albums, peak hour)
+- ✅ Configuration basée sur habitudes d'écoute (roon-config.json)
+
+**Corrections:**
+- ✅ Fix affichage Timeline cas limites (Issue #57)
+- ✅ Amélioration robustesse parsing dates
+- ✅ Optimisation performances
+
+### Version 3.3.1 (27 janvier 2026)
+
+**Génération Playlists:**
+- ✅ Module generate-playlist.py avec 7 algorithmes (Issue #19)
+- ✅ Export multi-formats (JSON, M3U, CSV, TXT)
+- ✅ Génération playlists via IA avec prompt personnalisé
+- ✅ Déduplication automatique (Issue #38)
+
+**Corrections:**
+- ✅ Fix timezone décalage horaire UTC (Issue #32)
+- ✅ Tests timezone (5 nouveaux tests)
 
 ### Version 3.0.0 (23 janvier 2026)
 

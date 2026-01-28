@@ -29,9 +29,19 @@ Fonctionnalités principales:
         - Triple affichage images: artiste Spotify, album Spotify, album Last.fm
         - Statistiques en temps réel
         - Marquage des lectures favorites
+    
+    Timeline Roon (v3.4.0):
+        - Visualisation horaire des écoutes sur ligne temporelle
+        - Timeline horizontale graduée par heures (6h-23h configurable)
+        - Alternance de couleurs pour lisibilité
+        - Modes compact (pochettes) et détaillé (pochettes + métadonnées)
+        - Navigation par jour avec sélecteur de date
+        - Scroll horizontal pour parcourir la journée
+        - Statistiques journalières (total, uniques, peak hour)
+        - Performance: Max 20 tracks par heure affichés
 
 Interface:
-    - Navigation par menu radio (Collection / Journal)
+    - Navigation par menu radio (Collection / Journal / Timeline / etc.)
     - Layout responsive avec sidebar
     - CSS personnalisé pour apparence moderne
     - Mise en cache des données et images pour performance
@@ -112,6 +122,18 @@ Intégration écosystème:
     - Enrichissement: complete-resumes.py, complete-images-roon.py
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
+
+Changelog v3.4.0 (28 janvier 2026):
+    - **Nouveau**: Vue Timeline Roon pour visualisation horaire des écoutes (Issue #46)
+    - Timeline horizontale avec graduation par heures (6h-23h configurable)
+    - Alternance de couleurs par heure pour meilleure lisibilité
+    - Modes compact (pochettes seules) et détaillé (pochettes + métadonnées)
+    - Navigation par jour avec sélecteur de date au format lisible
+    - Scroll horizontal pour parcourir la journée
+    - Statistiques journalières: total tracks, artistes/albums uniques, peak hour
+    - Performance optimisée: max 20 tracks affichés par heure
+    - Basée sur configuration roon-config.json (listen_start_hour, listen_end_hour)
+    - Fix affichage cas limites (heures vides, jours sans écoutes) - Issue #57
 
 Changelog v3.1.0 (25 janvier 2026):
     - Haïkus: URLs Spotify et Discogs maintenant cliquables (correction indentation)
