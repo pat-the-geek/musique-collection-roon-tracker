@@ -27,6 +27,11 @@ markdown>=3.4.0               # Conversion Markdown vers HTML (musique-gui.py)
 # ---- Database (src/models/) ----
 sqlalchemy>=2.0.0             # ORM pour gestion base de données SQLite
 
+# ---- CLI Interface (src/cli/) ----
+rich>=13.0.0                  # Rich terminal output and formatting
+click>=8.0.0                  # CLI framework for command-line interfaces
+prompt-toolkit>=3.0.0         # Interactive command-line tools
+
 # ---- Testing (src/tests/) ----
 pytest>=7.0.0                 # Framework de tests unitaires
 pytest-cov>=4.0.0             # Couverture de code pour pytest
