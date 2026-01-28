@@ -1,8 +1,26 @@
 # Music Collection & Listening Tracker - AI Agent Guide
 
-**Version: 3.3.0** | **Date: 27 janvier 2026**
+**Version: 3.4.0** | **Date: 28 janvier 2026**
 
-This project tracks music listening history from Roon and Last.fm, manages a Discogs collection, and generates creative content (haikus) from album metadata. It features automatic AI-powered album information enrichment and a complete task scheduler.
+This project tracks music listening history from Roon and Last.fm, manages a Discogs collection, and generates creative content (haikus) from album metadata. It features automatic AI-powered album information enrichment, a complete task scheduler, and a visual timeline view for exploring listening patterns.
+
+---
+
+## 🎯 What's New in v3.4.0
+
+**TIMELINE VIEW**: Visual hourly display for Roon listening journal (Issue #46).
+
+**Key Changes:**
+- ✅ **New Timeline View** (`display_roon_timeline()`) - Visual hourly timeline for listening patterns
+- ✅ **Horizontal Scroll Layout** - Albums displayed on graduated timeline (6h-23h)
+- ✅ **Alternating Colors** - Hour columns with visual distinction for easy reading
+- ✅ **Compact/Detailed Modes** - Toggle between cover-only and full metadata display
+- ✅ **Daily Navigation** - Select specific days to explore listening history
+- ✅ **Statistics Dashboard** - Total tracks, unique artists/albums, peak listening hour
+
+**Impact:** New visual way to explore music listening patterns by time of day, complementing the chronological journal view.
+
+See [issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md](../issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md) and [issues/ISSUE-46-TIMELINE-VIEW-MOCKUP.md](../issues/ISSUE-46-TIMELINE-VIEW-MOCKUP.md) for complete details.
 
 ---
 
@@ -148,9 +166,10 @@ The project uses a **modular architecture** with clear separation:
    - [List_all_music_on_drive.py](../src/utils/List_all_music_on_drive.py): Disk music file scanner
 
 #### 8. **GUI** (`src/gui/`) - Web interface
-   - [musique-gui.py](../src/gui/musique-gui.py): Streamlit interface (v3.2.0)
+   - [musique-gui.py](../src/gui/musique-gui.py): Streamlit interface (v3.4.0)
      - Collection management with inline editing
      - Roon Journal with AI info expandable sections
+     - **New in v3.4.0**: "📈 Timeline Roon" - Visual hourly timeline view
      - **New in v3.2.0**: "🤖 Journal IA" view for daily AI logs
      - Scheduler configuration interface
      - Haiku and report visualization
@@ -218,6 +237,16 @@ The project uses a **modular architecture** with clear separation:
     - **v3.2.0**: AI info expandable sections (🤖 Info IA)
     - Compact layout optimized for density (v2.0)
     - Real-time statistics
+  - **Timeline Roon** (v3.4.0):
+    - New menu item: "📈 Timeline Roon"
+    - Visual hourly timeline view with horizontal scroll
+    - Albums displayed as cover images on graduated timeline (6h-23h)
+    - Alternating colors by hour for visual distinction
+    - Compact/Detailed toggle mode (cover-only vs cover+metadata)
+    - Daily navigation with date selector
+    - Statistics: total tracks, unique artists/albums, peak hour
+    - Limit: 20 tracks max per hour column
+    - Based on listening habits from `roon-config.json`
   - **AI Journal** (v3.2.0):
     - New menu item: "🤖 Journal IA"
     - Display daily AI logs (`output/ai-logs/`)
@@ -242,7 +271,8 @@ The project uses a **modular architecture** with clear separation:
   - `load_roon_data()`: Cached Roon history loader
   - `generate_resume_with_euria()`: AI resume generator (v2.1)
   - `display_discogs_collection()`: Collection management interface
-  - `display_roon_journal()`: Listening history visualization
+  - `display_roon_journal()`: Listening history visualization (chronological)
+  - `display_roon_timeline()`: Timeline visualization (hourly, v3.4.0)
   - `load_image_from_url()`: Cached image loader with User-Agent
   - `save_data()`: JSON persistence with cache invalidation
 - **Output**: Real-time updates to JSON files with automatic UI refresh
