@@ -37,9 +37,16 @@ Usage:
     optimizer.apply_recommendations(recommendations, auto_apply=True)
 
 Auteur: Patrick Ostertag
-**Version**: 1.0.2  
-**Date**: 27 janvier 2026  
+**Version**: 1.0.3  
+**Date**: 28 janvier 2026  
 **Module**: `src/services/ai_optimizer.py`
+
+**Changelog v1.0.3**:
+- Fix #47 (partie finale): Correction du chargement de l'historique
+  - Correction du bug "Total tracks analysés: 0" malgré présence de données
+  - Ajout du support pour le format correct chk-roon.json: {"tracks": [...]}
+  - Maintien de la compatibilité avec l'ancien format: [...]
+  - Les tests et le script de vérification utilisent maintenant le format correct
 
 **Changelog v1.0.2**:
 - Fix #47 (2ème partie): Amélioration du formatage du rapport
@@ -157,7 +164,16 @@ class AIOptimizer:
         # Charger les données
         self.config = self._load_json(self.config_path)
         self.state = self._load_json(self.state_path) if self.state_path.exists() else {}
-        self.history = self._load_json(self.history_path) if self.history_path.exists() else []
+        
+        # Charger l'historique avec gestion du format
+        # Format attendu: {"tracks": [...]} mais supporte aussi [...] pour compatibilité
+        history_data = self._load_json(self.history_path) if self.history_path.exists() else []
+        if isinstance(history_data, dict) and 'tracks' in history_data:
+            self.history = history_data['tracks']
+        elif isinstance(history_data, list):
+            self.history = history_data
+        else:
+            self.history = []
         
         # S'assurer que les variables d'environnement sont chargées
         ensure_env_loaded()

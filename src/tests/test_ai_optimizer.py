@@ -160,8 +160,9 @@ def sample_history(temp_dir):
     # Inverser pour avoir l'ordre chronologique
     history.reverse()
     
+    # Utiliser le format correct avec la clé "tracks"
     with open(history_path, 'w') as f:
-        json.dump(history, f)
+        json.dump({"tracks": history}, f)
     
     return history_path
 
@@ -772,11 +773,11 @@ class TestGenerateOptimizationReport:
         
         monkeypatch.setattr('services.ai_optimizer.ask_for_ia', mock_ask_for_ia)
         
-        # Créer un historique vide
+        # Créer un historique vide avec le format correct
         history_path = temp_dir / "data" / "history" / "chk-roon.json"
         history_path.parent.mkdir(parents=True, exist_ok=True)
         with open(history_path, 'w') as f:
-            json.dump([], f)
+            json.dump({"tracks": []}, f)
         
         optimizer = AIOptimizer(
             config_path=str(sample_config),
