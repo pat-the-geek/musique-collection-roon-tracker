@@ -1537,11 +1537,7 @@ def display_roon_timeline():
                         safe_album = html.escape(album, quote=True)
                         safe_time = html.escape(time, quote=True)
                         
-                        timeline_html += f'''
-                        <div class="track-in-hour" title="{safe_artist} - {safe_title}&#10;{safe_album}&#10;{safe_time}">
-                            <img src="{img_url}" class="album-cover-timeline" alt="{safe_album}">
-                        </div>
-                        '''
+                        timeline_html += f'<div class="track-in-hour" title="{safe_artist} - {safe_title}&#10;{safe_album}&#10;{safe_time}"><img src="{img_url}" class="album-cover-timeline" alt="{safe_album}"></div>'
                 else:
                     # Mode détaillé: pochette + infos
                     if img_url:
@@ -1551,14 +1547,7 @@ def display_roon_timeline():
                         safe_album = html.escape(album, quote=True)
                         safe_time = html.escape(time, quote=True)
                         
-                        timeline_html += f'''
-                        <div class="track-in-hour">
-                            <img src="{img_url}" class="album-cover-timeline" alt="{safe_album}">
-                            <div class="track-info-timeline"><b>{safe_time}</b></div>
-                            <div class="track-info-timeline">{safe_artist[:20]}</div>
-                            <div class="track-info-timeline">{safe_title[:20]}</div>
-                        </div>
-                        '''
+                        timeline_html += f'<div class="track-in-hour"><img src="{img_url}" class="album-cover-timeline" alt="{safe_album}"><div class="track-info-timeline"><b>{safe_time}</b></div><div class="track-info-timeline">{safe_artist[:20]}</div><div class="track-info-timeline">{safe_title[:20]}</div></div>'
         else:
             timeline_html += '<div style="text-align: center; color: #adb5bd; padding: 20px;">Aucune écoute</div>'
         
