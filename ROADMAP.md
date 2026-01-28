@@ -101,7 +101,7 @@ Transformer le POC (Proof of Concept) actuel en une **plateforme complète de tr
   - Compteur d'albums traités par jour
 
 #### 📚 Documentation
-- `ISSUE-21-IMPLEMENTATION.md`: Rapport complet d'implémentation Issue #21
+- `issues/ISSUE-21-IMPLEMENTATION.md`: Rapport complet d'implémentation Issue #21
 - `docs/AI-INTEGRATION.md`: Guide technique de l'intégration IA
 - `src/tests/test_ai_service.py`: Suite de tests unitaires pour service IA
 
@@ -192,7 +192,7 @@ Transformer le POC (Proof of Concept) actuel en une **plateforme complète de tr
 
 #### 📚 Documentation
 - `docs/CHANGELOG-ARCHITECTURE-v3.0.0.md`: Guide complet de migration
-- `MIGRATION-GUIDE.md`: Instructions pour les utilisateurs
+- `reports/MIGRATION-GUIDE.md`: Instructions pour les utilisateurs
 
 #### 🎯 Impact
 - **Scalabilité**: Structure extensible pour nouveaux modules
@@ -1029,7 +1029,7 @@ MediaFileStorageError: Bad filename 'xxx.jpg'.
 
 ### Archives
 - [CHANGELOG-*.md](docs/): Historique des versions
-- [MIGRATION-GUIDE.md](MIGRATION-GUIDE.md): Guide de migration v2→v3
+- [MIGRATION-GUIDE.md](reports/MIGRATION-GUIDE.md): Guide de migration v2→v3
 
 ---
 
