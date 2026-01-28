@@ -20,7 +20,7 @@ This project tracks music listening history from Roon and Last.fm, manages a Dis
 
 **Impact:** Every album now includes contextual information automatically, vastly improving the user experience.
 
-See [ISSUE-21-IMPLEMENTATION.md](../ISSUE-21-IMPLEMENTATION.md) and [docs/AI-INTEGRATION.md](../docs/AI-INTEGRATION.md) for complete details.
+See [issues/ISSUE-21-IMPLEMENTATION.md](../issues/ISSUE-21-IMPLEMENTATION.md) and [docs/AI-INTEGRATION.md](../docs/AI-INTEGRATION.md) for complete details.
 
 ---
 
@@ -88,6 +88,9 @@ The project uses a **modular architecture** with clear separation:
 │   ├── python/            # Script backups
 │   └── legacy/            # Pre-v3.0 structure
 ├── docs/                   # All documentation
+├── issues/                 # Issue implementation documentation
+├── reports/                # Project reports (releases, migrations, updates)
+├── tests/                  # Test documentation and summaries
 ├── resources/              # Static resources
 │   └── prompts/           # AI prompt templates
 └── scripts/                # Shell scripts
@@ -553,6 +556,19 @@ Uses `ask_for_ia()` function with EurIA API. Enable web search with `"enable_web
 - **`output/`**: Generated files (haikus, reports)
 - **`backups/`**: Timestamped backups (json/, python/, legacy/)
 - **`docs/`**: Centralized documentation
+- **`issues/`**: Issue implementation documentation and analysis
+  - Contains all ISSUE-*.md files documenting GitHub issue resolutions
+  - Format: ISSUE-{number}-{description}.md
+  - Examples: implementation reports, fix summaries, visual comparisons
+- **`reports/`**: Project-level reports and documentation
+  - Release notes, migration guides, and project updates
+  - Analysis reports and coherence checks
+  - Documentation update summaries
+  - Examples: RELEASE-NOTES-*.md, MIGRATION-GUIDE.md, ANALYSE-COMPLETE-*.md
+- **`tests/`**: Test-related documentation and summaries
+  - Test status reports, enhancement summaries
+  - Contains TEST-*.md and TEST-*.txt files
+  - Examples: TEST-STATUS.md, TEST-SUMMARY.txt
 - **`resources/`**: Static resources (prompts, templates)
 - **`scripts/`**: Shell scripts for setup and launching
 - **`.venv/`**: Python virtual environment (not versioned)
@@ -971,6 +987,72 @@ When creating new data processing scripts:
 4. Verify documentation is saved in `.github/copilot-instructions.md`
 
 This documentation is NOT optional - it's the only way scripts persist across Copilot sessions.
+
+## Documentation Directory Conventions
+
+The project uses **separate directories** for different types of documentation to maintain organization:
+
+### Main Directory (Root)
+Keep **ONLY** essential project files in the root:
+- **README.md**: Main project documentation (user-facing)
+- **ROADMAP.md**: Project roadmap and future plans
+- **TODO.md**: Current task list and action items
+- Configuration files: `requirements*.txt`, `pytest.ini`
+- Utility scripts: `*.sh`, `*.py` (operational scripts only)
+
+### issues/ Directory
+Store all **issue-specific documentation**:
+- **Purpose**: Track implementation details for GitHub issues
+- **Naming**: `ISSUE-{number}-{description}.md`
+- **Content**: Implementation reports, fix summaries, analysis, visual comparisons
+- **When to use**: Whenever documenting work done for a specific GitHub issue
+- **Examples**:
+  - `ISSUE-21-IMPLEMENTATION.md` - AI integration implementation
+  - `ISSUE-47-FIX-SUMMARY.md` - Bug fix summary
+  - `ISSUE-41-VISUALIZATION.md` - Data visualization work
+
+### reports/ Directory
+Store **project-level reports and documentation**:
+- **Purpose**: Track project evolution, releases, and major changes
+- **Content Types**:
+  - Release notes: `RELEASE-NOTES-*.md`
+  - Migration guides: `MIGRATION-GUIDE.md`
+  - Analysis reports: `ANALYSE-COMPLETE-*.md`, `COHERENCE-CHECK-REPORT.md`
+  - Update summaries: `DOCUMENTATION-UPDATE-*.md`
+  - Reorganization documentation: `REORGANISATION-COMPLETE.txt`
+- **When to use**: For project-wide documentation not tied to a specific issue
+
+### tests/ Directory
+Store **test-related documentation**:
+- **Purpose**: Document test infrastructure, status, and improvements
+- **Naming**: `TEST-*.md` or `TEST-*.txt`
+- **Content**: Test status reports, enhancement summaries, test coverage analysis
+- **When to use**: When documenting testing strategy or test results
+- **Examples**:
+  - `TEST-STATUS.md` - Current test coverage status
+  - `TEST-SUMMARY.txt` - Test run summaries
+  - `TEST-ENHANCEMENT-SUMMARY.md` - Test improvement documentation
+
+### docs/ Directory
+Technical documentation and user guides:
+- Architecture overviews, setup guides, API documentation
+- Persistent technical reference material
+- Examples: `README-ROON-TRACKER.md`, `ARCHITECTURE-OVERVIEW.md`
+
+### Best Practices
+1. **When creating new documentation**:
+   - Ask: Is this tied to a specific issue? → `issues/`
+   - Ask: Is this about testing? → `tests/`
+   - Ask: Is this a release/migration/project update? → `reports/`
+   - Ask: Is this technical reference documentation? → `docs/`
+   
+2. **Avoid root directory clutter**:
+   - Don't place new `.md` files in root unless they are README, ROADMAP, or TODO
+   - Move issue/test/report documentation to appropriate subdirectories
+   
+3. **Update references**:
+   - When moving files, check for broken references in other documents
+   - Update paths in `.github/copilot-instructions.md` if needed
 
 ## Documentation References
 

@@ -261,7 +261,7 @@ Les répertoires `output/haikus`, `output/reports`, `output/playlists` accumulen
   - 23 stubs blueprint pour futures implémentations
 - ✅ 223/223 tests passants (100%)
 - ✅ Couverture globale 91% (+3%)
-- ✅ Documentation complète: TEST-STATUS.md, ISSUE-28-TEST-IMPROVEMENTS.md
+- ✅ Documentation complète: tests/TEST-STATUS.md, issues/ISSUE-28-TEST-IMPROVEMENTS.md
 
 ### v3.3.0 (27 janvier 2026)
 - ✅ Intégration IA pour enrichissement automatique des albums

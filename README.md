@@ -110,10 +110,10 @@
 
 **🧪 Tests et Documentation**:
 - `test_ai_service.py`: Script de tests manuels (à convertir en tests pytest)
-- `ISSUE-21-IMPLEMENTATION.md`: Rapport d'implémentation complet
+- `issues/ISSUE-21-IMPLEMENTATION.md`: Rapport d'implémentation complet
 - `docs/AI-INTEGRATION.md`: Guide technique
 
-👉 **Voir les détails**: [ISSUE-21-IMPLEMENTATION.md](ISSUE-21-IMPLEMENTATION.md)
+👉 **Voir les détails**: [issues/ISSUE-21-IMPLEMENTATION.md](issues/ISSUE-21-IMPLEMENTATION.md)
 
 ### 📦 Nouveautés v3.1.0 (24 janvier 2026)
 
