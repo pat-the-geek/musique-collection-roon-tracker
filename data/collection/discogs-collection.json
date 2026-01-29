@@ -1,0 +1,114 @@
+[
+  {
+    "Release_ID": 123456,
+    "Titre": "Kind of Blue",
+    "Artiste": ["Miles Davis"],
+    "Annee": 1959,
+    "Support": "Vinyle",
+    "Label": "Columbia",
+    "Pochette": "https://api.discogs.com/image/R-123456-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example1",
+    "Resume": "Considered one of the greatest jazz albums of all time, Kind of Blue features Miles Davis on trumpet, John Coltrane and Cannonball Adderley on saxophone, Bill Evans on piano, Paul Chambers on bass, and Jimmy Cobb on drums. The album pioneered modal jazz and influenced countless musicians."
+  },
+  {
+    "Release_ID": 234567,
+    "Titre": "Abbey Road",
+    "Artiste": ["The Beatles"],
+    "Annee": 1969,
+    "Support": "Vinyle",
+    "Label": "Apple Records",
+    "Pochette": "https://api.discogs.com/image/R-234567-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example2",
+    "Resume": "The final album recorded by The Beatles, Abbey Road is known for its medley on side two and iconic cover photograph on the zebra crossing. Features classics like Come Together, Something, and Here Comes the Sun."
+  },
+  {
+    "Release_ID": 345678,
+    "Titre": "The Dark Side of the Moon",
+    "Artiste": ["Pink Floyd"],
+    "Annee": 1973,
+    "Support": "CD",
+    "Label": "Harvest",
+    "Pochette": "https://api.discogs.com/image/R-345678-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example3",
+    "Resume": "A landmark concept album exploring themes of conflict, greed, time, death, and mental illness. Known for its innovative use of studio effects, synthesizers, and cohesive sonic landscape. One of the best-selling albums of all time."
+  },
+  {
+    "Release_ID": 456789,
+    "Titre": "Blue Train",
+    "Artiste": ["John Coltrane"],
+    "Annee": 1957,
+    "Support": "Vinyle",
+    "Label": "Blue Note",
+    "Pochette": "https://api.discogs.com/image/R-456789-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example4",
+    "Resume": "John Coltrane's only album for Blue Note Records as leader. Features hard bop compositions with a stellar lineup including Lee Morgan, Curtis Fuller, Kenny Drew, Paul Chambers, and Philly Joe Jones."
+  },
+  {
+    "Release_ID": 567890,
+    "Titre": "Thriller",
+    "Artiste": ["Michael Jackson"],
+    "Annee": 1982,
+    "Support": "CD",
+    "Label": "Epic",
+    "Pochette": "https://api.discogs.com/image/R-567890-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example5",
+    "Resume": "The best-selling album of all time, Thriller revolutionized pop music with its blend of pop, rock, funk, and R&B. Produced by Quincy Jones and featuring Eddie Van Halen on Beat It. Known for groundbreaking music videos."
+  },
+  {
+    "Release_ID": 678901,
+    "Titre": "The Godfather",
+    "Artiste": ["Nino Rota"],
+    "Annee": 1972,
+    "Support": "CD",
+    "Label": "Paramount",
+    "Film": "The Godfather",
+    "Realisateur": "Francis Ford Coppola",
+    "Pochette": "https://api.discogs.com/image/R-678901-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example6",
+    "Resume": "Iconic film score featuring the unforgettable main theme. Nino Rota's composition perfectly captures the drama and emotion of the Corleone family saga. Won the Academy Award for Best Original Score."
+  },
+  {
+    "Release_ID": 789012,
+    "Titre": "Random Access Memories",
+    "Artiste": ["Daft Punk"],
+    "Annee": 2013,
+    "Support": "Vinyle",
+    "Label": "Columbia",
+    "Pochette": "https://api.discogs.com/image/R-789012-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example7",
+    "Resume": "Electronic music duo Daft Punk's return to live instrumentation, featuring collaborations with Nile Rodgers, Pharrell Williams, and Giorgio Moroder. Won five Grammy Awards including Album of the Year. Features the hit single Get Lucky."
+  },
+  {
+    "Release_ID": 890123,
+    "Titre": "Back in Black",
+    "Artiste": ["AC/DC"],
+    "Annee": 1980,
+    "Support": "Vinyle",
+    "Label": "Albert Productions",
+    "Pochette": "https://api.discogs.com/image/R-890123-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example8",
+    "Resume": "AC/DC's first album with new lead singer Brian Johnson, recorded as a tribute to former vocalist Bon Scott. Became one of the best-selling albums worldwide with classics like Back in Black, You Shook Me All Night Long, and Hells Bells."
+  },
+  {
+    "Release_ID": 901234,
+    "Titre": "Nevermind",
+    "Artiste": ["Nirvana"],
+    "Annee": 1991,
+    "Support": "CD",
+    "Label": "DGC Records",
+    "Pochette": "https://api.discogs.com/image/R-901234-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example9",
+    "Resume": "Nirvana's breakthrough album that brought alternative rock and grunge into the mainstream. Features the iconic single Smells Like Teen Spirit. Produced by Butch Vig with its raw energy and Kurt Cobain's introspective lyrics."
+  },
+  {
+    "Release_ID": 112345,
+    "Titre": "A Love Supreme",
+    "Artiste": ["John Coltrane"],
+    "Annee": 1965,
+    "Support": "Vinyle",
+    "Label": "Impulse!",
+    "Pochette": "https://api.discogs.com/image/R-112345-1234567890.jpeg",
+    "Spotify_Cover_URL": "https://i.scdn.co/image/ab67616d0000b273example10",
+    "Resume": "John Coltrane's spiritual jazz masterpiece, a four-part suite that represents his devotion to God. Features the classic quartet with McCoy Tyner, Jimmy Garrison, and Elvin Jones. Considered one of the most important jazz albums ever recorded."
+  }
+]
