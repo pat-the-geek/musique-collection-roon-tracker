@@ -1,0 +1,33 @@
+=================================================
+Branches Merged with Main - Quick Summary
+=================================================
+
+Total: 38 branches merged
+
+This file provides a quick summary. 
+For complete details, see: docs/MERGED-BRANCHES.md
+
+To regenerate this list, run:
+    bash scripts/list-merged-branches.sh
+
+---
+
+Recent Merges (Latest 10):
+1. copilot/check-library-dependencies (#62)
+2. copilot/implement-issue-59-solution (#61)
+3. copilot/prepare-design-report (#60)
+4. copilot/update-documents-for-timeline-roon (#58)
+5. copilot/fix-timeline-roon-code (#57)
+6. copilot/fix-display-issues (#56)
+7. copilot/propose-roon-journal-interface (#54)
+8. copilot/organize-main-directory-files (#53)
+9. copilot/fix-zero-tracks-issue (#51)
+10. copilot/verify-report-data-issue-47 (#49)
+
+---
+
+All merged branches follow the 'copilot/' naming prefix.
+For full list with descriptions, see docs/MERGED-BRANCHES.md
+
+Last Updated: 2026-01-29
+=================================================
