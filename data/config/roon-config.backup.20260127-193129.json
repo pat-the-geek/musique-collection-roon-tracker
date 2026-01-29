@@ -1,0 +1,68 @@
+{
+  "token": "f39ffa58-f5d5-40ba-8a1b-2683716bd324",
+  "host": "192.168.1.253",
+  "port": "9330",
+  "listen_start_hour": 6,
+  "listen_end_hour": 23,
+  "radio_stations": [
+    "RTS La Première",
+    "RTS Couleur 3",
+    "RTS Espace 2",
+    "RTS Option Musique",
+    "Radio Meuh",
+    "Radio Nova"
+  ],
+  "scheduled_tasks": {
+    "analyze_listening_patterns": {
+      "enabled": true,
+      "frequency_unit": "hour",
+      "frequency_count": 6,
+      "last_execution": "2026-01-27T16:02:42.970294",
+      "description": "Analyze listening patterns and generate insights"
+    },
+    "generate_haiku": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 1,
+      "last_execution": "2026-01-26T21:33:01.389247",
+      "description": "Generate haiku presentations for albums"
+    },
+    "read_discogs": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": "2026-01-25T21:06:55.633060",
+      "description": "Fetch Discogs collection"
+    },
+    "generate_soundtrack": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": "2026-01-25T21:07:01.876712",
+      "description": "Cross-reference soundtracks"
+    },
+    "generate_playlist": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": "2026-01-27T16:02:43.017524",
+      "description": "Generate playlists based on listening patterns",
+      "playlist_type": "top_sessions",
+      "max_tracks": 25,
+      "output_formats": [
+        "json",
+        "m3u",
+        "csv",
+        "roon-txt"
+      ]
+    },
+    "ai_optimize_system": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": null,
+      "description": "AI-powered system optimization with recommendations",
+      "auto_apply": false
+    }
+  }
+}

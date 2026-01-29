@@ -1,0 +1,122 @@
+[
+  {
+    "film_title": "à bout de souffle",
+    "album_title": "à bout de souffle (bande originale du film)",
+    "year": "1960",
+    "director": "Jean-Luc Godard"
+  },
+  {
+    "film_title": "apocalypse now",
+    "album_title": "apocalypse now (original motion picture soundtrack)",
+    "year": "1979",
+    "director": "Francis Ford Coppola"
+  },
+  {
+    "film_title": "basic instinct",
+    "album_title": "basic instinct (original motion picture soundtrack)",
+    "year": "1992",
+    "director": "Paul Verhoeven"
+  },
+  {
+    "film_title": "blow-up",
+    "album_title": "blow-up - the original soundtrack album",
+    "year": "1966",
+    "director": "Michelangelo Antonioni"
+  },
+  {
+    "film_title": "bullitt",
+    "album_title": "bullitt",
+    "year": "1968",
+    "director": "Peter Yates"
+  },
+  {
+    "film_title": "eyes wide shut",
+    "album_title": "eyes wide shut (music from the motion picture)",
+    "year": "1999",
+    "director": "Stanley Kubrick"
+  },
+  {
+    "film_title": "house of gucci",
+    "album_title": "house of gucci (music from the motion picture)",
+    "year": "2021",
+    "director": "Ridley Scott"
+  },
+  {
+    "film_title": "jackie brown",
+    "album_title": "jackie brown (music from the miramax motion picture)",
+    "year": "1997",
+    "director": "Quentin Tarantino"
+  },
+  {
+    "film_title": "l'amour ouf",
+    "album_title": "l'amour ouf (soundtrack & score)",
+    "year": "2024",
+    "director": "Gilles Lellouche"
+  },
+  {
+    "film_title": "le grand bleu",
+    "album_title": "le grand bleu (bande originale du film)",
+    "year": "1988",
+    "director": "Luc Besson"
+  },
+  {
+    "film_title": "lost in translation",
+    "album_title": "lost in translation (music from the motion picture soundtrack)",
+    "year": "2003",
+    "director": "Sofia Coppola"
+  },
+  {
+    "film_title": "marie antoinette",
+    "album_title": "marie antoinette (original motion picture soundtrack)",
+    "year": "2006",
+    "director": "Sofia Coppola"
+  },
+  {
+    "film_title": "priscilla",
+    "album_title": "priscilla (original motion picture soundtrack)",
+    "year": "2023",
+    "director": "Sofia Coppola"
+  },
+  {
+    "film_title": "pulp fiction",
+    "album_title": "pulp fiction (music from the motion picture)",
+    "year": "1994",
+    "director": "Quentin Tarantino"
+  },
+  {
+    "film_title": "the bling ring",
+    "album_title": "the bling ring (original motion picture soundtrack)",
+    "year": "2013",
+    "director": "Sofia Coppola"
+  },
+  {
+    "film_title": "the brutalist",
+    "album_title": "the brutalist (original motion picture soundtrack)",
+    "year": "2024",
+    "director": "Brady Corbet"
+  },
+  {
+    "film_title": "the room next door",
+    "album_title": "the room next door (original soundtrack)",
+    "year": "2024",
+    "director": "Pedro Almodóvar"
+  },
+  {
+    "film_title": "the thomas crown affair",
+    "album_title": "the thomas crown affair (original motion picture soundtrack)",
+    "year": "1968",
+    "director": "Norman Jewison"
+  },
+  {
+    "film_title": "the virgin suicides",
+    "album_title": "the virgin suicides (music from the motion picture)",
+    "year": "1999",
+    "director": "N/A"
+  },
+  {
+    "film_title": "the virgin suicides",
+    "album_title": "the virgin suicides redux",
+    "year": "1999",
+    "director": "N/A"
+  }
+]

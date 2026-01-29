@@ -1,0 +1,60 @@
+{
+  "core_id": "test-core-id",
+  "core_name": "Test Roon Core",
+  "token": "test-token",
+  "listen_start_hour": 6,
+  "listen_end_hour": 23,
+  "scheduled_tasks": {
+    "analyze_listening_patterns": {
+      "enabled": true,
+      "frequency_unit": "hour",
+      "frequency_count": 6,
+      "last_execution": null,
+      "description": "Analyze listening patterns and generate insights"
+    },
+    "generate_haiku": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 1,
+      "last_execution": null,
+      "description": "Generate haiku presentations for albums"
+    },
+    "generate_playlist": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": null,
+      "description": "Generate playlists based on listening patterns",
+      "playlist_type": "top_sessions",
+      "max_tracks": 25,
+      "output_formats": [
+        "json",
+        "m3u",
+        "csv",
+        "roon-txt"
+      ]
+    },
+    "read_discogs": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": null,
+      "description": "Fetch Discogs collection"
+    },
+    "generate_soundtrack": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": null,
+      "description": "Cross-reference soundtracks"
+    },
+    "ai_optimize_system": {
+      "enabled": true,
+      "frequency_unit": "day",
+      "frequency_count": 7,
+      "last_execution": null,
+      "description": "AI-powered system optimization with recommendations",
+      "auto_apply": false
+    }
+  }
+}
