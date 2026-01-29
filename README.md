@@ -101,12 +101,20 @@
 - ✅ Tests + documentation
 - 🚧 Phase 2 à venir: Collection commands (liste, recherche, édition)
 
+**Installation**:
+```bash
+# Installer les dépendances CLI (requis avant première utilisation)
+pip install -r requirements.txt
+# OU installer uniquement les dépendances CLI minimales:
+pip install rich click prompt-toolkit
+```
+
 **Usage**:
 ```bash
-# Lancement rapide
+# Lancement rapide (recommandé - gère automatiquement les dépendances)
 ./start-cli.sh
 
-# Commandes
+# OU commandes directes (nécessite installation préalable des dépendances)
 python3 -m src.cli.main version
 python3 -m src.cli.main collection list
 python3 -m src.cli.main --color truecolor journal show
