@@ -4,8 +4,8 @@
 
 Ce document liste toutes les dépendances Python nécessaires pour le projet Musique (Collection & Tracking), organisées par fonction et scripts concernés.
 
-**Version du projet:** 3.0.0  
-**Date:** 24 janvier 2026
+**Version du projet:** 3.5.0  
+**Date:** 29 janvier 2026
 
 ## Installation rapide
 
@@ -25,6 +25,14 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Option 3: Installation minimale (tracker Roon uniquement)
+```bash
+# Pour uniquement exécuter chk-roon.py
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-roon.txt
+```
+
 ## Dépendances externes (pip install)
 
 ### Core Dependencies
@@ -33,7 +41,7 @@ Utilisées par plusieurs scripts du projet.
 | Package | Version minimale | Usage | Scripts concernés |
 |---------|-----------------|-------|-------------------|
 | `python-dotenv` | 1.0.0 | Gestion variables d'environnement (.env) | Tous les scripts |
-| `requests` | 2.31.0 | Requêtes HTTP vers APIs | collection/, enrichment/, analysis/, gui/ |
+| `requests` | 2.31.0 | Requêtes HTTP vers APIs | collection/, enrichment/, analysis/, gui/, trackers/ |
 | `certifi` | 2023.0.0 | Gestion certificats SSL | trackers/ |
 
 ### Tracking & APIs musicales
@@ -52,6 +60,27 @@ Utilisées par plusieurs scripts du projet.
 |---------|-----------------|-------|-------------------|
 | `streamlit` | 1.53.0 | Framework Web UI | `src/gui/musique-gui.py` |
 | `pillow` | 12.1.0 | Traitement images | `src/gui/musique-gui.py` |
+| `markdown` | 3.4.0 | Conversion Markdown vers HTML | `src/gui/musique-gui.py` |
+
+### Interface CLI
+| Package | Version minimale | Usage | Scripts concernés |
+|---------|-----------------|-------|-------------------|
+| `rich` | 13.0.0 | Affichage terminal enrichi (tables, couleurs, panels) | `src/cli/` |
+| `click` | 8.0.0 | Framework CLI avec commandes imbriquées | `src/cli/main.py` |
+| `prompt-toolkit` | 3.0.0 | Outils interactifs CLI (prévu Phase 2) | À venir |
+
+### Base de données
+| Package | Version minimale | Usage | Scripts concernés |
+|---------|-----------------|-------|-------------------|
+| `sqlalchemy` | 2.0.0 | ORM pour gestion base SQLite | `src/models/schema.py`<br>`src/maintenance/migrate_to_sqlite.py` |
+
+### Tests
+| Package | Version minimale | Usage | Scripts concernés |
+|---------|-----------------|-------|-------------------|
+| `pytest` | 7.0.0 | Framework de tests unitaires | `src/tests/test_*.py` |
+| `pytest-cov` | 4.0.0 | Couverture de code | Configuration dans `pytest.ini` |
+
+**Note sur pytest-mock**: Non inclus car les tests utilisent `unittest.mock` de la bibliothèque standard Python.
 
 ## Modules Python Standard Library
 
@@ -94,6 +123,9 @@ Ces modules sont inclus avec Python et ne nécessitent pas d'installation.
 - `pylast` - API Last.fm
 - `certifi` - Certificats SSL
 - `python-dotenv` - Variables d'environnement
+- `requests` - Requêtes HTTP (Spotify, EurIA)
+
+**Fichier requirements minimal:** `requirements-roon.txt`
 
 ### `src/collection/` - Gestion collection
 **Scripts:** `Read-discogs-ia.py`, `generate-soundtrack.py`
@@ -110,7 +142,7 @@ Ces modules sont inclus avec Python et ne nécessitent pas d'installation.
 - `python-dotenv` - Variables d'environnement
 
 ### `src/analysis/` - Analyse et génération
-**Scripts:** `generate-haiku.py`, `analyze-listening-patterns.py`
+**Scripts:** `generate-haiku.py`, `analyze-listening-patterns.py`, `generate-playlist.py`
 
 **Dépendances:**
 - `requests` - API EurIA
@@ -122,22 +154,55 @@ Ces modules sont inclus avec Python et ne nécessitent pas d'installation.
 **Dépendances:**
 - `streamlit` - Framework Web
 - `pillow` - Traitement images
+- `markdown` - Conversion Markdown vers HTML
 - `requests` - Chargement images depuis URLs
 - `python-dotenv` - Variables d'environnement
 
+**Script de lancement:** `scripts/start-streamlit.sh`
+
+### `src/cli/` - Interface CLI (v3.5.0)
+**Scripts:** `main.py`, `ui/colors.py`, `utils/terminal.py`, `commands/*.py`
+
+**Dépendances:**
+- `rich` - Affichage terminal enrichi
+- `click` - Framework CLI
+- `prompt-toolkit` - Outils interactifs (prévu Phase 2)
+- `python-dotenv` - Variables d'environnement
+
+**Script de lancement:** `start-cli.sh` (gère auto-installation)
+
+### `src/models/` - Schéma base de données (v3.4.0)
+**Scripts:** `schema.py`
+
+**Dépendances:**
+- `sqlalchemy` - ORM pour SQLite
+
 ### `src/utils/` - Utilitaires
-**Scripts:** `List_all_music_on_drive.py`, `test-spotify-search-v2.2.py`
+**Scripts:** `List_all_music_on_drive.py`, `test-spotify-search-v2.2.py`, `scheduler.py`
 
 **Dépendances:**
 - `mutagen` - Métadonnées audio (FLAC, MP3, ID3)
 - `python-dotenv` - Variables d'environnement
 
 ### `src/maintenance/` - Maintenance
-**Scripts:** `remove-consecutive-duplicates.py`, `fix-radio-tracks.py`, `clean-radio-tracks.py`
+**Scripts:** `remove-consecutive-duplicates.py`, `fix-radio-tracks.py`, `clean-radio-tracks.py`, `migrate_to_sqlite.py`
 
 **Dépendances:**
 - `python-dotenv` - Variables d'environnement (certains scripts)
+- `sqlalchemy` - Migration vers SQLite (migrate_to_sqlite.py)
 - Principalement modules standard library
+
+### `src/tests/` - Tests unitaires (v3.1.0+)
+**Scripts:** `test_*.py`, `conftest.py`
+
+**Dépendances:**
+- `pytest` - Framework de tests
+- `pytest-cov` - Couverture de code
+- `unittest.mock` (stdlib) - Mocking
+
+**Exécution:** `python3 -m pytest src/tests/ -v`
+
+**Configuration:** `pytest.ini` à la racine du projet
 
 ## Vérification des dépendances installées
 
@@ -163,26 +228,44 @@ pip install --upgrade -r requirements.txt
 pip install --upgrade streamlit
 ```
 
-## Dépendances par fonctionnalité
+## Installation par composant
 
-### Pour utiliser le tracker Roon/Last.fm
+Si vous n'avez besoin que d'un sous-ensemble de fonctionnalités, vous pouvez installer uniquement les dépendances nécessaires.
+
+### Tracker Roon uniquement
 ```bash
-pip install roonapi pylast certifi python-dotenv
+# Installation minimale pour chk-roon.py
+pip install -r requirements-roon.txt
+# Ou installation manuelle
+pip install roonapi pylast certifi python-dotenv requests
 ```
 
-### Pour utiliser l'interface Web Streamlit
+### Interface Web (GUI) uniquement
 ```bash
-pip install streamlit pillow requests python-dotenv
+pip install streamlit pillow markdown requests python-dotenv
 ```
 
-### Pour scanner les fichiers musicaux
+### Interface CLI uniquement
+```bash
+pip install rich click prompt-toolkit python-dotenv
+# Ou utiliser le script automatique
+./start-cli.sh  # Installe automatiquement les dépendances manquantes
+```
+
+### Utilitaires audio
 ```bash
 pip install mutagen python-dotenv
 ```
 
-### Pour importer la collection Discogs
+### Développement et tests
 ```bash
-pip install requests python-dotenv
+pip install pytest pytest-cov
+# pytest-mock n'est pas nécessaire (unittest.mock est utilisé)
+```
+
+### Migration base de données
+```bash
+pip install sqlalchemy python-dotenv
 ```
 
 ## Compatibilité
@@ -190,6 +273,18 @@ pip install requests python-dotenv
 - **Python:** 3.8 ou supérieur (testé avec Python 3.11, 3.12, 3.13)
 - **OS:** macOS, Linux, Windows (verrouillage fcntl fonctionne uniquement sur Unix/macOS)
 - **Architecture:** x86_64, ARM64 (Apple Silicon compatible)
+
+## Fichiers requirements
+
+Le projet dispose de deux fichiers requirements :
+
+- **`requirements.txt`** : Toutes les dépendances pour l'installation complète du projet
+- **`requirements-roon.txt`** : Dépendances minimales pour le tracker Roon uniquement
+
+**Utilisation recommandée** :
+- Utilisez `requirements.txt` pour une installation complète
+- Utilisez `requirements-roon.txt` pour un déploiement minimal (tracker uniquement)
+- Les scripts d'installation (`install-dependencies.sh`, `setup-roon-tracker.sh`) gèrent cela automatiquement
 
 ## Troubleshooting
 
