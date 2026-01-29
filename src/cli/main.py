@@ -153,28 +153,48 @@ def collection():
 @collection.command('list')
 @click.option('--page', default=1, help='Numéro de page')
 @click.option('--per-page', default=25, help='Éléments par page')
-@click.option('--filter', help='Filtre (soundtrack, year, support)')
+@click.option('--filter', 'filter_type', help='Filtre (soundtrack, year:YYYY, support:TYPE)')
 @click.option('--sort', default='title', help='Trier par (title, artist, year)')
-def collection_list(page, per_page, filter, sort):
+def collection_list(page, per_page, filter_type, sort):
     """Liste les albums (paginée)."""
-    console.print(f"[yellow]Collection list - Page {page}, {per_page} par page[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 2...[/dim]")
+    from .commands.collection import CollectionCommand
+    cmd = CollectionCommand(console)
+    cmd.list_albums(page=page, per_page=per_page, filter_type=filter_type, sort_by=sort)
 
 
 @collection.command('search')
 @click.argument('term')
 def collection_search(term):
     """Recherche des albums par titre ou artiste."""
-    console.print(f"[yellow]Recherche: {term}[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 2...[/dim]")
+    from .commands.collection import CollectionCommand
+    cmd = CollectionCommand(console)
+    cmd.search_albums(term)
 
 
 @collection.command('view')
 @click.argument('release_id', type=int)
 def collection_view(release_id):
     """Affiche les détails d'un album."""
-    console.print(f"[yellow]Vue album #{release_id}[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 2...[/dim]")
+    from .commands.collection import CollectionCommand
+    cmd = CollectionCommand(console)
+    cmd.view_album(release_id)
+
+
+@collection.command('edit')
+@click.argument('release_id', type=int)
+def collection_edit(release_id):
+    """Édite les métadonnées d'un album."""
+    from .commands.collection import CollectionCommand
+    cmd = CollectionCommand(console)
+    cmd.edit_album(release_id)
+
+
+@collection.command('stats')
+def collection_stats():
+    """Affiche les statistiques de la collection."""
+    from .commands.collection import CollectionCommand
+    cmd = CollectionCommand(console)
+    cmd.show_stats()
 
 
 @cli.group()
