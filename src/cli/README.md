@@ -37,14 +37,28 @@ Cette interface CLI fournit une alternative légère et rapide à l'interface we
 
 ## 🚀 Installation et Utilisation
 
+### ⚠️ Prérequis
+
+**IMPORTANT**: Avant d'utiliser le CLI, vous devez installer les dépendances Python requises.
+
 ### Installation des dépendances
 
+**Méthode 1 - Installation complète (recommandée):**
 ```bash
-# Avec pip
-pip install rich click prompt-toolkit
-
-# Ou depuis requirements.txt
+# Installe toutes les dépendances du projet
 pip install -r requirements.txt
+```
+
+**Méthode 2 - Installation minimale (CLI uniquement):**
+```bash
+# Installe uniquement les dépendances CLI
+pip install rich click prompt-toolkit
+```
+
+**Méthode 3 - Utiliser le script de lancement:**
+```bash
+# Le script vérifie et installe automatiquement les dépendances
+./start-cli.sh
 ```
 
 ### Lancement rapide

@@ -26,10 +26,24 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import click
-from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
+# Check for required dependencies and provide helpful error message
+try:
+    import click
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+except ImportError as e:
+    missing_module = str(e).split("'")[1] if "'" in str(e) else "unknown"
+    print(f"\n❌ Erreur: Le module '{missing_module}' n'est pas installé.\n")
+    print("📦 Pour installer les dépendances CLI, utilisez l'une de ces méthodes:\n")
+    print("   Méthode 1 (Recommandée) - Utiliser le script de lancement:")
+    print("   $ ./start-cli.sh\n")
+    print("   Méthode 2 - Installer toutes les dépendances:")
+    print("   $ pip install -r requirements.txt\n")
+    print("   Méthode 3 - Installer uniquement les dépendances CLI:")
+    print("   $ pip install rich click prompt-toolkit\n")
+    print("📚 Voir la documentation: src/cli/README.md\n")
+    sys.exit(1)
 
 from .ui.colors import SemanticColor, apply_color, set_color_mode
 from .utils.terminal import detect_terminal_capabilities
