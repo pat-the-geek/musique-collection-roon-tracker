@@ -87,7 +87,7 @@ echo -e "${BLUE}╚════════════════════�
 echo ""
 echo -e "${GREEN}📋 Dépendances installées :${NC}"
 echo ""
-pip list | grep -E "(roonapi|pylast|mutagen|streamlit|pillow|requests|python-dotenv|certifi)"
+pip list | grep -E "(roonapi|pylast|mutagen|streamlit|pillow|markdown|sqlalchemy|rich|click|prompt-toolkit|requests|python-dotenv|certifi|pytest)"
 echo ""
 echo -e "${YELLOW}💡 Pour activer l'environnement virtuel :${NC}"
 echo "   source .venv/bin/activate"

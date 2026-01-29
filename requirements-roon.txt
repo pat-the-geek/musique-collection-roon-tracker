@@ -1,10 +1,25 @@
-# Dépendances pour Roon Music Tracker
+# =============================================================================
+# Requirements pour Roon Music Tracker (minimal)
+# =============================================================================
+# Ce fichier contient les dépendances minimales pour faire fonctionner
+# uniquement le tracker Roon (chk-roon.py).
+#
+# Pour l'installation complète du projet, utilisez requirements.txt
+#
+# Installation: pip install -r requirements-roon.txt
+# =============================================================================
 
-# API Roon
-roonapi>=0.1.0
+# ---- API Roon ----
+roonapi>=0.1.0                # Connexion et contrôle Roon Core
 
-# Gestion des variables d'environnement
-python-dotenv>=1.0.0
+# ---- API Last.fm ----
+pylast>=5.0.0                 # Vérification lectures Last.fm (utilisé par chk-roon.py)
 
-# Gestion des certificats SSL
-certifi>=2023.0.0
+# ---- Gestion configuration ----
+python-dotenv>=1.0.0          # Chargement variables d'environnement (.env)
+
+# ---- Gestion certificats SSL ----
+certifi>=2023.0.0             # Certificats SSL pour connexions HTTPS
+
+# ---- Requêtes HTTP ----
+requests>=2.31.0              # Requêtes API (Spotify, Last.fm, EurIA)

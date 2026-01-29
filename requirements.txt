@@ -30,12 +30,12 @@ sqlalchemy>=2.0.0             # ORM pour gestion base de données SQLite
 # ---- CLI Interface (src/cli/) ----
 rich>=13.0.0                  # Rich terminal output and formatting
 click>=8.0.0                  # CLI framework for command-line interfaces
-prompt-toolkit>=3.0.0         # Interactive command-line tools
+prompt-toolkit>=3.0.0         # Interactive command-line tools (prévu pour Phase 2)
 
 # ---- Testing (src/tests/) ----
 pytest>=7.0.0                 # Framework de tests unitaires
 pytest-cov>=4.0.0             # Couverture de code pour pytest
-pytest-mock>=3.12.0           # Mocking pour tests
+# Note: pytest-mock n'est pas utilisé - les tests utilisent unittest.mock (stdlib)
 
 # ---- Python Standard Library (déjà incluses avec Python) ----
 # Les modules suivants n'ont pas besoin d'installation:

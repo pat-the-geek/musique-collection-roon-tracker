@@ -633,8 +633,13 @@ Fichier: `data/config/roon-config.json`
 
 ### Documentation technique
 - **[docs/ARCHITECTURE-OVERVIEW.md](docs/ARCHITECTURE-OVERVIEW.md)**: Vue d'ensemble architecture
-- **[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md)**: Liste complète des dépendances
-- **[requirements.txt](requirements.txt)**: Fichier de dépendances Python
+- **[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md)**: 📦 **MIS À JOUR** - Guide complet des dépendances Python (v3.5.0)
+  - Installation complète vs minimale (tracker uniquement)  
+  - Dépendances par composant (GUI, CLI, tests, database)  
+  - Différence entre requirements.txt et requirements-roon.txt  
+  - Troubleshooting et compatibilité
+- **[requirements.txt](requirements.txt)**: Fichier de dépendances Python (installation complète)
+- **[requirements-roon.txt](requirements-roon.txt)**: Dépendances minimales (tracker uniquement)
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)**: Guide développement IA
 
 ## ⚠️ Bonnes Pratiques

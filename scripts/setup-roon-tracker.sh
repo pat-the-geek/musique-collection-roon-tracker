@@ -145,10 +145,26 @@ install_dependencies() {
     if [ ! -f "$REQUIREMENTS_FILE" ]; then
         print_info "Création du fichier requirements..."
         cat > "$REQUIREMENTS_FILE" << 'EOF'
-# Dépendances pour Roon Music Tracker
-roonapi>=0.1.0
-python-dotenv>=1.0.0
-certifi>=2023.0.0
+# =============================================================================
+# Requirements pour Roon Music Tracker (minimal)
+# =============================================================================
+# Installation: pip install -r requirements-roon.txt
+# =============================================================================
+
+# ---- API Roon ----
+roonapi>=0.1.0                # Connexion et contrôle Roon Core
+
+# ---- API Last.fm ----
+pylast>=5.0.0                 # Vérification lectures Last.fm (utilisé par chk-roon.py)
+
+# ---- Gestion configuration ----
+python-dotenv>=1.0.0          # Chargement variables d'environnement (.env)
+
+# ---- Gestion certificats SSL ----
+certifi>=2023.0.0             # Certificats SSL pour connexions HTTPS
+
+# ---- Requêtes HTTP ----
+requests>=2.31.0              # Requêtes API (Spotify, Last.fm, EurIA)
 EOF
         print_success "Fichier requirements-roon.txt créé"
     fi
@@ -159,7 +175,7 @@ EOF
     
     # Afficher les packages installés
     print_info "Packages installés:"
-    pip list | grep -E "roonapi|python-dotenv|certifi"
+    pip list | grep -E "roonapi|pylast|python-dotenv|certifi|requests"
     
     echo ""
 }
