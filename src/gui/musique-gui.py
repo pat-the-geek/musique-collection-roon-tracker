@@ -2,14 +2,14 @@
 """Interface Streamlit pour gestion de collection musicale.
 
 Interface web moderne pour visualiser, éditer et gérer une collection musicale.
-Intègre les données Discogs, l'historique d'écoute Roon/Last.fm et les métadonnées
+Intègre les données Discogs, l'historique d'écoute Last.fm et les métadonnées
 de films pour les bandes originales.
 
 Architecture:
     Ce module fait partie d'un écosystème plus large comprenant:
-    - chk-roon.py: Surveillance temps réel Roon/Last.fm (v2.2.0)
+    - chk-last-fm.py: Surveillance temps réel Last.fm (v1.0)
     - discogs-collection.json: Base de données collection Discogs
-    - chk-roon.json: Historique des lectures avec enrichissement Spotify
+    - chk-lastfm.json: Historique des lectures avec enrichissement Spotify
     - soundtrack.json: Métadonnées films pour bandes originales
     - Read-discogs-ia.py: Import/synchronisation Discogs API
 
@@ -23,14 +23,14 @@ Fonctionnalités principales:
         - Liens directs vers Spotify et Discogs
         - Affichage enrichi des métadonnées films (BOF)
     
-    Journal Roon:
+    Journal Last.fm:
         - Visualisation chronologique des lectures
-        - Filtres: source (Roon/Last.fm), recherche, favoris
+        - Filtres: source (Last.fm), recherche, favoris
         - Triple affichage images: artiste Spotify, album Spotify, album Last.fm
         - Statistiques en temps réel
         - Marquage des lectures favorites
     
-    Timeline Roon (v3.4.0):
+    Timeline Last.fm (v3.4.0):
         - Visualisation horaire des écoutes sur ligne temporelle
         - Timeline horizontale graduée par heures (6h-23h configurable)
         - Alternance de couleurs pour lisibilité
@@ -62,7 +62,7 @@ Structure des données:
             "Resume": str  # Généré via EurIA API
         }
     
-    chk-roon.json:
+    chk-lastfm.json:
         {
             "tracks": [
                 {
@@ -118,7 +118,7 @@ Notes techniques:
 
 Intégration écosystème:
     - Données Discogs: Read-discogs-ia.py → discogs-collection.json → GUI
-    - Données Roon: chk-roon.py → chk-roon.json → GUI (journal)
+    - Données Roon: chk-last-fm.py → chk-lastfm.json → GUI (journal)
     - Enrichissement: complete-resumes.py, complete-images-roon.py
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
@@ -132,7 +132,7 @@ Changelog v3.4.0 (28 janvier 2026):
     - Scroll horizontal pour parcourir la journée
     - Statistiques journalières: total tracks, artistes/albums uniques, peak hour
     - Performance optimisée: max 20 tracks affichés par heure
-    - Basée sur configuration roon-config.json (listen_start_hour, listen_end_hour)
+    - Basée sur configuration lastfm-config.json (listen_start_hour, listen_end_hour)
     - Fix affichage cas limites (heures vides, jours sans écoutes) - Issue #57
 
 Changelog v3.1.0 (25 janvier 2026):
@@ -336,7 +336,7 @@ st.markdown("""
 
 # Fichiers JSON sources - Configuration centrale des chemins de données
 JSON_FILE = os.path.join(PROJECT_ROOT, "data", "collection", "discogs-collection.json")  # Collection principale Discogs
-ROON_FILE = os.path.join(PROJECT_ROOT, "data", "history", "chk-roon.json")  # Historique lectures Roon/Last.fm
+LASTFM_FILE = os.path.join(PROJECT_ROOT, "data", "history", "chk-lastfm.json")  # Historique lectures Roon/Last.fm
 SOUNDTRACK_FILE = os.path.join(PROJECT_ROOT, "data", "collection", "soundtrack.json")  # Métadonnées films (BOF)
 
 # Configuration API EurIA
@@ -467,7 +467,7 @@ def load_data() -> List[Dict]:
 def load_roon_data() -> List[Dict]:
     """Charge l'historique des lectures Roon/Last.fm avec mise en cache auto-rafraîchie.
     
-    Lecture du fichier chk-roon.json généré par chk-roon.py (v2.2.0).
+    Lecture du fichier chk-lastfm.json généré par chk-last-fm.py (v2.2.0).
     Contient l'historique complet des lectures musicales avec enrichissement
     d'images via Spotify et Last.fm API.
     
@@ -519,25 +519,25 @@ def load_roon_data() -> List[Dict]:
         - Chargement: ~100-200ms (avec cache: <1ms)
     
     Data Quality:
-        - Images manquantes réparées automatiquement par chk-roon.py v2.1.0+
+        - Images manquantes réparées automatiquement par chk-last-fm.py v2.1.0+
         - Validation artiste Spotify stricte (v2.2.0)
         - Nettoyage métadonnées (parenthèses, versions)
     
     See Also:
-        display_roon_journal(): Affichage des données
-        chk-roon.py: Script source (surveillance temps réel)
+        display_lastfm_journal(): Affichage des données
+        chk-last-fm.py: Script source (surveillance temps réel)
         complete-images-roon.py: Réparation images manquantes
     """
-    if not os.path.exists(ROON_FILE):
-        st.error(f"❌ Le fichier {ROON_FILE} n'existe pas.")
+    if not os.path.exists(LASTFM_FILE):
+        st.error(f"❌ Le fichier {LASTFM_FILE} n'existe pas.")
         return []
     
     try:
-        with open(ROON_FILE, 'r', encoding='utf-8') as f:
+        with open(LASTFM_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data.get('tracks', [])
     except json.JSONDecodeError:
-        st.error(f"❌ Erreur de format JSON dans {ROON_FILE}")
+        st.error(f"❌ Erreur de format JSON dans {LASTFM_FILE}")
         return []
     except Exception as e:
         st.error(f"❌ Erreur lors du chargement : {e}")
@@ -867,7 +867,7 @@ def load_image_from_url(url: str) -> Optional[Image.Image]:
         - Pas de validation avant téléchargement (timeout protège)
     
     See Also:
-        display_roon_journal(): Affichage triple images par piste
+        display_lastfm_journal(): Affichage triple images par piste
         PIL.Image: Documentation Pillow
         requests.get(): Documentation Requests
     """
@@ -1035,7 +1035,7 @@ def filter_albums(albums: List[Dict], search_term: str) -> List[Dict]:
 # VUES PRINCIPALES - JOURNAL ROON
 # ============================================================================
 
-def display_roon_journal():
+def display_lastfm_journal():
     """Affiche le journal chronologique des lectures Roon/Last.fm.
     
     Interface de visualisation de l'historique musical complet avec:
@@ -1046,7 +1046,7 @@ def display_roon_journal():
     - Affichage URLs images avec expandeurs
     
     Data Source:
-        Lecture via load_roon_data() → chk-roon.json → chk-roon.py (v2.2.0)
+        Lecture via load_roon_data() → chk-lastfm.json → chk-last-fm.py (v2.2.0)
     
     Layout Structure:
         - En-tête: Titre "📻 Journal d'écoute Roon"
@@ -1105,7 +1105,7 @@ def display_roon_journal():
     Examples:
         # Usage dans main()
         if page == "📻 Journal Roon":
-            display_roon_journal()
+            display_lastfm_journal()
         
         # Données affichées
         {
@@ -1133,7 +1133,7 @@ def display_roon_journal():
         - Responsive: S'adapte à largeur écran
     
     Data Quality Notes:
-        - Images réparées automatiquement par chk-roon.py v2.1.0+
+        - Images réparées automatiquement par chk-last-fm.py v2.1.0+
         - Artistes nettoyés (pas de "/" multiples, parenthèses)
         - Albums nettoyés (pas de métadonnées version)
         - Source toujours définie ("roon" | "lastfm")
@@ -1147,7 +1147,7 @@ def display_roon_journal():
     
     See Also:
         load_roon_data(): Chargement données source
-        chk-roon.py: Script génération données
+        chk-last-fm.py: Script génération données
         analyze-listening-patterns.py: Analytics avancées
     """
     """Affiche le journal des écoutes Roon."""
@@ -1164,7 +1164,7 @@ def display_roon_journal():
     tracks = load_roon_data()
     
     if not tracks:
-        st.info("📁 Aucune lecture trouvée dans chk-roon.json")
+        st.info("📁 Aucune lecture trouvée dans chk-lastfm.json")
         return
     
     # Statistiques
@@ -1219,7 +1219,7 @@ def display_roon_journal():
     # Afficher les pistes avec layout adaptatif
     for i, track in enumerate(filtered_tracks):
         # Conteneur avec classe CSS pour styling compact
-        st.markdown('<div class="roon-track">', unsafe_allow_html=True)
+        st.markdown('<div class="lastfm-track">', unsafe_allow_html=True)
         with st.container():
             if compact_view:
                 # MODE COMPACT: Une seule ligne pour header, infos compactes, petites images
@@ -1380,7 +1380,7 @@ def display_roon_timeline():
         - Chaque jour sur une ligne séparée
     """
     # Charger la configuration Roon pour les heures d'écoute
-    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'roon-config.json'
+    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'lastfm-config.json'
     listen_start_hour = 6
     listen_end_hour = 23
     
@@ -1405,7 +1405,7 @@ def display_roon_timeline():
     tracks = load_roon_data()
     
     if not tracks:
-        st.info("📁 Aucune lecture trouvée dans chk-roon.json")
+        st.info("📁 Aucune lecture trouvée dans chk-lastfm.json")
         return
     
     # Grouper les tracks par date
@@ -1623,7 +1623,7 @@ def display_ai_logs():
         - Contenu: Affichage formaté des logs
     
     Note:
-        - Logs conservés 24h (nettoyage automatique par chk-roon.py)
+        - Logs conservés 24h (nettoyage automatique par chk-last-fm.py)
         - Format de log: ai-log-YYYY-MM-DD.txt
     """
     st.title("🤖 Journal technique IA")
@@ -2169,7 +2169,7 @@ def display_configuration():
     st.title("⚙️ Configuration")
     
     # Initialiser le scheduler
-    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'roon-config.json'
+    config_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'lastfm-config.json'
     state_path = Path(PROJECT_ROOT) / 'data' / 'config' / 'scheduler-state.json'
     
     try:
@@ -2764,9 +2764,9 @@ def display_ai_optimization():
         return
     
     # Déterminer les chemins des fichiers
-    config_path = Path(PROJECT_ROOT) / "data" / "config" / "roon-config.json"
+    config_path = Path(PROJECT_ROOT) / "data" / "config" / "lastfm-config.json"
     state_path = Path(PROJECT_ROOT) / "data" / "config" / "scheduler-state.json"
-    history_path = Path(PROJECT_ROOT) / "data" / "history" / "chk-roon.json"
+    history_path = Path(PROJECT_ROOT) / "data" / "history" / "chk-lastfm.json"
     
     # Vérifier que les fichiers existent
     if not config_path.exists():
@@ -3098,7 +3098,7 @@ def main():
         
         Main Zone:
         - display_discogs_collection() si "📀 Collection Discogs"
-        - display_roon_journal() si "📻 Journal Roon"
+        - display_lastfm_journal() si "📻 Journal Roon"
     
     State Management:
         - Navigation state géré automatiquement par Streamlit
@@ -3208,7 +3208,7 @@ def main():
     
     See Also:
         display_discogs_collection(): Vue collection musicale
-        display_roon_journal(): Vue historique lectures
+        display_lastfm_journal(): Vue historique lectures
         Streamlit documentation: https://docs.streamlit.io
     """
     """Fonction principale de l'application."""
@@ -3217,15 +3217,15 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "📈 Timeline Roon", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal Roon", "📈 Timeline Last.fm", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
     
     # Afficher la page sélectionnée
     if page == "📻 Journal Roon":
-        display_roon_journal()
-    elif page == "📈 Timeline Roon":
+        display_lastfm_journal()
+    elif page == "📈 Timeline Last.fm":
         display_roon_timeline()
     elif page == "🤖 Journal IA":
         display_ai_logs()
