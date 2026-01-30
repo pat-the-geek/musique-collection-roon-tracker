@@ -12,9 +12,8 @@ python-dotenv>=1.0.0          # Gestion variables d'environnement (.env)
 requests>=2.31.0              # Requêtes HTTP (API Spotify, Discogs, EurIA)
 certifi>=2023.0.0             # Gestion certificats SSL
 
-# ---- Roon & Last.fm Tracking (src/trackers/) ----
-roonapi>=0.1.0                # API Roon Core (chk-roon.py)
-pylast>=5.0.0                 # API Last.fm (chk-roon.py, chk-last-fm.py)
+# ---- Last.fm Tracking (src/trackers/) ----
+pylast>=5.0.0                 # API Last.fm (chk-last-fm.py)
 
 # ---- Audio Metadata (src/utils/) ----
 mutagen>=1.47.0               # Lecture métadonnées audio FLAC/MP3 (List_all_music_on_drive.py)
@@ -27,10 +26,8 @@ markdown>=3.4.0               # Conversion Markdown vers HTML (musique-gui.py)
 # ---- Database (src/models/) ----
 sqlalchemy>=2.0.0             # ORM pour gestion base de données SQLite
 
-# ---- CLI Interface (src/cli/) ----
-rich>=13.0.0                  # Rich terminal output and formatting
-click>=8.0.0                  # CLI framework for command-line interfaces
-prompt-toolkit>=3.0.0         # Interactive command-line tools (prévu pour Phase 2)
+# ---- CLI Interface (src/cli/) ---- REMOVED
+# CLI module removed for simplification
 
 # ---- Testing (src/tests/) ----
 pytest>=7.0.0                 # Framework de tests unitaires
