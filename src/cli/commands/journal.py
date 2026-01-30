@@ -413,7 +413,7 @@ def view_track(index):
     source = track.get('source', 'unknown')
     detail_text.append("Source: ", style=get_style(SemanticColor.MUTED))
     source_color = SemanticColor.SOURCE_ROON if source.lower() == 'roon' else SemanticColor.SOURCE_LASTFM
-    detail_text.append(f"{source.upper()}\n", style=apply_color(source_color))
+    detail_text.append(f"{source.upper()}\n", style=get_style(source_color))
     
     # Loved status
     loved = track.get('loved', False)
