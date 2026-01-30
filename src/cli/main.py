@@ -197,68 +197,15 @@ def collection_stats():
     cmd.show_stats()
 
 
-@cli.group()
-def journal():
-    """Voir le journal d'écoute."""
-    pass
+# Import Phase 3 commands
+from .commands.journal import journal_group
+from .commands.timeline import timeline_group
+from .commands.ai_logs import ai_logs_group
 
-
-@journal.command('show')
-@click.option('--source', type=click.Choice(['all', 'roon', 'lastfm']), default='all')
-@click.option('--loved', is_flag=True, help='Afficher uniquement les tracks aimés')
-@click.option('--date', help='Filtrer par date (YYYY-MM-DD)')
-@click.option('--page', default=1, help='Numéro de page')
-def journal_show(source, loved, date, page):
-    """Affiche le journal d'écoute."""
-    console.print(f"[yellow]Journal - Source: {source}, Page: {page}[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 3...[/dim]")
-
-
-@journal.command('stats')
-@click.option('--json', 'json_output', is_flag=True, help='Sortie JSON')
-def journal_stats(json_output):
-    """Affiche les statistiques du journal."""
-    console.print("[yellow]Statistiques du journal[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 3...[/dim]")
-
-
-@cli.group()
-def timeline():
-    """Voir la visualisation timeline."""
-    pass
-
-
-@timeline.command('display')
-@click.option('--day', help='Date (YYYY-MM-DD, défaut: aujourd\'hui)')
-@click.option('--mode', type=click.Choice(['compact', 'detailed']), default='compact')
-def timeline_display(day, mode):
-    """Affiche la timeline pour un jour spécifique."""
-    console.print(f"[yellow]Timeline - Mode: {mode}[/yellow]")
-    if day:
-        console.print(f"Date: {day}")
-    console.print("[dim]Implémentation à venir dans Phase 3...[/dim]")
-
-
-@cli.group()
-def ai():
-    """Voir les logs d'enrichissement IA."""
-    pass
-
-
-@ai.command('logs')
-def ai_logs_list():
-    """Liste les fichiers de logs IA disponibles."""
-    console.print("[yellow]Liste des logs IA[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 3...[/dim]")
-
-
-@ai.command('view')
-@click.argument('date', required=False)
-def ai_logs_view(date):
-    """Voir le log IA pour une date spécifique (défaut: aujourd'hui)."""
-    date_display = date or "aujourd'hui"
-    console.print(f"[yellow]Log IA - Date: {date_display}[/yellow]")
-    console.print("[dim]Implémentation à venir dans Phase 3...[/dim]")
+# Register Phase 3 command groups
+cli.add_command(journal_group, name='journal')
+cli.add_command(timeline_group, name='timeline')
+cli.add_command(ai_logs_group, name='ai-logs')
 
 
 @cli.command()

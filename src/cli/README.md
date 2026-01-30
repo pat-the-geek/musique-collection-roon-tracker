@@ -2,9 +2,9 @@
 
 Interface CLI moderne et élégante pour Musique Collection & Roon Tracker.
 
-**Version:** 1.0.0  
-**Date:** 28 janvier 2026  
-**Status:** Phase 1 - Fondations ✅
+**Version:** 1.1.0  
+**Date:** 30 janvier 2026  
+**Status:** Phase 3 Complete ✅ (Journal, Timeline, AI Logs)
 
 ---
 
@@ -18,7 +18,7 @@ Cette interface CLI fournit une alternative légère et rapide à l'interface we
 
 ### Caractéristiques principales
 
-✅ **Implémenté (Phase 1 - Fondations)**
+✅ **Phase 1 - Fondations (Complete)**
 - Architecture modulaire avec séparation des responsabilités
 - Système de couleurs sémantiques adaptatif
 - Détection automatique des capacités du terminal
@@ -26,12 +26,25 @@ Cette interface CLI fournit une alternative légère et rapide à l'interface we
 - Framework CLI complet avec Click
 - Tests unitaires complets (48 tests, 100% pass)
 
-🚧 **En développement (Phases suivantes)**
-- Collection Discogs (liste, recherche, détails, édition)
-- Journal d'écoute Roon/Last.fm
-- Visualisation timeline horaire
-- Logs d'enrichissement IA
-- Mode interactif avec menus
+✅ **Phase 2 - Collection Discogs (Complete)**
+- Liste paginée des albums avec tri et filtrage
+- Recherche interactive par titre/artiste
+- Vue détail album avec métadonnées complètes
+- Statistiques de collection
+- 24 tests d'intégration (100% pass)
+
+✅ **Phase 3 - Journal & Timeline (Complete)**
+- Journal d'écoute Roon/Last.fm avec filtres avancés
+- Timeline horaire ASCII avec visualisation graphique
+- Logs d'enrichissement IA avec statistiques
+- Filtrage par source, favoris, date
+- ~82 tests d'intégration (95%+ pass)
+
+🚧 **À venir (Phases suivantes)**
+- Mode interactif avec menus complets
+- Édition en ligne des métadonnées
+- Export multi-formats (CSV, JSON, Markdown)
+- Intégration avec scheduler automatique
 
 ---
 
@@ -112,21 +125,57 @@ python3 -m src.cli.main collection view 123456
 ### Journal d'écoute
 
 ```bash
-# Afficher le journal (à venir Phase 3)
-python3 -m src.cli.main journal show --source all --page 1
+# Lister l'historique d'écoute
+python3 -m src.cli.main journal list
 
-# Filtrer par date
-python3 -m src.cli.main journal show --date 2026-01-28
+# Avec filtres
+python3 -m src.cli.main journal list --source roon        # Filtre par source
+python3 -m src.cli.main journal list --loved              # Seulement les favoris
+python3 -m src.cli.main journal list --date-from 2026-01-28  # À partir d'une date
+python3 -m src.cli.main journal list --limit 20           # Limiter le nombre de résultats
 
-# Statistiques
+# Statistiques d'écoute
 python3 -m src.cli.main journal stats
+python3 -m src.cli.main journal stats --source roon --date-from 2026-01-01
+
+# Voir les détails d'une track
+python3 -m src.cli.main journal view 1
 ```
 
 ### Timeline
 
 ```bash
-# Afficher la timeline (à venir Phase 3)
-python3 -m src.cli.main timeline display --day 2026-01-28
+# Afficher la timeline horaire du jour
+python3 -m src.cli.main timeline display --date 2026-01-28
+
+# Mode compact (titres uniquement)
+python3 -m src.cli.main timeline display --date 2026-01-28 --compact
+
+# Personnaliser les heures affichées
+python3 -m src.cli.main timeline display --date 2026-01-28 --start-hour 8 --end-hour 22
+
+# Lister les dates disponibles
+python3 -m src.cli.main timeline list-dates
+python3 -m src.cli.main timeline list-dates --limit 10
+
+# Statistiques horaires
+python3 -m src.cli.main timeline hourly-stats
+python3 -m src.cli.main timeline hourly-stats --date 2026-01-28
+```
+
+### Logs IA
+
+```bash
+# Lister les fichiers de logs IA
+python3 -m src.cli.main ai-logs list
+
+# Voir le contenu d'un log
+python3 -m src.cli.main ai-logs view --date 2026-01-27
+python3 -m src.cli.main ai-logs view --date 2026-01-27 --limit 10
+
+# Statistiques du log
+python3 -m src.cli.main ai-logs stats --date 2026-01-27
+```
 
 # Mode compact ou détaillé
 python3 -m src.cli.main timeline display --mode detailed
