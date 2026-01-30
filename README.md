@@ -1,123 +1,57 @@
 # 🎵 Musique - Projet de Tracking Musical
 
-> ⚠️ **PROOF OF CONCEPT** - Ce projet est une démonstration de faisabilité technique explorant l'intégration de multiples APIs musicales (Roon, Last.fm, Spotify, Discogs) avec enrichissement IA (EurIA/Qwen3) pour le tracking, l'analyse et la présentation de données musicales personnelles.
+> ⚠️ **PROOF OF CONCEPT** - Ce projet est une démonstration de faisabilité technique explorant l'intégration d'APIs musicales (Last.fm, Spotify, Discogs) avec enrichissement IA (EurIA/Qwen3) pour le tracking, l'analyse et la présentation de données musicales personnelles.
 
 ## 🗺️ Roadmap et Plan d'Évolution
 
 **📌 Nouveau**: Consultez le **[ROADMAP.md](ROADMAP.md)** pour la vision stratégique complète du projet avec:
-- 📊 Analyse des modifications récentes (v3.0.0 → v3.3.0)
+- 📊 Analyse des modifications récentes
 - 🎯 Problèmes identifiés et issues en cours
-- 📅 Plan d'action court terme (0-3 mois)
-- 📅 Plan d'action moyen terme (3-12 mois)
-- 📅 Plan d'action long terme (12+ mois)
-- 🚀 Recommandations prioritaires (Top 5 actions immédiates)
+- 📅 Plans d'action court, moyen et long terme
+- 🚀 Recommandations prioritaires
 - 📈 Métriques de succès et KPIs
 
 ## 🎯 État du Projet
 
-**Version actuelle : 3.4.0** (Timeline View + Génération Playlists + Timezone Fix - 28 janvier 2026)
+**Version actuelle : 4.0.0** (Simplification - Last.fm uniquement - 30 janvier 2026)
 
 **Statut :** ✅ Fonctionnel • 🧪 Expérimental • 📊 En évolution
 
 ### Fonctionnalités Validées
-- ✅ Surveillance temps réel Roon + Last.fm avec enrichissement images publiques
+- ✅ Surveillance Last.fm avec enrichissement images publiques (Spotify)
 - ✅ Import automatique collection Discogs avec résumés IA
 - ✅ Interface Web Streamlit pour gestion collection
-- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Interface CLI moderne pour terminal (Issue #59)
-- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Système de couleurs sémantiques adaptatif
-- ✅ **NOUVEAU v3.5.0-cli (Phase 1)**: Détection automatique capacités terminal
 - ✅ Génération de présentations musicales (haïkus) via IA
-- ✅ **NOUVEAU v3.4.0**: Vue Timeline pour visualisation horaire des écoutes (Issue #46)
-- ✅ **NOUVEAU v3.4.0**: Navigation temporelle horizontale avec alternance couleurs
-- ✅ **NOUVEAU v3.4.0**: Modes compact/détaillé pour affichage Timeline
-- ✅ **NOUVEAU v3.3.1**: Génération de playlists intelligentes basée sur patterns d'écoute
-- ✅ **NOUVEAU v3.3.1**: 7 algorithmes de génération (sessions, correlations, flow, temps, albums, redécouverte, IA)
-- ✅ **NOUVEAU v3.3.1**: Export playlists multi-formats (JSON, M3U, CSV, TXT pour Roon)
-- ✅ **NOUVEAU v3.3.1**: Déduplication automatique des doublons dans playlists
-- ✅ **NOUVEAU v3.3.1**: Correction timezone (affichage heure locale correcte)
+- ✅ Vue Timeline pour visualisation horaire des écoutes
+- ✅ Navigation temporelle horizontale avec alternance couleurs
+- ✅ Modes compact/détaillé pour affichage Timeline
+- ✅ Génération de playlists intelligentes basée sur patterns d'écoute
+- ✅ 7 algorithmes de génération (sessions, correlations, flow, temps, albums, redécouverte, IA)
+- ✅ Export playlists multi-formats (JSON, M3U, CSV, TXT)
+- ✅ Déduplication automatique des doublons dans playlists
 - ✅ Analyse patterns d'écoute (sessions, corrélations, statistiques)
 - ✅ Cross-référence films/soundtracks via projet Cinéma
-- ✅ Détection et traitement intelligent des radios
 - ✅ Système de cache et retry pour robustesse API
-- ✅ **NOUVEAU v3.1**: Services partagés (`spotify_service`, `metadata_cleaner`)
-- ✅ **NOUVEAU v3.1**: Infrastructure de tests complète (228 tests, 91% couverture)
-- ✅ **NOUVEAU v3.1**: Constantes centralisées dans `constants.py`
-- ✅ **NOUVEAU v3.2**: Système de planification automatique (scheduler) intégré au tracker
-- ✅ **NOUVEAU v3.2**: Interface GUI pour configuration et monitoring des tâches
-- ✅ **NOUVEAU v3.2**: Visualisation des haïkus et rapports d'analyse dans la GUI
-- ✅ **NOUVEAU v3.3**: Service IA centralisé (`ai_service.py`) pour enrichissement albums
-- ✅ **NOUVEAU v3.3**: Génération automatique d'informations pour chaque album détecté
-- ✅ **NOUVEAU v3.3**: Fallback intelligent Discogs → IA (80%+ optimisation)
-- ✅ **NOUVEAU v3.3**: Journal technique IA quotidien avec rétention 24h
-- ✅ **NOUVEAU v3.3**: Vue "🤖 Journal IA" dans l'interface GUI
+- ✅ Services partagés (`spotify_service`, `metadata_cleaner`, `ai_service`)
+- ✅ Infrastructure de tests complète
+- ✅ Constantes centralisées dans `constants.py`
+- ✅ Service IA centralisé pour enrichissement albums
+- ✅ Génération automatique d'informations pour chaque album détecté
+- ✅ Fallback intelligent Discogs → IA (80%+ optimisation)
+- ✅ Journal technique IA quotidien avec rétention 24h
+- ✅ Vue "🤖 Journal IA" dans l'interface GUI
 
-### 📦 Nouveautés v3.4.0 (28 janvier 2026)
+### 📦 Nouveautés v4.0.0 (30 janvier 2026)
 
-**📈 Vue Timeline pour Visualisation Horaire** (Issue #46):
-- `display_roon_timeline()`: Nouvelle vue dans l'interface GUI (254 lignes)
-  - **Timeline horizontale**: Albums disposés sur ligne temporelle graduée par heures (6h-23h)
-  - **Alternance de couleurs**: Colonnes horaires alternées (gris/blanc) pour lisibilité
-  - **Modes d'affichage**: Toggle Compact (pochettes seules) / Détaillé (pochettes + métadonnées)
-  - **Navigation par jour**: Sélecteur de date avec format lisible ("Mardi 28 Janvier 2026")
-  - **Scroll horizontal**: Navigation fluide dans la journée
-  - **Statistiques**: Total tracks, artistes uniques, albums uniques, heure la plus active
-  - **Limitation intelligente**: Max 20 tracks par heure pour performance
-- **Menu GUI**: Nouvelle entrée "📈 Timeline Roon" entre Journal et Journal IA
-- **Configuration**: Utilise `listen_start_hour` et `listen_end_hour` de `roon-config.json`
-- **Impact**: Visualisation complémentaire au journal chronologique classique
+**🎯 Simplification Majeure**:
+- ❌ **Suppression Roon API**: Interface Roon retirée (pas assez robuste)
+- ❌ **Suppression CLI**: Module CLI retiré (trop complexe)
+- ✅ **Focus Last.fm**: Conservation uniquement de la détection Last.fm
+- ✅ **Renommage Interface**: "Journal d'écoute Last.fm" et "Timeline Last.fm"
+- ✅ **Code simplifié**: -6000+ lignes de code retirées
+- ✅ **Dépendances réduites**: Suppression de `roonapi`, `rich`, `click`, `prompt-toolkit`
 
-**🐛 Corrections** (Issue #57):
-- Fix affichage Timeline dans cas limites (heures vides, jours sans écoutes)
-- Amélioration robustesse parsing dates
-- Optimisation performances pour grandes collections
-
-👉 **Voir les détails**: [issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md](issues/ISSUE-46-TIMELINE-VIEW-IMPLEMENTATION.md)
-
-### 📦 Nouveautés v3.5.0-cli (28 janvier 2026) - Phase 1
-
-**🖥️ Interface CLI Moderne** (Issue #59):
-- `src/cli/`: Nouveau module CLI avec architecture modulaire (44+ KB de code)
-  - **Framework Click**: CLI moderne avec commandes imbriquées
-  - **Rich pour rendu**: Tables, panels, couleurs élégantes
-  - **Système de couleurs sémantiques**: 17 rôles adaptatifs (PRIMARY, ARTIST, ALBUM, etc.)
-  - **4 modes de couleur**: auto, truecolor (24-bit), color (4-bit), never (accessible)
-  - **Détection automatique terminal**: couleurs, dimensions, SSH, unicode
-- **Commandes CLI** (stubs Phase 1):
-  - `collection`: Liste, recherche, détails, édition albums
-  - `journal`: Visualisation historique d'écoute
-  - `timeline`: Vue timeline horaire
-  - `ai`: Logs d'enrichissement IA
-  - `version`: Info système et capacités terminal
-- **Script lancement**: `start-cli.sh` avec gestion auto dépendances
-- **48 tests unitaires**: 100% pass (couleurs: 29, terminal: 19)
-- **Documentation complète**: `src/cli/README.md` + docstrings
-- **Performance**: < 0.5s démarrage, < 15 MB RAM
-- **Compatibilité**: SSH, terminaux basiques, truecolor modernes
-
-**🎯 Phase 1 Terminée** (Fondations):
-- ✅ Architecture modulaire complète
-- ✅ Système couleurs + détection terminal
-- ✅ Framework CLI avec Click + Rich
-- ✅ Tests + documentation
-- 🚧 Phase 2 à venir: Collection commands (liste, recherche, édition)
-
-**Installation**:
-```bash
-# Installer les dépendances CLI (requis avant première utilisation)
-pip install -r requirements.txt
-# OU installer uniquement les dépendances CLI minimales:
-pip install rich click prompt-toolkit
-```
-
-**Usage**:
-```bash
-# Lancement rapide (recommandé - gère automatiquement les dépendances)
-./start-cli.sh
-
-# OU commandes directes (nécessite installation préalable des dépendances)
-python3 -m src.cli.main version
-python3 -m src.cli.main collection list
-python3 -m src.cli.main --color truecolor journal show
+**Objectif**: Retour à un logiciel plus simple et maintenable.
 ```
 
 👉 **Voir les détails**: 
@@ -464,46 +398,31 @@ Musique/
 ### Première Installation
 
 ```bash
-# 1. Installation des dépendances Python
-./scripts/install-dependencies.sh
-
-# 2. Configuration complète du tracker Roon
-./scripts/setup-roon-tracker.sh
-
-# 3. Lancer le tracker Roon
-./start-roon-tracker.sh
-```
-
-**Ou manuellement:**
-```bash
-# Créer environnement virtuel
+# 1. Créer environnement virtuel
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Installer dépendances
+# 2. Installer dépendances
 pip install -r requirements.txt
 
-# Configurer .env
+# 3. Configurer .env
 cp data/config/.env.example data/config/.env
-# Éditer data/config/.env avec vos clés API
+# Éditer data/config/.env avec vos clés API Last.fm, Spotify, Discogs, EurIA
 ```
 
 ### Utilisation Quotidienne
 
 ```bash
-# 🚀 Lancer TOUT en même temps (Tracker Roon + Interface Web) - RECOMMANDÉ
+# 🚀 Lancer l'interface Web
 ./start-all.sh
 
 # 🚀 Lancer sans ouvrir le navigateur automatiquement
 ./start-all.sh --no-browser
 
-# Ou lancer séparément:
+# Ou lancer les composants séparément:
 
-# Tracker Roon (temps réel)
-./start-roon-tracker.sh
-
-# Interface Web Streamlit
-./scripts/start-streamlit.sh
+# Tracker Last.fm (temps réel)
+python3 src/trackers/chk-last-fm.py
 
 # Import collection Discogs
 cd src/collection && python3 Read-discogs-ia.py
@@ -525,7 +444,6 @@ cd src/analysis && python3 analyze-listening-patterns.py
 
 ### Trackers (temps réel)
 
-- **`src/trackers/chk-roon.py`**: Surveillance Roon + Last.fm (monitoring continu)
 - **`src/trackers/chk-last-fm.py`**: Tracker Last.fm standalone
 
 ### Collection
