@@ -1,0 +1,75 @@
+name: Delete Merged Branches
+
+on:
+  # Trigger manually via GitHub UI
+  workflow_dispatch:
+  
+  # Or automatically when a PR is closed and merged
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  delete-merged-branches:
+    runs-on: ubuntu-latest
+    
+    # Only run if PR was merged (not just closed)
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Delete merged branch (from PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          echo "Deleting merged branch: $BRANCH_NAME"
+          git push origin --delete "$BRANCH_NAME" || echo "Branch already deleted or does not exist"
+      
+      - name: Delete all merged branches (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Fetching all branches..."
+          git fetch --all
+          
+          echo "Finding merged branches..."
+          # Get all remote branches except main
+          BRANCHES=$(git branch -r | grep -v HEAD | grep -v main | sed 's/origin\///')
+          
+          echo "Checking which branches are merged..."
+          MERGED_COUNT=0
+          SKIPPED_COUNT=0
+          
+          for branch in $BRANCHES; do
+            # Check if branch is merged into main
+            if git merge-base --is-ancestor "origin/$branch" origin/main 2>/dev/null; then
+              echo "✅ Deleting merged branch: $branch"
+              if git push origin --delete "$branch" 2>&1; then
+                ((MERGED_COUNT++))
+              else
+                echo "⚠️  Could not delete: $branch"
+                ((SKIPPED_COUNT++))
+              fi
+            else
+              echo "⏭️  Skipping unmerged branch: $branch"
+              ((SKIPPED_COUNT++))
+            fi
+          done
+          
+          echo ""
+          echo "=========================================="
+          echo "Summary:"
+          echo "  Deleted: $MERGED_COUNT branches"
+          echo "  Skipped: $SKIPPED_COUNT branches"
+          echo "=========================================="
+      
+      - name: Cleanup
+        run: |
+          echo "Pruning deleted branches from local refs..."
+          git fetch --prune origin
+          echo "✨ Done!"
