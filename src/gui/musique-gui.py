@@ -1359,7 +1359,7 @@ def display_lastfm_journal():
         st.markdown('</div><hr class="track-divider">', unsafe_allow_html=True)
 
 
-def display_roon_timeline():
+def display_lastfm_timeline():
     """Affiche une visualisation en timeline des écoutes Roon.
     
     Vue chronologique avec albums disposés sur une ligne temporelle graduée par heures.
@@ -3217,16 +3217,16 @@ def main():
         st.title("🎵 Navigation")
         page = st.radio(
             "Choisir une vue",
-            ["📀 Collection Discogs", "📻 Journal Roon", "📈 Timeline Last.fm", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
+            ["📀 Collection Discogs", "📻 Journal d'écoute Last.fm", "📈 Timeline Last.fm", "🤖 Journal IA", "🎭 Haïkus", "🎵 Playlists", "📊 Rapports d'analyse", "🤖 Optimisation IA", "⚙️ Configuration"],
             label_visibility="collapsed"
         )
         st.divider()
     
     # Afficher la page sélectionnée
-    if page == "📻 Journal Roon":
+    if page == "📻 Journal d'écoute Last.fm":
         display_lastfm_journal()
     elif page == "📈 Timeline Last.fm":
-        display_roon_timeline()
+        display_lastfm_timeline()
     elif page == "🤖 Journal IA":
         display_ai_logs()
     elif page == "🎭 Haïkus":
