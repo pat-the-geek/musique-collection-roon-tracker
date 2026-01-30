@@ -118,13 +118,13 @@ Notes techniques:
 
 Intégration écosystème:
     - Données Discogs: Read-discogs-ia.py → discogs-collection.json → GUI
-    - Données Roon: chk-last-fm.py → chk-lastfm.json → GUI (journal)
-    - Enrichissement: complete-resumes.py, complete-images-roon.py
+    - Données Last.fm: chk-last-fm.py → chk-lastfm.json → GUI (journal)
+    - Enrichissement: complete-resumes.py, complete-images-lastfm.py
     - Analyse: analyze-listening-patterns.py, generate-haiku.py
     - Synchronisation: generate-soundtrack.py (films ⟷ musique)
 
 Changelog v3.4.0 (28 janvier 2026):
-    - **Nouveau**: Vue Timeline Roon pour visualisation horaire des écoutes (Issue #46)
+    - **Nouveau**: Vue Timeline Last.fm pour visualisation horaire des écoutes (Issue #46)
     - Timeline horizontale avec graduation par heures (6h-23h configurable)
     - Alternance de couleurs par heure pour meilleure lisibilité
     - Modes compact (pochettes seules) et détaillé (pochettes + métadonnées)
@@ -138,18 +138,18 @@ Changelog v3.4.0 (28 janvier 2026):
 Changelog v3.1.0 (25 janvier 2026):
     - Haïkus: URLs Spotify et Discogs maintenant cliquables (correction indentation)
     - Rapports: Amélioration lisibilité avec style CSS personnalisé
-    - Configuration Roon: Contraste amélioré pour champs désactivés
+    - Configuration: Contraste amélioré pour champs désactivés
     - Dropdowns: Meilleure visibilité avec police en gras et bordure verte
 
 Changelog v3.2.0 (26 janvier 2026):
-    - **Nouveau**: Affichage des informations IA sur les albums dans Journal Roon
+    - **Nouveau**: Affichage des informations IA sur les albums dans Journal Last.fm
     - **Nouveau**: Vue "Journal IA" pour consulter les logs techniques quotidiens
     - Info IA accessible via expandeur dans les modes compact et détaillé
     - Informations sources: Discogs collection (priorité) ou génération via EurIA API
     - Logs conservés 24h avec nettoyage automatique
     
 Changelog v3.0 (24 janvier 2026):
-    - Vue compacte pour Journal Roon: images réduites à 60px, layout optimisé
+    - Vue compacte pour Journal Last.fm: images réduites à 60px, layout optimisé
     - Toggle "Vue compacte / Vue détaillée" pour basculer entre modes
     - En mode compact: Header sur une ligne, infos denses, +60% de contenu visible
     - Collection Discogs: images limitées à 400px pour meilleure utilisation espace
@@ -163,7 +163,7 @@ License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
 See Also:
-    README-ROON-TRACKER.md: Documentation système de tracking
+    README-LASTFM-TRACKER.md: Documentation système de tracking
     ARCHITECTURE-OVERVIEW.md: Diagrammes de flux complets
     .github/copilot-instructions.md: Guide développement IA
 """
@@ -464,7 +464,7 @@ def load_data() -> List[Dict]:
         return []
 
 @st.cache_data(ttl=60)  # Cache de 60 secondes
-def load_roon_data() -> List[Dict]:
+def load_lastfm_data() -> List[Dict]:
     """Charge l'historique des lectures Roon/Last.fm avec mise en cache auto-rafraîchie.
     
     Lecture du fichier chk-lastfm.json généré par chk-last-fm.py (v2.2.0).
@@ -484,7 +484,7 @@ def load_roon_data() -> List[Dict]:
                     "artist_spotify_image": URL image artiste,
                     "album_spotify_image": URL pochette Spotify,
                     "album_lastfm_image": URL pochette Last.fm,
-                    "source": "roon" | "lastfm"
+                    "source": "lastfm"
                 }
             ]
         }
@@ -510,7 +510,7 @@ def load_roon_data() -> List[Dict]:
             'title': 'Feeling Good',
             'album': 'I Put a Spell on You',
             'date': '2026-01-20 14:30',
-            'source': 'roon',
+            'source': 'lastfm',
             'loved': False
         }
     
