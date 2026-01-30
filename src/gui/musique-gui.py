@@ -157,8 +157,8 @@ Changelog v3.0 (24 janvier 2026):
     - Amélioration densité globale de l'interface
 
 Auteur: Patrick Ostertag
-Version: 3.2.0
-Date: 26 janvier 2026
+Version: 4.0.0
+Date: 30 janvier 2026
 License: Projet personnel
 Repository: /Users/patrickostertag/Documents/DataForIA/Musique/
 
@@ -501,7 +501,7 @@ def load_lastfm_data() -> List[Dict]:
         Bouton manuel "🔄 Actualiser" disponible dans l'interface.
     
     Examples:
-        >>> tracks = load_roon_data()
+        >>> tracks = load_lastfm_data()
         >>> len(tracks)
         1250
         >>> tracks[0]
@@ -1046,7 +1046,7 @@ def display_lastfm_journal():
     - Affichage URLs images avec expandeurs
     
     Data Source:
-        Lecture via load_roon_data() → chk-lastfm.json → chk-last-fm.py (v2.2.0)
+        Lecture via load_lastfm_data() → chk-lastfm.json → chk-last-fm.py (v2.2.0)
     
     Layout Structure:
         - En-tête: Titre "📻 Journal d'écoute Roon"
@@ -1146,7 +1146,7 @@ def display_lastfm_journal():
         - Détection albums complets (5+ pistes)
     
     See Also:
-        load_roon_data(): Chargement données source
+        load_lastfm_data(): Chargement données source
         chk-last-fm.py: Script génération données
         analyze-listening-patterns.py: Analytics avancées
     """
@@ -1157,11 +1157,11 @@ def display_lastfm_journal():
         st.title("📻 Journal d'écoute Roon")
     with col_refresh:
         if st.button("🔄 Actualiser", key="refresh_roon"):
-            load_roon_data.clear()
+            load_lastfm_data.clear()
             st.rerun()
     
     # Charger les données Roon
-    tracks = load_roon_data()
+    tracks = load_lastfm_data()
     
     if not tracks:
         st.info("📁 Aucune lecture trouvée dans chk-lastfm.json")
@@ -1398,11 +1398,11 @@ def display_lastfm_timeline():
         st.title("📈 Timeline d'écoute Roon")
     with col_refresh:
         if st.button("🔄 Actualiser", key="refresh_timeline"):
-            load_roon_data.clear()
+            load_lastfm_data.clear()
             st.rerun()
     
     # Charger les données
-    tracks = load_roon_data()
+    tracks = load_lastfm_data()
     
     if not tracks:
         st.info("📁 Aucune lecture trouvée dans chk-lastfm.json")

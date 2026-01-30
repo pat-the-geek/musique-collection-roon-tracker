@@ -14,7 +14,7 @@ En enregistrant les lectures musicales avec des URLs d'images publiques (Spotify
 - ✅ **Persistance**: URLs publiques restent accessibles indépendamment de Roon
 - ✅ **Portabilité**: Données utilisables sur n'importe quel système
 
-Le fichier `chk-roon.json` devient ainsi une **source de données universelle** exploitable par n'importe quel outil moderne.
+Le fichier `chk-lastfm.json` devient ainsi une **source de données universelle** exploitable par n'importe quel outil moderne.
 
 ## 📋 Table des matières
 
@@ -46,7 +46,7 @@ Application Streamlit complète intégrant trois sources de données musicales :
 - 📄 Résumés générés par IA (EurIA API)
 - 🤖 Génération de résumé à la demande (bouton intégré)
 
-### Journal Roon
+### Journal Last.fm
 - 📻 Visualisation chronologique des écoutes
 - 🔍 Filtres multiples (source, recherche, favoris)
 - 🖼️ Triple affichage images :
@@ -57,7 +57,7 @@ Application Streamlit complète intégrant trois sources de données musicales :
 - ❤️ Marquage favoris
 - 📱 Interface compacte et optimisée
 
-### Timeline Roon (v3.4.0)
+### Timeline Last.fm (v4.0.0)
 - 📈 Visualisation horaire des écoutes sur ligne temporelle
 - ⏰ Timeline horizontale graduée par heures (6h-23h configurable)
 - 🎨 Alternance de couleurs par heure (gris/blanc) pour lisibilité
@@ -90,7 +90,7 @@ pip install streamlit pillow requests
 ```
 musique-gui.py                 # Application principale
 discogs-collection.json        # Collection Discogs
-chk-roon.json                  # Historique Roon/Last.fm
+chk-lastfm.json                # Historique Last.fm
 soundtrack.json                # Métadonnées films (optionnel)
 .env                           # Variables d'environnement (EurIA API)
 ```
@@ -196,7 +196,7 @@ ip addr show
 }
 ```
 
-#### chk-roon.json
+#### chk-lastfm.json
 ```json
 {
     "tracks": [
@@ -210,7 +210,7 @@ ip addr show
             "artist_spotify_image": "https://...",
             "album_spotify_image": "https://...",
             "album_lastfm_image": "https://...",
-            "source": "roon"
+            "source": "lastfm"
         }
     ]
 }
@@ -219,15 +219,14 @@ ip addr show
 ### Flux de données
 ```
 ┌─────────────────┐
-│  chk-roon.py    │──┐
-│  (v2.2.0)       │  │
-└─────────────────┘  │
-                     ├──► chk-roon.json ──┐
-┌─────────────────┐  │                    │
-│  chk-last-fm.py │──┘                    │
-└─────────────────┘                       │
-                                          ▼
-┌─────────────────┐              ┌──────────────┐
+│ chk-last-fm.py  │
+│  (v2.2.0)       │
+└─────────────────┘
+         │
+         ├──► chk-lastfm.json ──┐
+         │                      │
+                               ▼
+┌─────────────────┐      ┌──────────────┐
 │ Read-discogs-   │──────────►   │ musique-gui  │
 │ ia.py           │              │   .py        │
 └─────────────────┘              └──────────────┘
@@ -257,15 +256,16 @@ Des captures d'écran de l'interface sont disponibles dans [samples/](../samples
 
 ### Navigation
 - **📀 Collection Discogs** : Gestion collection
-- **📻 Journal Roon** : Historique écoutes chronologique
-- **📈 Timeline Roon** : Visualisation horaire des écoutes (v3.4.0)
+- **📻 Journal Last.fm** : Historique écoutes chronologique
+- **📈 Timeline Last.fm** : Visualisation horaire des écoutes (v4.0.0)
 - **🤖 Journal IA** : Logs quotidiens enrichissement IA
 - **🎭 Haïkus** : Présentations musicales générées
-- **🎵 Playlists** : Génération playlists intelligentes
-- **📊 Rapports d'analyse** : Statistiques et patterns d'écoute
+- **🎵 Playlists** : Génération playlists intelligentes (v4.0.0)
+- **📊 Rapports d'analyse** : Statistiques et patterns d'écoute (v4.0.0)
+- **🤖 Optimisation IA** : Recommandations système (v4.0.0)
 - **⚙️ Configuration** : Paramètres du scheduler
 
-### Layout Journal Roon (optimisé v2.0)
+### Layout Journal Last.fm (optimisé v2.0)
 
 ```
 ┌─────────────────────────────────────┬─────────────────────────────┐
@@ -277,12 +277,12 @@ Des captures d'écran de l'interface sont disponibles dans [samples/](../samples
 └─────────────────────────────────────┴─────────────────────────────┘
 ```
 
-### Layout Timeline Roon (v3.4.0)
+### Layout Timeline Last.fm (v4.0.0)
 
 **Vue d'ensemble:**
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ 📈 Timeline d'écoute Roon                      [🔄 Actualiser]  │
+│ 📈 Timeline d'écoute Last.fm                   [🔄 Actualiser]  │
 ├─────────────────────────────────────────────────────────────────┤
 │ 📅 Sélectionner un jour:  [▼ Mardi 28 Janvier 2026]            │
 │                                                                  │
@@ -324,7 +324,7 @@ Des captures d'écran de l'interface sont disponibles dans [samples/](../samples
 **Cas d'usage:**
 - Identifier patterns d'écoute par heure de la journée
 - Vue d'ensemble rapide de l'activité musicale quotidienne
-- Complémentaire au Journal Roon (chronologique vs horaire)
+- Complémentaire au Journal Last.fm (chronologique vs horaire)
 
 ### Génération de résumé EurIA (v2.1)
 
@@ -357,10 +357,19 @@ Interface de génération dans l'onglet "Informations" :
 
 ## 📝 Modifications récentes
 
+### Version 4.0.0 - 30 janvier 2026
+
+#### Simplification et focus Last.fm
+✅ **Suppression Roon API** : Interface Roon retirée (remplacée par Last.fm)  
+✅ **Suppression CLI** : Module CLI retiré (simplification)  
+✅ **Renommage vues** : "Journal Last.fm" et "Timeline Last.fm"  
+✅ **Nouvelles vues** : Playlists, Rapports d'analyse, Optimisation IA  
+✅ **Correction bugs** : `load_roon_data` → `load_lastfm_data`
+
 ### Version 3.4.0 - 28 janvier 2026
 
 #### Timeline View pour visualisation horaire (Issue #46)
-✅ **Nouvelle vue Timeline Roon** : Visualisation horaire des écoutes  
+✅ **Nouvelle vue Timeline** : Visualisation horaire des écoutes  
 ✅ **Timeline horizontale** : Graduation par heures (6h-23h configurable)  
 ✅ **Alternance de couleurs** : Colonnes grises/blanches pour lisibilité  
 ✅ **Double mode** : Compact (pochettes) et Détaillé (pochettes+métadonnées)  
@@ -385,7 +394,7 @@ Interface de génération dans l'onglet "Informations" :
 ✅ **Gestion des erreurs** : Messages clairs en cas de problème  
 ✅ **Interface intuitive** : Layout 2 colonnes avec spinner pendant génération
 
-#### Journal Roon - Optimisations visuelles (v2.0)
+#### Journal Last.fm - Optimisations visuelles (v2.0)
 ✅ **Images réduites 4x** : Passage de pleine largeur à 100px  
 ✅ **Layout réorganisé** : Texte à gauche (2/3), images à droite (1/3)  
 ✅ **Images horizontales** : Les 3 images alignées sur une ligne  
@@ -401,7 +410,7 @@ Interface de génération dans l'onglet "Informations" :
     color: #000000;
 }
 
-/* Journal Roon compact */
+/* Journal Last.fm compact */
 .roon-track h3 {
     font-size: 1.2rem;
     margin: 0.2rem 0;
@@ -471,7 +480,7 @@ streamlit run musique-gui.py --server.headless true
 ```bash
 # Vérifier fichiers
 python -m json.tool discogs-collection.json
-python -m json.tool chk-roon.json
+python -m json.tool chk-lastfm.json
 ```
 
 ### Images ne s'affichent pas
